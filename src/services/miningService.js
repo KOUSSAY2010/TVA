@@ -1,0 +1,325 @@
+import { User, WithdrawalRequest, PromoCode } from '../models/index.js';
+import config from '../config/index.js';
+
+/**
+ * Service handling mining calculations, ads rewards, referrals, and withdrawals.
+ */
+export class MiningService {
+  /**
+   * Get or create a user by Telegram ID
+   */
+  static async getOrCreateUser(telegramUser, referrerId = null) {
+    let user = await User.findOne({ telegramId: telegramUser.id });
+
+    if (!user) {
+      // Validate referrer: must exist and not be self
+      let validReferrerId = null;
+      if (referrerId && Number(referrerId) !== telegramUser.id) {
+        const referrerExists = await User.exists({ telegramId: Number(referrerId) });
+        if (referrerExists) {
+          validReferrerId = Number(referrerId);
+        }
+      }
+
+      user = await User.create({
+        telegramId: telegramUser.id,
+        username: telegramUser.username || '',
+        firstName: telegramUser.first_name || '',
+        referredBy: validReferrerId,
+        lastClaimAt: new Date(),
+      });
+    } else {
+      user.checkAndResetDailyAds();
+      user.updateRigsStatus();
+      await user.save();
+    }
+
+    return user;
+  }
+
+  /**
+   * Calculate currently accumulated claimable TON based on elapsed time and current daily rate.
+   */
+  static calculateAccumulatedTon(user) {
+    user.checkAndResetDailyAds();
+    user.updateRigsStatus();
+
+    const dailyRate = user.calculateDailyMiningRate();
+    const now = Date.now();
+    const lastClaim = new Date(user.lastClaimAt).getTime();
+    const elapsedSeconds = Math.max(0, (now - lastClaim) / 1000);
+
+    // Accumulated = (Daily Rate / 86400 seconds) * elapsedSeconds
+    const accumulated = (dailyRate / 86400) * elapsedSeconds;
+    return {
+      dailyRate,
+      elapsedSeconds: Math.floor(elapsedSeconds),
+      accumulatedTon: Number(accumulated.toFixed(8)),
+    };
+  }
+
+  /**
+   * Claim accumulated mined TON to main balance.
+   */
+  static async claimMinedTon(telegramId) {
+    const user = await User.findOne({ telegramId });
+    if (!user) throw new Error('User not found');
+
+    const { accumulatedTon, dailyRate } = this.calculateAccumulatedTon(user);
+
+    if (accumulatedTon <= 0) {
+      return { claimedTon: 0, newBalance: user.tonBalance, dailyRate };
+    }
+
+    user.tonBalance = Number((user.tonBalance + accumulatedTon).toFixed(8));
+    user.lastClaimAt = new Date();
+    await user.save();
+
+    return {
+      claimedTon: accumulatedTon,
+      newBalance: user.tonBalance,
+      dailyRate,
+    };
+  }
+
+  /**
+   * Process AdsGram / Ad reward with 15-second anti-cheat verification and referral rewards.
+   */
+  static async processAdReward(telegramId, adDurationSeconds) {
+    // Anti-Cheat: Reject if ad watched duration is under 15 seconds
+    if (typeof adDurationSeconds === 'number' && adDurationSeconds < config.ads.minDurationSeconds) {
+      throw new Error(`Anti-cheat violation: Ad watched duration (${adDurationSeconds}s) is below required ${config.ads.minDurationSeconds}s.`);
+    }
+
+    const user = await User.findOne({ telegramId });
+    if (!user) throw new Error('User not found');
+
+    user.checkAndResetDailyAds();
+
+    // Check daily ads limit (max 40/day)
+    if (user.adsWatchedToday >= config.ads.maxDailyAds) {
+      throw new Error(`Daily limit of ${config.ads.maxDailyAds} ads reached. Resets at midnight UTC.`);
+    }
+
+    // 1 watched ad = 1 point
+    user.adsWatchedToday += 1;
+    user.totalAdsWatched += 1;
+    user.totalPoints += config.mining.pointsPerAd; // 1 point = +0.0001 TON/day
+    user.adsWatchedForWithdrawal += 1;
+    user.hasWatchedAdForPromo = true;
+
+    // Check Referral Activation:
+    // A referral is considered "active" (and rewards referrer with 10 points)
+    // AFTER the referred user watches exactly 10 ads.
+    let referralRewarded = false;
+    if (user.referredBy && !user.isReferralRewarded && user.totalAdsWatched >= config.ads.adsForActiveReferral) {
+      const referrer = await User.findOne({ telegramId: user.referredBy });
+      if (referrer) {
+        referrer.activeReferralsCount += 1;
+        referrer.totalPoints += config.ads.referralRewardPoints; // 10 points
+        await referrer.save();
+
+        user.isReferralRewarded = true;
+        referralRewarded = true;
+      }
+    }
+
+    await user.save();
+
+    return {
+      pointsAwarded: config.mining.pointsPerAd,
+      totalPoints: user.totalPoints,
+      adsWatchedToday: user.adsWatchedToday,
+      remainingDailyAds: config.ads.maxDailyAds - user.adsWatchedToday,
+      currentDailyMiningRate: user.calculateDailyMiningRate(),
+      referralRewarded,
+    };
+  }
+
+  /**
+   * Buy a mining rig using TON balance.
+   * Prices: [1, 3, 5, 10, 25, 50, 100] TON.
+   * Yields 11% daily for 10 days.
+   */
+  static async purchaseRig(telegramId, costTon) {
+    const tier = config.rigTiers.find((t) => t.costTon === costTon);
+    if (!tier) {
+      throw new Error(`Invalid rig tier. Allowed costs: ${config.rigTiers.map((t) => t.costTon).join(', ')} TON.`);
+    }
+
+    const user = await User.findOne({ telegramId });
+    if (!user) throw new Error('User not found');
+
+    if (user.tonBalance < costTon) {
+      throw new Error(`Insufficient TON balance. Required: ${costTon} TON, Current: ${user.tonBalance.toFixed(4)} TON.`);
+    }
+
+    // Deduct balance and add rig
+    user.tonBalance = Number((user.tonBalance - costTon).toFixed(4));
+    user.rigs.push({
+      tierId: tier.tierId,
+      costTon: tier.costTon,
+      dailyYieldTon: tier.dailyYieldTon, // 11% of cost
+      purchasedAt: new Date(),
+      expiresAt: new Date(Date.now() + tier.durationDays * 24 * 60 * 60 * 1000),
+      status: 'active',
+    });
+
+    await user.save();
+
+    return {
+      tier,
+      newTonBalance: user.tonBalance,
+      newDailyMiningRate: user.calculateDailyMiningRate(),
+      activeRigsCount: user.rigs.filter((r) => r.status === 'active').length,
+    };
+  }
+
+  /**
+   * Claim a promo code.
+   * Requirement: User must watch at least 1 ad before claiming any promo code.
+   */
+  static async claimPromoCode(telegramId, rawCode) {
+    const code = rawCode.trim().toUpperCase();
+    const user = await User.findOne({ telegramId });
+    if (!user) throw new Error('User not found');
+
+    const promo = await PromoCode.findOne({ code, isActive: true });
+    if (!promo) {
+      throw new Error('Invalid or expired promo code.');
+    }
+
+    // Dynamic ad requirement per promo code
+    const requiredAds = typeof promo.requiredAdsCount === 'number' ? promo.requiredAdsCount : 1;
+    if (user.totalAdsWatched < requiredAds) {
+      throw new Error(`You must watch at least ${requiredAds} ad(s) before claiming this promo code. (Watched: ${user.totalAdsWatched}/${requiredAds})`);
+    }
+
+    if (promo.expiresAt && new Date(promo.expiresAt) <= new Date()) {
+      throw new Error('This promo code has expired.');
+    }
+
+    if (promo.timesUsed >= promo.maxUses) {
+      throw new Error('This promo code has reached its maximum usage limit.');
+    }
+
+    const alreadyUsed = promo.usedBy.some((u) => u.telegramId === telegramId);
+    if (alreadyUsed) {
+      throw new Error('You have already claimed this promo code.');
+    }
+
+    // Apply rewards
+    promo.timesUsed += 1;
+    promo.usedBy.push({ telegramId, redeemedAt: new Date() });
+    await promo.save();
+
+    if (promo.rewardPoints > 0) {
+      user.totalPoints += promo.rewardPoints;
+    }
+    if (promo.rewardTon > 0) {
+      user.tonBalance = Number((user.tonBalance + promo.rewardTon).toFixed(4));
+    }
+
+    await user.save();
+
+    return {
+      rewardPoints: promo.rewardPoints,
+      rewardTon: promo.rewardTon,
+      newPoints: user.totalPoints,
+      newTonBalance: user.tonBalance,
+      newDailyMiningRate: user.calculateDailyMiningRate(),
+    };
+  }
+
+  /**
+   * Submit manual withdrawal request.
+   * Requirements:
+   * 1. Min 0.1 TON.
+   * 2. 5% withdrawal fee.
+   * 3. Must have watched 15 ads for withdrawal.
+   * 4. If requireRigForWithdrawal toggle is true, user must own at least 1 active rig.
+   */
+  static async createWithdrawalRequest(telegramId, walletAddress, amountTon, botInstance = null) {
+    if (amountTon < config.withdrawals.minAmountTon) {
+      throw new Error(`Minimum withdrawal amount is ${config.withdrawals.minAmountTon} TON.`);
+    }
+
+    const user = await User.findOne({ telegramId });
+    if (!user) throw new Error('User not found');
+
+    // Check 15 ads requirement
+    if (user.adsWatchedForWithdrawal < config.withdrawals.adsRequiredForWithdrawal) {
+      throw new Error(
+        `You must watch ${config.withdrawals.adsRequiredForWithdrawal} ads before requesting a withdrawal. Progress: ${user.adsWatchedForWithdrawal}/${config.withdrawals.adsRequiredForWithdrawal}`
+      );
+    }
+
+    // Check rig requirement toggle (disabled by default, configurable)
+    user.updateRigsStatus();
+    if (config.withdrawals.requireRigForWithdrawal) {
+      const hasActiveRig = user.rigs.some((r) => r.status === 'active');
+      if (!hasActiveRig) {
+        throw new Error('You must own at least one active mining rig to withdraw.');
+      }
+    }
+
+    // Check balance
+    if (user.tonBalance < amountTon) {
+      throw new Error(`Insufficient TON balance. Current balance: ${user.tonBalance.toFixed(4)} TON.`);
+    }
+
+    // Deduct balance and reset withdrawal ads counter
+    const feeTon = Number(((amountTon * config.withdrawals.feePercent) / 100).toFixed(6));
+    const netAmountTon = Number((amountTon - feeTon).toFixed(6));
+    const currentRate = user.calculateDailyMiningRate();
+
+    user.tonBalance = Number((user.tonBalance - amountTon).toFixed(6));
+    // Reset the 15-ads requirement counter for subsequent withdrawal
+    user.adsWatchedForWithdrawal = Math.max(0, user.adsWatchedForWithdrawal - config.withdrawals.adsRequiredForWithdrawal);
+    await user.save();
+
+    const request = await WithdrawalRequest.create({
+      telegramId,
+      walletAddress,
+      amountTon,
+      feeTon,
+      netAmountTon,
+      currentDailyMiningRateAtRequest: currentRate,
+      status: 'pending',
+    });
+
+    // Notify Admin via Telegram Bot if admin ID and bot instance are configured
+    if (botInstance && config.telegram.adminId) {
+      const adminMessage = 
+        `🚨 *New Withdrawal Request* 🚨\n\n` +
+        `👤 *User ID:* \`${telegramId}\`\n` +
+        `💰 *Requested Amount:* \`${amountTon} TON\`\n` +
+        `💸 *Fee (5%):* \`${feeTon} TON\`\n` +
+        `💵 *Net Payout:* \`${netAmountTon} TON\`\n` +
+        `🏦 *Wallet:* \`${walletAddress}\`\n` +
+        `⚡ *Current Daily Mining Rate:* \`${currentRate} TON/day\`\n` +
+        `🆔 *Request ID:* \`${request._id}\``;
+
+      try {
+        const sent = await botInstance.telegram.sendMessage(config.telegram.adminId, adminMessage, {
+          parse_mode: 'Markdown',
+        });
+        request.adminTelegramMessageId = sent.message_id;
+        await request.save();
+      } catch (err) {
+        console.error('Failed to send admin withdrawal notification:', err.message);
+      }
+    }
+
+    return {
+      requestId: request._id,
+      amountTon,
+      feeTon,
+      netAmountTon,
+      currentDailyMiningRate: currentRate,
+      remainingBalance: user.tonBalance,
+    };
+  }
+}
+
+export default MiningService;

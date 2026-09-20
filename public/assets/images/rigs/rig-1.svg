@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bgGlow1" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#581c87" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#2e1065" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chassisGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#27272a"/>
+      <stop offset="40%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="metalTop1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3f3f46"/>
+      <stop offset="50%" stop-color="#52525b"/>
+      <stop offset="100%" stop-color="#27272a"/>
+    </linearGradient>
+    <linearGradient id="purpleNeon1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="50%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6b21a8"/>
+    </linearGradient>
+    <linearGradient id="cyanAccent1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <filter id="neonGlow1" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softShadow1" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.75"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <rect x="0" y="0" width="400" height="300" fill="url(#bgGlow1)" />
+
+  <!-- Ground Grid Lines -->
+  <g opacity="0.18" stroke="#a78bfa" stroke-width="1">
+    <line x1="40" y1="260" x2="360" y2="260" />
+    <line x1="80" y1="240" x2="320" y2="240" />
+    <line x1="120" y1="225" x2="280" y2="225" />
+    <line x1="60" y1="275" x2="140" y2="220" />
+    <line x1="340" y1="275" x2="260" y2="220" />
+    <line x1="200" y1="280" x2="200" y2="225" />
+  </g>
+
+  <!-- Drop Shadow Base -->
+  <ellipse cx="200" cy="242" rx="130" ry="24" fill="#000000" opacity="0.65" filter="blur(8px)" />
+
+  <!-- MAIN MINER CHASSIS (Isometric High-Tech Block) -->
+  <g filter="url(#softShadow1)">
+    <!-- Main Body Base -->
+    <rect x="90" y="90" width="220" height="135" rx="14" fill="url(#chassisGrad1)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+
+    <!-- Top Bevel Plate -->
+    <path d="M 90 102 Q 90 90 104 90 L 296 90 Q 310 90 310 102 L 310 112 L 90 112 Z" fill="url(#metalTop1)"/>
+
+    <!-- Corner Armor Guards -->
+    <path d="M 90 115 L 108 115 L 108 135 L 90 135 Z" fill="#3f3f46" />
+    <path d="M 310 115 L 292 115 L 292 135 L 310 135 Z" fill="#3f3f46" />
+    <path d="M 90 205 L 108 205 L 108 225 L 90 225 Z" fill="#3f3f46" />
+    <path d="M 310 205 L 292 205 L 292 225 L 310 225 Z" fill="#3f3f46" />
+
+    <!-- Hex Screws -->
+    <circle cx="100" cy="100" r="2.5" fill="#71717a"/>
+    <circle cx="300" cy="100" r="2.5" fill="#71717a"/>
+    <circle cx="100" cy="215" r="2.5" fill="#71717a"/>
+    <circle cx="300" cy="215" r="2.5" fill="#71717a"/>
+
+    <!-- TWIN COOLING TURBINES -->
+    <!-- Fan 1 (Left) -->
+    <g transform="translate(142, 160)">
+      <!-- Fan Shroud -->
+      <circle cx="0" cy="0" r="38" fill="#09090b" stroke="#3f3f46" stroke-width="3"/>
+      <circle cx="0" cy="0" r="34" fill="#18181b"/>
+      <circle cx="0" cy="0" r="34" stroke="url(#purpleNeon1)" stroke-width="2" filter="url(#neonGlow1)"/>
+      <!-- Fan Blades -->
+      <path d="M 0 -30 Q 15 -15 0 0 Q -15 15 0 30" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M -30 0 Q -15 -15 0 0 Q 15 15 30 0" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M -22 -22 Q -5 -15 0 0 Q 5 15 22 22" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M 22 -22 Q 15 -5 0 0 Q -15 5 -22 22" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <!-- Center Hub with LED -->
+      <circle cx="0" cy="0" r="12" fill="#27272a" stroke="#52525b" stroke-width="1.5"/>
+      <circle cx="0" cy="0" r="7" fill="url(#purpleNeon1)" filter="url(#neonGlow1)"/>
+      <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    </g>
+
+    <!-- Fan 2 (Right) -->
+    <g transform="translate(258, 160)">
+      <!-- Fan Shroud -->
+      <circle cx="0" cy="0" r="38" fill="#09090b" stroke="#3f3f46" stroke-width="3"/>
+      <circle cx="0" cy="0" r="34" fill="#18181b"/>
+      <circle cx="0" cy="0" r="34" stroke="url(#purpleNeon1)" stroke-width="2" filter="url(#neonGlow1)"/>
+      <!-- Fan Blades -->
+      <path d="M 0 -30 Q 15 -15 0 0 Q -15 15 0 30" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M -30 0 Q -15 -15 0 0 Q 15 15 30 0" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M -22 -22 Q -5 -15 0 0 Q 5 15 22 22" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M 22 -22 Q 15 -5 0 0 Q -15 5 -22 22" stroke="#27272a" stroke-width="5" stroke-linecap="round"/>
+      <!-- Center Hub with LED -->
+      <circle cx="0" cy="0" r="12" fill="#27272a" stroke="#52525b" stroke-width="1.5"/>
+      <circle cx="0" cy="0" r="7" fill="url(#purpleNeon1)" filter="url(#neonGlow1)"/>
+      <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    </g>
+
+    <!-- Top Digital Status Panel & Hashrate Display -->
+    <rect x="110" y="97" width="180" height="18" rx="4" fill="#05030a" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+    <!-- LED Indicators -->
+    <circle cx="120" cy="106" r="3" fill="#10b981" filter="url(#neonGlow1)"/>
+    <circle cx="130" cy="106" r="3" fill="#38bdf8" filter="url(#neonGlow1)"/>
+    <circle cx="140" cy="106" r="3" fill="#c084fc" filter="url(#neonGlow1)"/>
+    <!-- Digital Text -->
+    <text x="160" y="110" fill="#a78bfa" font-family="'Courier New', monospace" font-size="9" font-weight="bold" letter-spacing="1">1.10 TH/s • ASIC</text>
+
+    <!-- Neon Power Rail Bars -->
+    <rect x="110" y="210" width="180" height="3" rx="1.5" fill="url(#purpleNeon1)" filter="url(#neonGlow1)"/>
+
+    <!-- Side Vent Slits -->
+    <g fill="#09090b" stroke="rgba(167,139,250,0.4)" stroke-width="1">
+      <line x1="94" y1="145" x2="94" y2="175" />
+      <line x1="97" y1="140" x2="97" y2="180" />
+      <line x1="303" y1="140" x2="303" y2="180" />
+      <line x1="306" y1="145" x2="306" y2="175" />
+    </g>
+  </g>
+
+  <!-- Holographic Floating Badge / Level -->
+  <g transform="translate(200, 50)" filter="url(#neonGlow1)">
+    <rect x="-60" y="-14" width="120" height="26" rx="13" fill="rgba(88,28,135,0.7)" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="0" y="4" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" text-anchor="middle" letter-spacing="0.5">⚡ 1 TON RIG</text>
+  </g>
+</svg>

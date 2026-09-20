@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TVA - Crypto Mining</title>
+
+  <!-- Official Telegram Web App Script -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Google Fonts: Cairo (for Arabic), Inter & Poppins (for English/Numerals) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="user-profile">
+        <div class="user-avatar" id="user-avatar">
+          <i class="fa-solid fa-user-astronaut"></i>
+        </div>
+        <div class="user-meta">
+          <span class="user-greeting" data-i18n="welcome_back">مرحباً بك،</span>
+          <h2 class="user-name" id="user-display-name">Cosmic Miner</h2>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span class="pulse-dot"></span>
+        <span class="badge-text" data-i18n="ton_mainnet">شبكة TON الرئيسية</span>
+      </div>
+    </header>
+
+    <!-- Main Views Container -->
+    <main class="views-wrapper">
+      
+      <!-- ================= 1. VIEW: HOME (DASHBOARD) ================= -->
+      <section id="view-home" class="view-panel active">
+        <!-- TOP: Clear User TON Balance Card -->
+        <div class="glass-card balance-highlight-card">
+          <div class="balance-card-header">
+            <div class="balance-title-group">
+              <i class="fa-solid fa-wallet text-neon"></i>
+              <span data-i18n="total_balance">الرصيد الكلي</span>
+            </div>
+            <span class="points-pill" id="home-points-badge">15 PTS</span>
+          </div>
+          <div class="balance-amount-row">
+            <span class="wallet-ton-number" id="wallet-balance-display">4.8250</span>
+            <span class="ton-symbol">TON</span>
+          </div>
+          <div class="balance-subtext">
+            <span data-i18n="balance_subtext">متاح للسحب وشراء منصات التعدين</span>
+          </div>
+        </div>
+
+        <!-- MIDDLE: Mining Reactor Visual, Rate, and Accumulated TON -->
+        <div class="glass-card hero-card">
+          <div class="hero-top-tag">
+            <i class="fa-solid fa-bolt text-neon"></i>
+            <span data-i18n="current_daily_rate">معدل التعدين اليومي</span>
+            <strong id="daily-rate-display" class="daily-rate-highlight">+0.126500 TON/day</strong>
+          </div>
+
+          <!-- Animated Reactor Core -->
+          <div class="reactor-container">
+            <div class="reactor-ring outer-ring"></div>
+            <div class="reactor-ring inner-ring"></div>
+            <div class="reactor-core">
+              <i class="fa-solid fa-gem reactor-gem"></i>
+            </div>
+          </div>
+
+          <div class="balance-meta">
+            <span class="balance-label" data-i18n="mined_ready_claim">عملات TON الجاهزة للمطالبة</span>
+            <div class="balance-value-row">
+              <span class="balance-ton-number" id="accumulated-balance-display">0.04185200</span>
+              <span class="ton-symbol">TON</span>
+            </div>
+          </div>
+
+          <button id="btn-claim-ton" class="btn-cta glow-btn">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <span data-i18n="claim_ton">مطالبة بالأرباح</span>
+          </button>
+        </div>
+
+        <!-- BELOW MINING: Two Large Quick-Action Buttons Side-by-Side -->
+        <div class="quick-actions-row">
+          <button id="btn-goto-withdraw" class="btn-quick-action">
+            <div class="quick-action-icon">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </div>
+            <div class="quick-action-text">
+              <span class="quick-action-title" data-i18n="go_to_withdraw">سحب الأرباح</span>
+              <span class="quick-action-subtitle" data-i18n="withdraw_sub">الحد الأدنى 0.1 TON</span>
+            </div>
+          </button>
+
+          <button id="btn-goto-tasks" class="btn-quick-action">
+            <div class="quick-action-icon">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div class="quick-action-text">
+              <span class="quick-action-title" data-i18n="go_to_tasks">تنفيذ المهام</span>
+              <span class="quick-action-subtitle" data-i18n="tasks_sub">+1 نقطة لكل إعلان</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- BOTTOM: Promo Code Redemption Section -->
+        <div class="glass-card promo-card-home">
+          <div class="card-header-simple">
+            <i class="fa-solid fa-ticket text-neon"></i>
+            <h3 data-i18n="redeem_promo_title">استخدام الرمز الترويجي</h3>
+          </div>
+          <p class="card-caption" data-i18n="redeem_promo_desc">
+            هل تمتلك رمزاً ترويجياً؟ أدخله أدناه. (يتطلب مشاهدة إعلان واحد على الأقل).
+          </p>
+          <div class="promo-input-group">
+            <input type="text" id="promo-code-input" data-i18n-placeholder="promo_placeholder" placeholder="أدخل الرمز الترويجي" autocomplete="off" />
+            <button id="btn-redeem-promo" class="btn-cta btn-compact">
+              <span data-i18n="redeem_btn">تفعيل</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. VIEW: RIGS (DEDICATED STORE) ================= -->
+      <section id="view-rigs" class="view-panel">
+        <div class="glass-card rigs-store-hero">
+          <div class="view-badge">
+            <i class="fa-solid fa-robot text-neon"></i>
+            <span data-i18n="rigs_store_badge">متجر منصات التعدين</span>
+          </div>
+          <h2 class="view-title" data-i18n="rigs_store_title">وحدات التعدين الآلية</h2>
+          <p class="view-description" data-i18n="rigs_store_desc">
+            شغل منصات التعدين المتقدمة. تعمل كل منصة لمدة 10 أيام وتمنحك عائداً 11% يومياً (10% رأس المال + 1% أرباح صافية).
+          </p>
+          <div class="active-rigs-banner">
+            <span data-i18n="active_rigs_label">المنصات النشطة حالياً:</span>
+            <strong id="rigs-active-count-display">1 منصة</strong>
+          </div>
+        </div>
+
+        <!-- Dedicated Rigs Cards Grid -->
+        <div class="rigs-dedicated-grid" id="rigs-grid-container">
+          <!-- Dynamically populated by app.js with translated specs & buttons -->
+        </div>
+      </section>
+
+      <!-- ================= 3. VIEW: TASKS (ADS) ================= -->
+      <section id="view-tasks" class="view-panel">
+        <div class="glass-card text-center">
+          <div class="view-badge">
+            <i class="fa-solid fa-film text-neon"></i>
+            <span data-i18n="boost_hashrate">زيادة سرعة التعدين</span>
+          </div>
+          <h2 class="view-title" data-i18n="watch_ads_title">شاهد الإعلانات وضاعف أرباحك</h2>
+          <p class="view-description" data-i18n="watch_ads_desc">
+            كل إعلان فيديو تشاهده يمنحك +1 نقطة، مما يزيد معدل التعدين اليومي لديك بمقدار +0.0001 TON/يوم بشكل دائم!
+          </p>
+
+          <!-- Ads Counter & Progress Bar -->
+          <div class="ads-progress-container">
+            <div class="progress-info-row">
+              <span data-i18n="daily_limit">الحد اليومي</span>
+              <span id="ads-counter-text" class="progress-count-text">6 / 40</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="ads-progress-fill" style="width: 15%;"></div>
+            </div>
+            <div class="progress-helper" data-i18n="resets_daily">يتجدد يومياً في 00:00 UTC</div>
+          </div>
+
+          <!-- Large CTA Button -->
+          <button id="btn-watch-ad" class="btn-cta large-cta glow-btn">
+            <i class="fa-solid fa-play"></i>
+            <span data-i18n="watch_ad_btn">مشاهدة إعلان وكسب النقاط</span>
+          </button>
+
+          <!-- Security note -->
+          <div class="info-callout">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span data-i18n="anti_cheat_note">محمي بنظام AdsGram للتحقق ومنع الاحتيال (15 ثانية)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. VIEW: FRIENDS (REFERRALS) ================= -->
+      <section id="view-friends" class="view-panel">
+        <div class="glass-card">
+          <div class="view-badge">
+            <i class="fa-solid fa-user-group text-neon"></i>
+            <span data-i18n="referral_program">برنامج الإحالة</span>
+          </div>
+          <h2 class="view-title" data-i18n="invite_miners_title">ادعُ أصدقاءك وضاعف دخلك</h2>
+          <p class="view-description" data-i18n="referral_desc">
+            شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط (0.001 TON/يوم) لكل صديق نشط!
+          </p>
+
+          <!-- Stats Row -->
+          <div class="stats-cards-row">
+            <div class="mini-stat-card">
+              <span class="stat-icon"><i class="fa-solid fa-users"></i></span>
+              <span class="stat-number" id="total-friends-count">8</span>
+              <span class="stat-label" data-i18n="total_friends">إجمالي الأصدقاء</span>
+            </div>
+            <div class="mini-stat-card highlight-stat">
+              <span class="stat-icon text-neon"><i class="fa-solid fa-circle-check"></i></span>
+              <span class="stat-number" id="active-friends-count">3</span>
+              <span class="stat-label" data-i18n="active_friends">الأصدقاء النشطون (10 إعلانات)</span>
+            </div>
+          </div>
+
+          <!-- Referral Link Display & Copy Button -->
+          <div class="referral-box">
+            <label class="input-label" data-i18n="your_ref_link">رابط الدعوة الخاص بك</label>
+            <div class="copy-input-group">
+              <input type="text" id="referral-link-input" readonly value="https://t.me/tva_bot?start=ref_12345" />
+              <button id="btn-copy-ref" class="btn-copy" title="Copy link">
+                <i class="fa-regular fa-copy"></i>
+                <span data-i18n="copy_btn">نسخ</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="btn-share-friends" class="btn-cta">
+            <i class="fa-brands fa-telegram"></i>
+            <span data-i18n="share_telegram">مشاركة عبر تلغرام</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= 5. VIEW: PROFILE ================= -->
+      <section id="view-profile" class="view-panel">
+        <!-- Top Profile Card with Avatar, Name, Handle, ID, and Wallet Pill -->
+        <div class="glass-card profile-header-card">
+          <div class="profile-avatar" id="profile-avatar">
+            <i class="fa-solid fa-user-astronaut"></i>
+          </div>
+
+          <h2 class="profile-user-name" id="profile-user-name">Cosmic Miner</h2>
+          <span class="profile-user-handle" id="profile-user-username">@cosmic_miner</span>
+
+          <div class="profile-id-row">
+            <span class="profile-id-label" data-i18n="id_label">المعرف:</span>
+            <span class="profile-id-value" id="profile-user-id">782491024</span>
+            <button id="btn-copy-user-id" class="btn-copy-mini" title="Copy ID" aria-label="Copy User ID">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+
+          <!-- Wallet Connection Badge -->
+          <button id="profile-wallet-pill" class="wallet-pill-btn disconnected" title="Toggle Wallet Connection">
+            <div class="wallet-pill-inner">
+              <i class="fa-solid fa-xmark pill-icon"></i>
+              <div class="wallet-pill-text-group">
+                <span class="wallet-pill-status" data-i18n="not_connected">غير متصل</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Menu List -->
+        <div class="profile-menu-stack">
+          <!-- 1. Wallet Card -->
+          <div class="glass-card profile-menu-item" id="profile-menu-wallet" role="button" tabindex="0">
+            <div class="menu-item-left">
+              <div class="menu-item-icon-box">
+                <i class="fa-solid fa-wallet text-neon"></i>
+              </div>
+              <div class="menu-item-content">
+                <span class="menu-item-title" data-i18n="profile_wallet_title">المحفظة</span>
+                <span class="menu-item-subtitle" data-i18n="profile_wallet_sub">إيداع • سحب</span>
+              </div>
+            </div>
+            <div class="menu-item-right">
+              <i class="fa-solid fa-chevron-right menu-chevron"></i>
+            </div>
+          </div>
+
+          <!-- 2. Settings Card (Opens Language & Preferences Modal) -->
+          <div class="glass-card profile-menu-item" id="profile-menu-settings" role="button" tabindex="0">
+            <div class="menu-item-left">
+              <div class="menu-item-icon-box">
+                <i class="fa-solid fa-gear text-neon"></i>
+              </div>
+              <div class="menu-item-content">
+                <span class="menu-item-title" data-i18n="profile_settings_title">الإعدادات</span>
+                <span class="menu-item-subtitle" data-i18n="profile_settings_sub">تفضيلات التطبيق واللغة</span>
+              </div>
+            </div>
+            <div class="menu-item-right">
+              <i class="fa-solid fa-chevron-right menu-chevron"></i>
+            </div>
+          </div>
+
+          <!-- 3. Complaints & Suggestions Card -->
+          <div class="glass-card profile-menu-item" id="profile-menu-feedback" role="button" tabindex="0">
+            <div class="menu-item-left">
+              <div class="menu-item-icon-box">
+                <i class="fa-solid fa-headset text-neon"></i>
+              </div>
+              <div class="menu-item-content">
+                <span class="menu-item-title" data-i18n="profile_feedback_title">الشكاوى والاقتراحات</span>
+                <span class="menu-item-subtitle" data-i18n="profile_feedback_sub">أرسل شكوى أو اقتراحاً لفريق العمل</span>
+              </div>
+            </div>
+            <div class="menu-item-right">
+              <i class="fa-solid fa-chevron-right menu-chevron"></i>
+            </div>
+          </div>
+
+          <!-- 4. Admin Panel Card -->
+          <div class="glass-card profile-menu-item admin-only" id="profile-menu-admin" role="button" tabindex="0">
+            <div class="menu-item-left">
+              <div class="menu-item-icon-box admin-badge-box">
+                <i class="fa-solid fa-shield-halved text-neon"></i>
+              </div>
+              <div class="menu-item-content">
+                <div class="menu-title-with-badge">
+                  <span class="menu-item-title" data-i18n="profile_admin_title">لوحة التحكم</span>
+                  <span class="admin-chip">ADMIN</span>
+                </div>
+                <span class="menu-item-subtitle" data-i18n="profile_admin_sub">إدارة البوت والمستخدمين</span>
+              </div>
+            </div>
+            <div class="menu-item-right">
+              <i class="fa-solid fa-chevron-right menu-chevron"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal: Request Withdrawal -->
+    <div id="withdrawal-modal" class="modal-backdrop">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-wallet text-neon"></i>
+            <h3 data-i18n="modal_withdraw_title">طلب سحب الأرباح</h3>
+          </div>
+          <button id="btn-close-withdrawal-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" data-i18n="modal_withdraw_caption">
+          اسحب رصيدك من TON مباشرة إلى عنوان محفظتك.
+        </p>
+
+        <div class="withdrawal-rules-box">
+          <div class="rule-item">
+            <i class="fa-solid fa-circle-info"></i>
+            <span data-i18n="modal_withdraw_min_rule">الحد الأدنى: 0.1 TON • رسوم السحب 5%</span>
+          </div>
+          <div class="rule-item">
+            <i class="fa-solid fa-circle-check"></i>
+            <span><span data-i18n="modal_withdraw_req_rule">الشرط: مشاهدة 15 إعلاناً</span> (<strong id="withdrawal-ads-status">11 / 15</strong>)</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="withdraw-wallet-address" data-i18n="modal_withdraw_wallet_label">عنوان محفظة TON</label>
+          <input type="text" id="withdraw-wallet-address" data-i18n-placeholder="modal_withdraw_wallet_placeholder" placeholder="EQD... or UQD..." />
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="withdraw-amount-ton" data-i18n="modal_withdraw_amount_label">المبلغ المراد سحبه (TON)</label>
+          <input type="number" id="withdraw-amount-ton" placeholder="0.10" step="0.01" min="0.1" />
+        </div>
+
+        <button id="btn-request-withdrawal" class="btn-cta glow-btn">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span data-i18n="modal_withdraw_submit_btn">تأكيد طلب السحب</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Settings & Language Preferences (Arabic & English) -->
+    <div id="settings-modal" class="modal-backdrop">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-gear text-neon"></i>
+            <h3 data-i18n="modal_settings_title">إعدادات التطبيق</h3>
+          </div>
+          <button id="btn-close-settings-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" data-i18n="modal_settings_caption">
+          اختر لغة الواجهة المفضلة لديك.
+        </p>
+
+        <div class="settings-section mb-4">
+          <label class="input-label" data-i18n="modal_settings_lang_label">اختر اللغة</label>
+          <div class="language-options-list">
+            <!-- Arabic Option -->
+            <div class="language-option-card active" data-lang="ar">
+              <div class="lang-info">
+                <span class="lang-flag">🇸🇦</span>
+                <div class="lang-texts">
+                  <span class="lang-name">العربية</span>
+                  <span class="lang-native">Arabic (الافتراضية)</span>
+                </div>
+              </div>
+              <div class="lang-check">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+            </div>
+
+            <!-- English Option -->
+            <div class="language-option-card" data-lang="en">
+              <div class="lang-info">
+                <span class="lang-flag">🇬🇧</span>
+                <div class="lang-texts">
+                  <span class="lang-name">English</span>
+                  <span class="lang-native">English</span>
+                </div>
+              </div>
+              <div class="lang-check">
+                <i class="fa-regular fa-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-save-settings" class="btn-cta glow-btn">
+          <i class="fa-solid fa-check"></i>
+          <span data-i18n="modal_settings_save_btn">حفظ التفضيلات</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Complaints & Suggestions -->
+    <div id="feedback-modal" class="modal-backdrop">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-comment-dots text-neon"></i>
+            <h3 data-i18n="modal_feedback_title">الشكاوى والاقتراحات</h3>
+          </div>
+          <button id="btn-close-feedback-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" data-i18n="modal_feedback_caption">
+          هل لديك اقتراح لتطوير التطبيق أو واجهت مشكلة؟ أرسل رسالة مباشرة إلى الإدارة.
+        </p>
+
+        <div class="form-group">
+          <label class="input-label" for="feedback-category" data-i18n="modal_feedback_cat_label">نوع الرسالة</label>
+          <select id="feedback-category" class="form-select">
+            <option value="suggestion">💡 اقتراح / فكرة</option>
+            <option value="complaint">⚠️ شكوى / بلاغ</option>
+            <option value="bug">🐛 خطأ تقني (Bug)</option>
+            <option value="other">💬 استفسار آخر</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="feedback-message" data-i18n="modal_feedback_msg_label">نص الرسالة</label>
+          <textarea id="feedback-message" class="form-textarea" rows="4" data-i18n-placeholder="modal_feedback_placeholder" placeholder="اكتب تفاصيل اقتراحك أو مشكلتك هنا..."></textarea>
+        </div>
+
+        <button id="btn-submit-feedback" class="btn-cta glow-btn">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span data-i18n="modal_feedback_submit">إرسال إلى الفريق</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Admin Panel (Authorized Admins Only) -->
+    <div id="admin-modal" class="modal-backdrop">
+      <div class="modal-sheet admin-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-shield-halved text-neon"></i>
+            <h3 data-i18n="modal_admin_title">لوحة إدارة المسؤول</h3>
+          </div>
+          <button id="btn-close-admin-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" data-i18n="modal_admin_caption">
+          مركز تحكم المسؤول لإدارة البوت ومتابعة الطلبات.
+        </p>
+
+        <!-- Admin Section 1: Generate Promo Code -->
+        <div class="glass-card mb-4 admin-section-card">
+          <div class="card-header-simple">
+            <i class="fa-solid fa-ticket text-neon"></i>
+            <h4 data-i18n="admin_promo_title">إنشاء رمز ترويجي</h4>
+          </div>
+          <div class="admin-form-grid">
+            <div class="form-group">
+              <label class="input-label" data-i18n="admin_code_label">رمز الكوبون (اختياري)</label>
+              <input type="text" id="admin-promo-code" placeholder="e.g. VIP2026" style="text-transform: uppercase;" />
+            </div>
+            <div class="form-group">
+              <label class="input-label" data-i18n="admin_ton_label">مكافأة TON</label>
+              <input type="number" id="admin-promo-ton" placeholder="0.5" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label class="input-label" data-i18n="admin_points_label">مكافأة النقاط</label>
+              <input type="number" id="admin-promo-points" placeholder="20" step="1" />
+            </div>
+            <div class="form-group">
+              <label class="input-label" data-i18n="admin_uses_label">عدد مرات الاستخدام</label>
+              <input type="number" id="admin-promo-uses" placeholder="100" step="1" />
+            </div>
+          </div>
+          <button id="btn-admin-generate-promo" class="btn-cta btn-compact mt-2">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="admin_btn_generate">إنشاء الكود</span>
+          </button>
+        </div>
+
+        <!-- Admin Section 2: Pending Withdrawals -->
+        <div class="glass-card mb-4 admin-section-card">
+          <div class="card-header-simple justify-between">
+            <div class="flex-align-center gap-2">
+              <i class="fa-solid fa-money-bill-transfer text-neon"></i>
+              <h4 data-i18n="admin_withdrawals_title">طلبات السحب المعلقة</h4>
+            </div>
+            <button id="btn-admin-refresh-withdrawals" class="btn-icon-tiny" title="Refresh">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+          <div id="admin-withdrawals-list" class="admin-withdrawals-container">
+            <!-- Populated dynamically by app.js -->
+            <div class="admin-placeholder-text">
+              <span>جاري تحميل طلبات السحب...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Section 3: Search User & Modify Balance -->
+        <div class="glass-card admin-section-card">
+          <div class="card-header-simple">
+            <i class="fa-solid fa-user-pen text-neon"></i>
+            <h4 data-i18n="admin_search_title">بحث عن مستخدم وتعديل الرصيد</h4>
+          </div>
+          <div class="promo-input-group mb-2">
+            <input type="number" id="admin-search-user-id" placeholder="Telegram User ID (e.g. 782491024)" />
+            <button id="btn-admin-search-user" class="btn-cta btn-compact">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span data-i18n="admin_btn_search">بحث</span>
+            </button>
+          </div>
+
+          <!-- User Search Result Details Box -->
+          <div id="admin-user-result-box" class="admin-user-details" style="display: none;">
+            <div class="profile-details-list mb-2">
+              <div class="profile-detail-item">
+                <span class="detail-label">Telegram ID:</span>
+                <span class="detail-val" id="admin-res-id">-</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="detail-label">Username:</span>
+                <span class="detail-val" id="admin-res-username">-</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="detail-label">Current Balance:</span>
+                <span class="detail-val text-neon" id="admin-res-balance">0.0000 TON</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="detail-label">Total Points:</span>
+                <span class="detail-val" id="admin-res-points">0 PTS</span>
+              </div>
+            </div>
+
+            <!-- Modify Balance Inputs -->
+            <div class="admin-modify-controls">
+              <div class="form-group mb-2">
+                <label class="input-label">تعديل رصيد TON الجديد:</label>
+                <input type="number" id="admin-modify-ton-val" placeholder="New TON Balance" step="0.01" />
+              </div>
+              <div class="form-group mb-2">
+                <label class="input-label">تعديل مجموع النقاط الجديد:</label>
+                <input type="number" id="admin-modify-pts-val" placeholder="New Total Points" step="1" />
+              </div>
+              <button id="btn-admin-update-balance" class="btn-cta glow-btn">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span data-i18n="admin_btn_update">حفظ وتحديث رصيد المستخدم</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Navigation Bar: Home, Rigs, Tasks, Friends, Profile -->
+    <nav class="bottom-navbar">
+      <button class="nav-tab active" data-tab="view-home">
+        <div class="nav-icon"><i class="fa-solid fa-house"></i></div>
+        <span class="nav-label" data-i18n="nav_home">الرئيسية</span>
+      </button>
+
+      <button class="nav-tab" data-tab="view-rigs">
+        <div class="nav-icon"><i class="fa-solid fa-robot"></i></div>
+        <span class="nav-label" data-i18n="nav_rigs">المنصات</span>
+      </button>
+
+      <button class="nav-tab" data-tab="view-tasks">
+        <div class="nav-icon"><i class="fa-solid fa-list-check"></i></div>
+        <span class="nav-label" data-i18n="nav_tasks">المهام</span>
+      </button>
+
+      <button class="nav-tab" data-tab="view-friends">
+        <div class="nav-icon"><i class="fa-solid fa-user-group"></i></div>
+        <span class="nav-label" data-i18n="nav_friends">الأصدقاء</span>
+      </button>
+
+      <button class="nav-tab" data-tab="view-profile">
+        <div class="nav-icon"><i class="fa-regular fa-user"></i></div>
+        <span class="nav-label" data-i18n="nav_profile">حسابي</span>
+      </button>
+    </nav>
+
+    <!-- Global Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <!-- Main Client Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>

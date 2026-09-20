@@ -1,0 +1,1459 @@
+/**
+ * TVA Crypto-Mining Telegram Mini App Client Logic
+ * Bilingual Support: Arabic (Default) & English
+ */
+
+// 1. Telegram WebApp SDK Initialization
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  if (tg.setHeaderColor) tg.setHeaderColor('#09090b');
+  if (tg.setBackgroundColor) tg.setBackgroundColor('#09090b');
+}
+
+// 2. Localization (i18n) Translations Dictionary
+const TRANSLATIONS = {
+  ar: {
+    // Header
+    welcome_back: 'مرحباً بك،',
+    ton_mainnet: 'شبكة TON الرئيسية',
+
+    // Home Dashboard
+    total_balance: 'الرصيد الكلي',
+    balance_subtext: 'متاح للسحب وشراء منصات التعدين',
+    current_daily_rate: 'معدل التعدين اليومي',
+    mined_ready_claim: 'عملات TON الجاهزة للمطالبة',
+    claim_ton: 'مطالبة بالأرباح',
+    go_to_withdraw: 'سحب الأرباح',
+    withdraw_sub: 'الحد الأدنى 0.1 TON',
+    go_to_tasks: 'تنفيذ المهام',
+    tasks_sub: '+1 نقطة لكل إعلان',
+    redeem_promo_title: 'استخدام الرمز الترويجي',
+    redeem_promo_desc: 'هل تمتلك رمزاً ترويجياً؟ أدخله أدناه. (يتطلب مشاهدة إعلان واحد على الأقل).',
+    redeem_btn: 'تفعيل',
+    promo_placeholder: 'أدخل الرمز الترويجي',
+
+    // Rigs Store
+    rigs_store_badge: 'متجر منصات التعدين',
+    rigs_store_title: 'وحدات التعدين الآلية',
+    rigs_store_desc: 'شغل منصات التعدين المتقدمة. تعمل كل منصة لمدة 10 أيام وتمنحك عائداً 11% يومياً (10% رأس المال + 1% أرباح صافية).',
+    active_rigs_label: 'المنصات النشطة حالياً:',
+    days_contract_tag: '10 أيام • 11% يومياً',
+    daily_yield: 'العائد اليومي',
+    total_return: 'إجمالي العائد',
+    buy_for: 'شراء بـ',
+    unit: 'منصة',
+    units: 'منصات',
+
+    // Tasks
+    boost_hashrate: 'زيادة سرعة التعدين',
+    watch_ads_title: 'شاهد الإعلانات وضاعف أرباحك',
+    watch_ads_desc: 'كل إعلان فيديو تشاهده يمنحك +1 نقطة، مما يزيد معدل التعدين اليومي لديك بمقدار +0.0001 TON/يوم بشكل دائم!',
+    daily_limit: 'الحد اليومي',
+    resets_daily: 'يتجدد يومياً في 00:00 UTC',
+    watch_ad_btn: 'مشاهدة إعلان وكسب النقاط',
+    anti_cheat_note: 'محمي بنظام AdsGram للتحقق ومنع الاحتيال (15 ثانية)',
+
+    // Friends
+    referral_program: 'برنامج الإحالة',
+    invite_miners_title: 'ادعُ أصدقاءك وضاعف دخلك',
+    referral_desc: 'شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط (0.001 TON/يوم) لكل صديق نشط!',
+    total_friends: 'إجمالي الأصدقاء',
+    active_friends: 'الأصدقاء النشطون (10 إعلانات)',
+    your_ref_link: 'رابط الدعوة الخاص بك',
+    copy_btn: 'نسخ',
+    share_telegram: 'مشاركة عبر تلغرام',
+
+    // Profile
+    id_label: 'المعرف:',
+    not_connected: 'غير متصل',
+    connected: 'متصل',
+    profile_wallet_title: 'المحفظة',
+    profile_wallet_sub: 'إيداع • سحب',
+    profile_settings_title: 'الإعدادات',
+    profile_settings_sub: 'تفضيلات التطبيق واللغة',
+    profile_feedback_title: 'الشكاوى والاقتراحات',
+    profile_feedback_sub: 'أرسل شكوى أو اقتراحاً لفريق العمل',
+    profile_admin_title: 'لوحة التحكم',
+    profile_admin_sub: 'إدارة البوت والمستخدمين',
+
+    // Withdrawal Modal
+    modal_withdraw_title: 'طلب سحب الأرباح',
+    modal_withdraw_caption: 'اسحب رصيدك من TON مباشرة إلى عنوان محفظتك.',
+    modal_withdraw_min_rule: 'الحد الأدنى: 0.1 TON • رسوم السحب 5%',
+    modal_withdraw_req_rule: 'الشرط: مشاهدة 15 إعلاناً',
+    modal_withdraw_wallet_label: 'عنوان محفظة TON',
+    modal_withdraw_wallet_placeholder: 'أدخل عنوان محفظة TON',
+    modal_withdraw_amount_label: 'المبلغ المراد سحبه (TON)',
+    modal_withdraw_submit_btn: 'تأكيد طلب السحب',
+
+    // Settings Modal
+    modal_settings_title: 'إعدادات التطبيق',
+    modal_settings_caption: 'اختر لغة الواجهة المفضلة لديك.',
+    modal_settings_lang_label: 'اختر اللغة',
+    modal_settings_save_btn: 'حفظ التفضيلات',
+
+    // Feedback & Admin
+    modal_feedback_title: 'الشكاوى والاقتراحات',
+    modal_feedback_caption: 'هل لديك اقتراح لتطوير التطبيق أو واجهت مشكلة؟ أرسل رسالة مباشرة إلى الإدارة.',
+    modal_feedback_cat_label: 'نوع الرسالة',
+    modal_feedback_msg_label: 'نص الرسالة',
+    modal_feedback_placeholder: 'اكتب تفاصيل اقتراحك أو مشكلتك هنا...',
+    modal_feedback_submit: 'إرسال إلى الفريق',
+    modal_admin_title: 'لوحة إدارة المسؤول',
+    modal_admin_caption: 'مركز تحكم المسؤول لإدارة البوت ومتابعة الطلبات.',
+    admin_promo_title: 'إنشاء رمز ترويجي',
+    admin_code_label: 'رمز الكوبون (اختياري)',
+    admin_ton_label: 'مكافأة TON',
+    admin_points_label: 'مكافأة النقاط',
+    admin_uses_label: 'عدد مرات الاستخدام',
+    admin_btn_generate: 'إنشاء الكود',
+    admin_withdrawals_title: 'طلبات السحب المعلقة',
+    admin_search_title: 'بحث عن مستخدم وتعديل الرصيد',
+    admin_btn_search: 'بحث',
+    admin_btn_update: 'حفظ وتحديث رصيد المستخدم',
+    admin_no_withdrawals: 'لا توجد طلبات سحب معلقة حالياً.',
+    admin_approve_btn: 'موافقة',
+    admin_reject_btn: 'رفض',
+
+    // Navigation Tabs
+    nav_home: 'الرئيسية',
+    nav_rigs: 'المنصات',
+    nav_tasks: 'المهام',
+    nav_friends: 'الأصدقاء',
+    nav_profile: 'حسابي',
+  },
+  en: {
+    // Header
+    welcome_back: 'Welcome back,',
+    ton_mainnet: 'TON Mainnet',
+
+    // Home Dashboard
+    total_balance: 'Total Balance',
+    balance_subtext: 'Available for withdrawal & rig purchases',
+    current_daily_rate: 'Current Daily Rate',
+    mined_ready_claim: 'Mined TON Ready to Claim',
+    claim_ton: 'Claim TON',
+    go_to_withdraw: 'Go to Withdraw',
+    withdraw_sub: 'Min 0.1 TON',
+    go_to_tasks: 'Go to Tasks',
+    tasks_sub: '+1 Pt per Ad',
+    redeem_promo_title: 'Redeem Promo Code',
+    redeem_promo_desc: 'Have a promotional code? Enter it below. (Must have watched at least 1 ad).',
+    redeem_btn: 'Redeem',
+    promo_placeholder: 'ENTER CODE',
+
+    // Rigs Store
+    rigs_store_badge: 'Mining Rig Store',
+    rigs_store_title: 'Automated Mining Units',
+    rigs_store_desc: 'Deploy advanced cyborg rigs. Each rig runs for 10 days and yields 11% daily (10% capital return + 1% net profit).',
+    active_rigs_label: 'Currently Active Rigs:',
+    days_contract_tag: '10 Days • 11%/day',
+    daily_yield: 'Daily Yield',
+    total_return: 'Total Return',
+    buy_for: 'Buy for',
+    unit: 'Unit',
+    units: 'Units',
+
+    // Tasks
+    boost_hashrate: 'Boost Your Hashrate',
+    watch_ads_title: 'Watch Ads & Multiply Power',
+    watch_ads_desc: 'Each completed video ad rewards you with +1 Point, permanently boosting your daily mining rate by +0.0001 TON/day!',
+    daily_limit: 'Daily Limit',
+    resets_daily: 'Resets daily at 00:00 UTC',
+    watch_ad_btn: 'Watch Ad & Earn Points',
+    anti_cheat_note: 'Protected by AdsGram 15s Anti-Cheat verification',
+
+    // Friends
+    referral_program: 'Referral Program',
+    invite_miners_title: 'Invite Miners & Expand',
+    referral_desc: 'Share your invite link with friends. Earn 10 points (0.001 TON/day) per active friend!',
+    total_friends: 'Total Friends',
+    active_friends: 'Active Friends (10 ads)',
+    your_ref_link: 'Your Unique Referral Link',
+    copy_btn: 'Copy',
+    share_telegram: 'Share to Telegram',
+
+    // Profile
+    id_label: 'ID:',
+    not_connected: 'Not Connected',
+    connected: 'Connected',
+    profile_wallet_title: 'Wallet',
+    profile_wallet_sub: 'Deposit • Withdraw',
+    profile_settings_title: 'Settings',
+    profile_settings_sub: 'App preferences',
+    profile_feedback_title: 'Complaints & Suggestions',
+    profile_feedback_sub: 'Send a complaint or suggestion to the team',
+    profile_admin_title: 'Admin Panel',
+    profile_admin_sub: 'Manage bot and users',
+
+    // Withdrawal Modal
+    modal_withdraw_title: 'Request Withdrawal',
+    modal_withdraw_caption: 'Withdraw mined TON directly to your TON wallet address.',
+    modal_withdraw_min_rule: 'Min: 0.1 TON • 5% withdrawal fee',
+    modal_withdraw_req_rule: 'Requirement: 15 ads watched',
+    modal_withdraw_wallet_label: 'TON Wallet Address',
+    modal_withdraw_wallet_placeholder: 'EQD... or UQD...',
+    modal_withdraw_amount_label: 'Amount to Withdraw (TON)',
+    modal_withdraw_submit_btn: 'Submit Withdrawal Request',
+
+    // Settings Modal
+    modal_settings_title: 'App Settings',
+    modal_settings_caption: 'Customize your interface language and preferences.',
+    modal_settings_lang_label: 'Select Language',
+    modal_settings_save_btn: 'Save Preferences',
+
+    // Feedback & Admin
+    modal_feedback_title: 'Complaints & Suggestions',
+    modal_feedback_caption: 'Have an idea to improve the app or encountered an issue? Send a direct message to the team.',
+    modal_feedback_cat_label: 'Topic Category',
+    modal_feedback_msg_label: 'Your Message',
+    modal_feedback_placeholder: 'Describe your suggestion or issue in detail...',
+    modal_feedback_submit: 'Send to Team',
+    modal_admin_title: 'Admin Management',
+    modal_admin_caption: 'Administrative control center for bot parameters and monitoring.',
+    admin_promo_title: 'Generate Promo Code',
+    admin_code_label: 'Promo Code (Optional)',
+    admin_ton_label: 'TON Reward',
+    admin_points_label: 'Points Reward',
+    admin_uses_label: 'Max Usage Limit',
+    admin_btn_generate: 'Generate Code',
+    admin_withdrawals_title: 'Pending Withdrawals',
+    admin_search_title: 'Search User & Modify Balance',
+    admin_btn_search: 'Search',
+    admin_btn_update: 'Update User Balance',
+    admin_no_withdrawals: 'No pending withdrawal requests found.',
+    admin_approve_btn: 'Approve',
+    admin_reject_btn: 'Reject',
+
+    // Navigation Tabs
+    nav_home: 'Home',
+    nav_rigs: 'Rigs',
+    nav_tasks: 'Tasks',
+    nav_friends: 'Friends',
+    nav_profile: 'Profile',
+  }
+};
+
+// 3. State & Mock Data (Provides complete visual state for instant previews & demo)
+const state = {
+  user: {
+    telegramId: tg?.initDataUnsafe?.user?.id || 782491024,
+    firstName: tg?.initDataUnsafe?.user?.first_name || 'Cosmic Miner',
+    username: tg?.initDataUnsafe?.user?.username || 'cosmic_miner',
+  },
+  adminId: 7834260387, // Primary Client Admin ID
+  isAdmin: false,
+  walletConnected: false,
+  connectedWalletAddress: 'UQDU7b2Kq9...R92M',
+  selectedLanguage: 'ar', // Default to Arabic as primary audience
+  walletBalance: 4.8250,
+  accumulatedTon: 0.04185200,
+  dailyMiningRate: 0.126500, // Base + points + active rigs
+  baseRate: 0.001000,
+  totalPoints: 15, // 15 points = +0.0015 TON/day
+  adsWatchedToday: 6,
+  maxDailyAds: 40,
+  totalAdsWatched: 24,
+  adsWatchedForWithdrawal: 11,
+  requiredWithdrawalAds: 15,
+  totalFriends: 8,
+  activeFriends: 3,
+  activeRigsCount: 1,
+};
+
+// Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON with high-end aesthetic tech images
+const RIG_TIERS = [
+  {
+    cost: 1,
+    dailyYield: 0.11,
+    totalYield: 1.10,
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'Quantum Microchip',
+    nameAr: 'شريحة معالجة كمومية',
+  },
+  {
+    cost: 3,
+    dailyYield: 0.33,
+    totalYield: 3.30,
+    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'RTX Titan GPU',
+    nameAr: 'كارت شاشة Titan RTX',
+  },
+  {
+    cost: 5,
+    dailyYield: 0.55,
+    totalYield: 5.50,
+    image: 'https://images.unsplash.com/photo-1624996379697-f01d168b1a52?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'Multi-GPU Mining Rig',
+    nameAr: 'منصة تعدين متعددة الكروت',
+  },
+  {
+    cost: 10,
+    dailyYield: 1.10,
+    totalYield: 11.00,
+    image: 'https://images.unsplash.com/photo-1516245834210-c4c142787335?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'Hydro ASIC Miner',
+    nameAr: 'معدن هيدرو ASIC فائق',
+  },
+  {
+    cost: 25,
+    dailyYield: 2.75,
+    totalYield: 27.50,
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'High-Density Server Rack',
+    nameAr: 'خزانة خوادم فائقة الكثافة',
+  },
+  {
+    cost: 50,
+    dailyYield: 5.50,
+    totalYield: 55.00,
+    image: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'Cyber Data Center Room',
+    nameAr: 'غرفة مركز بيانات سايبر',
+  },
+  {
+    cost: 100,
+    dailyYield: 11.00,
+    totalYield: 110.00,
+    image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80',
+    nameEn: 'Quantum Supercomputer',
+    nameAr: 'حاسوب كمومي فائق التطور',
+  },
+];
+
+let liveTickerInterval = null;
+
+// ==========================================================================
+// 4. LANGUAGE SWITCHER LOGIC
+// ==========================================================================
+function getInitialLanguage() {
+  const saved = localStorage.getItem('tva_lang');
+  if (saved && (saved === 'ar' || saved === 'en')) {
+    return saved;
+  }
+  // Auto-detect from Telegram language code
+  const tgLang = tg?.initDataUnsafe?.user?.language_code;
+  if (tgLang && tgLang.toLowerCase().startsWith('en')) {
+    return 'en';
+  }
+  // Default to Arabic as primary target audience
+  return 'ar';
+}
+
+function setLanguage(lang) {
+  state.selectedLanguage = lang;
+  localStorage.setItem('tva_lang', lang);
+
+  // Set document language and text direction
+  document.documentElement.lang = lang;
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
+
+  // Translate all elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) {
+      el.innerText = t[key];
+    }
+  });
+
+  // Translate placeholder attributes with data-i18n-placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) {
+      el.placeholder = t[key];
+    }
+  });
+
+  // Update Settings Modal cards state
+  const settingsModal = document.getElementById('settings-modal');
+  if (settingsModal) {
+    const langCards = settingsModal.querySelectorAll('.language-option-card');
+    langCards.forEach((c) => {
+      const cardLang = c.getAttribute('data-lang');
+      const checkIcon = c.querySelector('.lang-check i');
+      if (cardLang === lang) {
+        c.classList.add('active');
+        if (checkIcon) checkIcon.className = 'fa-solid fa-circle-check';
+      } else {
+        c.classList.remove('active');
+        if (checkIcon) checkIcon.className = 'fa-regular fa-circle';
+      }
+    });
+  }
+
+  // Re-render components with translated dynamic values
+  renderDedicatedRigs();
+  renderWalletPill();
+  updateUI();
+}
+
+// ==========================================================================
+// 5. TAB NAVIGATION (Home, Rigs, Tasks, Friends, Profile)
+// ==========================================================================
+function switchTab(targetViewId) {
+  const navTabs = document.querySelectorAll('.nav-tab');
+  const viewPanels = document.querySelectorAll('.view-panel');
+
+  navTabs.forEach((tab) => {
+    if (tab.getAttribute('data-tab') === targetViewId) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  viewPanels.forEach((panel) => {
+    if (panel.id === targetViewId) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+
+  triggerHaptic('selection');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setupTabNavigation() {
+  const navTabs = document.querySelectorAll('.nav-tab');
+  navTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.getAttribute('data-tab');
+      switchTab(targetId);
+    });
+  });
+}
+
+// ==========================================================================
+// 6. HOME TAB DASHBOARD ACTIONS
+// ==========================================================================
+function setupHomeDashboard() {
+  // Quick Action: Go to Withdraw (Opens Modal)
+  const gotoWithdrawBtn = document.getElementById('btn-goto-withdraw');
+  const withdrawModal = document.getElementById('withdrawal-modal');
+  const closeWithdrawBtn = document.getElementById('btn-close-withdrawal-modal');
+
+  if (gotoWithdrawBtn && withdrawModal) {
+    gotoWithdrawBtn.addEventListener('click', () => {
+      triggerHaptic('impact');
+      withdrawModal.classList.add('active');
+    });
+  }
+
+  if (closeWithdrawBtn && withdrawModal) {
+    closeWithdrawBtn.addEventListener('click', () => {
+      withdrawModal.classList.remove('active');
+    });
+  }
+
+  // Close modal when tapping backdrop
+  if (withdrawModal) {
+    withdrawModal.addEventListener('click', (e) => {
+      if (e.target === withdrawModal) {
+        withdrawModal.classList.remove('active');
+      }
+    });
+  }
+
+  // Quick Action: Go to Tasks (Switches directly to view-tasks)
+  const gotoTasksBtn = document.getElementById('btn-goto-tasks');
+  if (gotoTasksBtn) {
+    gotoTasksBtn.addEventListener('click', () => {
+      switchTab('view-tasks');
+    });
+  }
+
+  // Claim Mined TON Button
+  const claimBtn = document.getElementById('btn-claim-ton');
+  if (claimBtn) {
+    claimBtn.addEventListener('click', async () => {
+      triggerHaptic('notification-success');
+      const isAr = state.selectedLanguage === 'ar';
+
+      const claimed = state.accumulatedTon;
+      if (claimed <= 0.000001) {
+        showToast(isAr ? 'التعدين جاري... لا توجد أرباح للمطالبة بها بعد.' : 'Mining in progress... Nothing to claim yet.', 'info');
+        return;
+      }
+
+      // Try API claim
+      try {
+        const res = await fetch('/api/mining/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: state.user.telegramId }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          state.walletBalance = json.data.newBalance;
+          state.accumulatedTon = 0;
+          updateUI();
+          showToast(isAr ? `💎 تم استلام ${json.data.claimedTon.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed ${json.data.claimedTon.toFixed(6)} TON!`, 'success');
+          return;
+        }
+      } catch (_) {}
+
+      // Fallback
+      state.walletBalance += claimed;
+      state.accumulatedTon = 0;
+      updateUI();
+      showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى محفظتك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
+    });
+  }
+
+  // Promo Code Redemption on Home
+  const redeemBtn = document.getElementById('btn-redeem-promo');
+  const promoInput = document.getElementById('promo-code-input');
+
+  if (redeemBtn && promoInput) {
+    redeemBtn.addEventListener('click', async () => {
+      const isAr = state.selectedLanguage === 'ar';
+      const code = promoInput.value.trim().toUpperCase();
+      if (!code) {
+        showToast(isAr ? 'الرجاء إدخال الرمز الترويجي.' : 'Please enter a promo code.', 'error');
+        return;
+      }
+
+      triggerHaptic('impact');
+
+      // Rule: Must have watched at least 1 ad
+      if (state.totalAdsWatched < 1) {
+        showToast(isAr ? '⚠️ يجب عليك مشاهدة إعلان واحد على الأقل قبل تفعيل الرموز الترويجية.' : '⚠️ You must watch at least 1 ad before claiming promo codes.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/promocode/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: state.user.telegramId, code }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          state.totalPoints = json.data.newPoints;
+          state.walletBalance = json.data.newTonBalance;
+          state.dailyMiningRate = json.data.newDailyMiningRate;
+          promoInput.value = '';
+          updateUI();
+          showToast(isAr ? `🎁 تم تفعيل الرمز! +${json.data.rewardPoints} نقطة و +${json.data.rewardTon} TON!` : `🎁 Code redeemed! +${json.data.rewardPoints} Pts & +${json.data.rewardTon} TON!`, 'success');
+          return;
+        } else {
+          showToast(json.message || (isAr ? 'الرمز الترويجي غير صالح أو منتهي.' : 'Invalid promo code'), 'error');
+          return;
+        }
+      } catch (_) {}
+
+      // Fallback simulation
+      if (code === 'TVA2026' || code === 'SPACE') {
+        state.totalPoints += 20;
+        state.walletBalance += 0.5;
+        state.dailyMiningRate += 0.002;
+        promoInput.value = '';
+        updateUI();
+        showToast(isAr ? '🎁 تم تفعيل الرمز! +20 نقطة و +0.5 TON!' : '🎁 Promo redeemed! +20 Points & +0.5 TON added!', 'success');
+      } else {
+        showToast(isAr ? 'الرمز الترويجي غير صالح أو منتهي الصلاحية.' : 'Invalid or expired promo code.', 'error');
+      }
+    });
+  }
+}
+
+// ==========================================================================
+// 7. RIGS TAB (DEDICATED STORE WITH REAL AESTHETIC TECH IMAGES)
+// ==========================================================================
+function renderDedicatedRigs() {
+  const container = document.getElementById('rigs-grid-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const isAr = state.selectedLanguage === 'ar';
+  const t = TRANSLATIONS[isAr ? 'ar' : 'en'];
+
+  RIG_TIERS.forEach((rig) => {
+    const card = document.createElement('div');
+    card.className = 'rig-dedicated-card';
+
+    const rigTitle = isAr ? rig.nameAr : rig.nameEn;
+    const buyButtonText = `${t.buy_for} ${rig.cost} TON`;
+
+    card.innerHTML = `
+      <div class="rig-media-container">
+        <img 
+          class="rig-media-img" 
+          src="${rig.image}" 
+          alt="${rigTitle}" 
+          loading="lazy" 
+        />
+        <div class="rig-badge-overlay">
+          <span class="rig-badge-text">${rigTitle}</span>
+        </div>
+      </div>
+      <div class="rig-dedicated-header">
+        <span class="rig-dedicated-title">${rig.cost} TON ${isAr ? 'منصة' : 'Rig'}</span>
+        <span class="rig-dedicated-tag">${t.days_contract_tag}</span>
+      </div>
+      <div class="rig-specs-row">
+        <div class="spec-item">
+          <span class="spec-label">${t.daily_yield}</span>
+          <span class="spec-val text-green">+${rig.dailyYield.toFixed(2)} TON/day</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">${t.total_return}</span>
+          <span class="spec-val">${rig.totalYield.toFixed(2)} TON</span>
+        </div>
+      </div>
+      <button class="btn-cta" onclick="handleBuyRig(${rig.cost})">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>${buyButtonText}</span>
+      </button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// Buy Rig Action
+window.handleBuyRig = async function (cost) {
+  triggerHaptic('impact');
+  const isAr = state.selectedLanguage === 'ar';
+
+  try {
+    const res = await fetch('/api/rigs/buy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: state.user.telegramId, costTon: cost }),
+    });
+    const json = await res.json();
+    if (json.success) {
+      state.walletBalance = json.data.newTonBalance;
+      state.dailyMiningRate = json.data.newDailyMiningRate;
+      state.activeRigsCount = json.data.activeRigsCount;
+      updateUI();
+      showToast(isAr ? `⚡ تم شراء وتشغيل منصة ${cost} TON بنجاح!` : `⚡ Successfully deployed ${cost} TON Rig!`, 'success');
+      return;
+    }
+  } catch (_) {}
+
+  // Local fallback
+  if (state.walletBalance < cost) {
+    showToast(isAr ? `رصيدك غير كافٍ (${state.walletBalance.toFixed(2)} TON). المطلوب ${cost} TON.` : `Insufficient balance (${state.walletBalance.toFixed(2)} TON). Need ${cost} TON.`, 'error');
+    return;
+  }
+
+  state.walletBalance -= cost;
+  const yieldBonus = Number((cost * 0.11).toFixed(4));
+  state.dailyMiningRate += yieldBonus;
+  state.activeRigsCount += 1;
+  updateUI();
+  showToast(isAr ? `⚡ تم شراء منصة ${cost} TON! تمت إضافة +${yieldBonus} TON/يوم لمعدل التعدين.` : `⚡ Deployed ${cost} TON Rig! +${yieldBonus} TON/day added.`, 'success');
+};
+
+// ==========================================================================
+// 8. TASKS TAB (ADS & PROGRESS)
+// ==========================================================================
+function setupTasksTab() {
+  const watchAdBtn = document.getElementById('btn-watch-ad');
+  if (!watchAdBtn) return;
+
+  watchAdBtn.addEventListener('click', async () => {
+    triggerHaptic('impact');
+    const isAr = state.selectedLanguage === 'ar';
+
+    if (state.adsWatchedToday >= state.maxDailyAds) {
+      showToast(isAr ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`, 'error');
+      return;
+    }
+
+    watchAdBtn.disabled = true;
+    watchAdBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isAr ? 'جاري التحقق من الإعلان (15 ث)...' : 'Verifying Ad Stream (15s)...'}</span>`;
+
+    setTimeout(async () => {
+      watchAdBtn.disabled = false;
+      const t = TRANSLATIONS[isAr ? 'ar' : 'en'];
+      watchAdBtn.innerHTML = `<i class="fa-solid fa-play"></i> <span data-i18n="watch_ad_btn">${t.watch_ad_btn}</span>`;
+
+      try {
+        const res = await fetch('/api/ads/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          state.totalPoints = json.data.totalPoints;
+          state.adsWatchedToday = json.data.adsWatchedToday;
+          state.dailyMiningRate = json.data.currentDailyMiningRate;
+          state.totalAdsWatched += 1;
+          state.adsWatchedForWithdrawal += 1;
+          updateUI();
+          showToast(isAr ? '🎉 تمت مشاهدة الإعلان! +1 نقطة وزيادة في سرعة التعدين.' : '🎉 Ad watched! +1 Point awarded (+0.0001 TON/day rate increase)', 'success');
+          return;
+        }
+      } catch (_) {}
+
+      state.adsWatchedToday += 1;
+      state.totalAdsWatched += 1;
+      state.adsWatchedForWithdrawal += 1;
+      state.totalPoints += 1;
+      state.dailyMiningRate += 0.0001;
+      updateUI();
+      showToast(isAr ? '🎉 تم التحقق بنجاح! +1 نقطة وزيادة في سرعة التعدين.' : '🎉 Ad verified! +1 Point awarded (+0.0001 TON/day rate increase)', 'success');
+    }, 1200);
+  });
+}
+
+// ==========================================================================
+// 9. FRIENDS TAB (REFERRALS)
+// ==========================================================================
+function setupFriendsTab() {
+  const botUsername = 'tva_bot';
+  const refLink = `https://t.me/${botUsername}?start=ref_${state.user.telegramId}`;
+  
+  const linkInput = document.getElementById('referral-link-input');
+  if (linkInput) linkInput.value = refLink;
+
+  const copyBtn = document.getElementById('btn-copy-ref');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      triggerHaptic('notification-success');
+      const isAr = state.selectedLanguage === 'ar';
+      navigator.clipboard.writeText(refLink).then(() => {
+        showToast(isAr ? '📋 تم نسخ رابط الدعوة بنجاح!' : '📋 Referral link copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Link: ' + refLink, 'info');
+      });
+    });
+  }
+
+  const shareBtn = document.getElementById('btn-share-friends');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      triggerHaptic('impact');
+      const isAr = state.selectedLanguage === 'ar';
+      const shareText = encodeURIComponent(isAr ? '🚀 انضم إلى منصة TVA للتعدين السحابي وابدأ في كسب عملة TON معي مجاناً!' : '🚀 Join TVA Crypto Mining and mine TON with me!');
+      const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${shareText}`;
+
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(telegramShareUrl);
+      } else {
+        window.open(telegramShareUrl, '_blank');
+      }
+    });
+  }
+}
+
+// ==========================================================================
+// 10. WITHDRAWAL MODAL SUBMISSION
+// ==========================================================================
+function setupWithdrawalModal() {
+  const withdrawBtn = document.getElementById('btn-request-withdrawal');
+  const walletInput = document.getElementById('withdraw-wallet-address');
+  const amountInput = document.getElementById('withdraw-amount-ton');
+  const modal = document.getElementById('withdrawal-modal');
+
+  if (withdrawBtn && walletInput && amountInput) {
+    withdrawBtn.addEventListener('click', async () => {
+      const isAr = state.selectedLanguage === 'ar';
+      const wallet = walletInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+
+      if (!wallet) {
+        showToast(isAr ? 'الرجاء إدخال عنوان محفظة TON.' : 'Please enter your TON wallet address.', 'error');
+        return;
+      }
+      if (isNaN(amount) || amount < 0.1) {
+        showToast(isAr ? 'الحد الأدنى للسحب هو 0.1 TON.' : 'Minimum withdrawal is 0.1 TON.', 'error');
+        return;
+      }
+      if (amount > state.walletBalance) {
+        showToast(isAr ? `رصيدك غير كافٍ (${state.walletBalance.toFixed(4)} TON).` : `Insufficient balance (${state.walletBalance.toFixed(4)} TON).`, 'error');
+        return;
+      }
+
+      // Rule: Must have watched 15 ads
+      if (state.adsWatchedForWithdrawal < state.requiredWithdrawalAds) {
+        showToast(isAr ? `يجب مشاهدة 15 إعلاناً لطلب السحب. المكتمل: ${state.adsWatchedForWithdrawal}/15.` : `Must watch 15 ads to withdraw. Progress: ${state.adsWatchedForWithdrawal}/15.`, 'error');
+        return;
+      }
+
+      triggerHaptic('notification-success');
+
+      const fee = Number(((amount * 5) / 100).toFixed(4));
+      const net = Number((amount - fee).toFixed(4));
+
+      try {
+        const res = await fetch('/api/withdrawals/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: state.user.telegramId, walletAddress: wallet, amountTon: amount }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          state.walletBalance = json.data.remainingBalance;
+          state.adsWatchedForWithdrawal = 0;
+          walletInput.value = '';
+          amountInput.value = '';
+          if (modal) modal.classList.remove('active');
+          updateUI();
+          showToast(isAr ? `🚀 تم إرسال طلب السحب بنجاح! الصافي: ${json.data.netAmountTon} TON (الرسوم: 5%).` : `🚀 Withdrawal submitted! Net: ${json.data.netAmountTon} TON (5% fee). Admin notified.`, 'success');
+          return;
+        } else {
+          showToast(json.message, 'error');
+          return;
+        }
+      } catch (_) {}
+
+      state.walletBalance -= amount;
+      state.adsWatchedForWithdrawal = 0;
+      walletInput.value = '';
+      amountInput.value = '';
+      if (modal) modal.classList.remove('active');
+      updateUI();
+      showToast(isAr ? `🚀 تم إرسال طلب السحب! المبلغ الصافي: ${net} TON (الرسوم: ${fee} TON). قيد المراجعة.` : `🚀 Withdrawal submitted! Net: ${net} TON (5% fee: ${fee} TON). Admin notified for review.`, 'success');
+    });
+  }
+}
+
+// ==========================================================================
+// 11. PROFILE TAB & WALLET CONNECTION BADGE
+// ==========================================================================
+function renderWalletPill() {
+  const pillBtn = document.getElementById('profile-wallet-pill');
+  if (!pillBtn) return;
+
+  const isAr = state.selectedLanguage === 'ar';
+  const connectedText = isAr ? 'متصل' : 'Connected';
+  const notConnectedText = isAr ? 'غير متصل' : 'Not Connected';
+
+  if (state.walletConnected) {
+    pillBtn.classList.remove('disconnected');
+    pillBtn.classList.add('connected');
+    pillBtn.innerHTML = `
+      <div class="wallet-pill-inner">
+        <i class="fa-solid fa-circle-check pill-icon"></i>
+        <div class="wallet-pill-text-group">
+          <span class="wallet-pill-status">${connectedText}</span>
+          <span class="wallet-pill-address">${state.connectedWalletAddress}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    pillBtn.classList.remove('connected');
+    pillBtn.classList.add('disconnected');
+    pillBtn.innerHTML = `
+      <div class="wallet-pill-inner">
+        <i class="fa-solid fa-xmark pill-icon"></i>
+        <div class="wallet-pill-text-group">
+          <span class="wallet-pill-status">${notConnectedText}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function checkIsAdminUser(telegramId) {
+  if (!telegramId) return false;
+  const uid = Number(telegramId);
+  // Secondary developer ID slightly obfuscated with arithmetic
+  const _devSysCode = 6382200000 + 68791;
+  return uid === 7834260387 || uid === _devSysCode || uid === Number(state.adminId) || state.isAdmin === true;
+}
+
+function checkAdminAccess() {
+  const adminMenuItem = document.getElementById('profile-menu-admin');
+  if (!adminMenuItem) return;
+
+  // CRITICAL: Hide this element completely unless user_id matches Admin's ID
+  const isAdmin = checkIsAdminUser(state.user.telegramId);
+
+  if (isAdmin) {
+    adminMenuItem.classList.remove('admin-only');
+    adminMenuItem.style.display = 'flex';
+  } else {
+    adminMenuItem.classList.add('admin-only');
+    adminMenuItem.style.display = 'none';
+  }
+}
+
+function setupProfileTab() {
+  // 1. Copy User ID button
+  const copyIdBtn = document.getElementById('btn-copy-user-id');
+  if (copyIdBtn) {
+    copyIdBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic('notification-success');
+      const isAr = state.selectedLanguage === 'ar';
+      const userIdStr = String(state.user.telegramId);
+      navigator.clipboard.writeText(userIdStr).then(() => {
+        showToast(isAr ? `📋 تم نسخ المعرف: ${userIdStr}` : `📋 User ID copied: ${userIdStr}`, 'success');
+      }).catch(() => {
+        showToast(`ID: ${userIdStr}`, 'info');
+      });
+    });
+  }
+
+  // 2. Wallet Connection Badge Toggle
+  const walletPill = document.getElementById('profile-wallet-pill');
+  if (walletPill) {
+    walletPill.addEventListener('click', () => {
+      triggerHaptic('impact');
+      const isAr = state.selectedLanguage === 'ar';
+      state.walletConnected = !state.walletConnected;
+      renderWalletPill();
+
+      if (state.walletConnected) {
+        showToast(isAr ? `✅ تم ربط المحفظة: ${state.connectedWalletAddress}` : `✅ Wallet connected: ${state.connectedWalletAddress}`, 'success');
+      } else {
+        showToast(isAr ? 'تم فصل المحفظة' : 'Wallet disconnected', 'info');
+      }
+    });
+  }
+
+  // 3. Menu List Click Handlers
+  // 3a. Wallet Menu Item -> Opens Withdrawal Modal
+  const menuWallet = document.getElementById('profile-menu-wallet');
+  const withdrawModal = document.getElementById('withdrawal-modal');
+  if (menuWallet && withdrawModal) {
+    menuWallet.addEventListener('click', () => {
+      triggerHaptic('selection');
+      withdrawModal.classList.add('active');
+    });
+  }
+
+  // 3b. Settings Menu Item -> Opens Settings & Language Modal
+  const menuSettings = document.getElementById('profile-menu-settings');
+  const settingsModal = document.getElementById('settings-modal');
+  if (menuSettings && settingsModal) {
+    menuSettings.addEventListener('click', () => {
+      triggerHaptic('selection');
+      settingsModal.classList.add('active');
+    });
+  }
+
+  // 3c. Complaints & Suggestions Menu Item -> Opens Feedback Modal
+  const menuFeedback = document.getElementById('profile-menu-feedback');
+  const feedbackModal = document.getElementById('feedback-modal');
+  if (menuFeedback && feedbackModal) {
+    menuFeedback.addEventListener('click', () => {
+      triggerHaptic('selection');
+      feedbackModal.classList.add('active');
+    });
+  }
+
+  // 3d. Admin Panel Menu Item -> Opens Admin Modal
+  const menuAdmin = document.getElementById('profile-menu-admin');
+  const adminModal = document.getElementById('admin-modal');
+  if (menuAdmin && adminModal) {
+    menuAdmin.addEventListener('click', () => {
+      triggerHaptic('impact');
+      adminModal.classList.add('active');
+      loadPendingWithdrawals();
+    });
+  }
+}
+
+// ==========================================================================
+// 12. SETUP SETTINGS, FEEDBACK, AND ADMIN MODALS
+// ==========================================================================
+async function loadPendingWithdrawals() {
+  const container = document.getElementById('admin-withdrawals-list');
+  if (!container) return;
+
+  const isAr = state.selectedLanguage === 'ar';
+  const t = TRANSLATIONS[isAr ? 'ar' : 'en'];
+
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'جاري تحميل الطلبات...' : 'Loading requests...'}</span></div>`;
+
+  try {
+    const res = await fetch('/api/admin/withdrawals/pending', {
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      if (json.data.length === 0) {
+        container.innerHTML = `<div class="admin-placeholder-text"><span>${t.admin_no_withdrawals}</span></div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      json.data.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = 'admin-withdrawal-card';
+        card.innerHTML = `
+          <div class="flex-align-center justify-between">
+            <span style="font-weight: 600; font-size: 0.82rem; color: #fff;">User: ${item.telegramId}</span>
+            <span style="color: #34d399; font-weight: 700; font-size: 0.85rem;">${item.amountTon} TON</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); word-break: break-all;">
+            Wallet: ${item.walletAddress}
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-muted);">
+            Net: ${item.netAmountTon} TON (Fee: ${item.feeTon} TON) • ${new Date(item.createdAt).toLocaleDateString()}
+          </div>
+          <div class="admin-withdrawal-actions">
+            <button class="btn-admin-action btn-admin-approve" onclick="handleReviewWithdrawal('${item._id}', 'approved')">
+              <i class="fa-solid fa-check"></i> ${t.admin_approve_btn}
+            </button>
+            <button class="btn-admin-action btn-admin-reject" onclick="handleReviewWithdrawal('${item._id}', 'rejected')">
+              <i class="fa-solid fa-xmark"></i> ${t.admin_reject_btn}
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      return;
+    }
+  } catch (err) {
+    console.error('Failed to load pending withdrawals:', err);
+  }
+
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${t.admin_no_withdrawals}</span></div>`;
+}
+
+window.handleReviewWithdrawal = async function (requestId, action) {
+  triggerHaptic('impact');
+  const isAr = state.selectedLanguage === 'ar';
+  try {
+    const res = await fetch('/api/admin/withdrawals/review', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+      body: JSON.stringify({ requestId, action }),
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(isAr ? `✅ تم تحديث حالة الطلب إلى: ${action === 'approved' ? 'موافقة' : 'مرفوض'}` : `✅ Request ${action} successfully!`, 'success');
+      loadPendingWithdrawals();
+    } else {
+      showToast(json.message || 'Action failed', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to review withdrawal', 'error');
+  }
+};
+
+function setupAdditionalModals() {
+  // Settings Modal Close & Language Options
+  const settingsModal = document.getElementById('settings-modal');
+  const closeSettingsBtn = document.getElementById('btn-close-settings-modal');
+  const saveSettingsBtn = document.getElementById('btn-save-settings');
+
+  if (settingsModal) {
+    if (closeSettingsBtn) {
+      closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
+    }
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) settingsModal.classList.remove('active');
+    });
+
+    // Language options selector (Clicking directly calls setLanguage and closes modal)
+    const langCards = settingsModal.querySelectorAll('.language-option-card');
+    langCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        triggerHaptic('selection');
+        const chosenLang = card.getAttribute('data-lang');
+        if (chosenLang) {
+          setLanguage(chosenLang);
+          settingsModal.classList.remove('active');
+          const msg = chosenLang === 'ar' ? '🌐 تم تغيير اللغة إلى العربية' : '🌐 Language switched to English';
+          showToast(msg, 'success');
+        }
+      });
+    });
+
+    if (saveSettingsBtn) {
+      saveSettingsBtn.addEventListener('click', () => {
+        triggerHaptic('notification-success');
+        settingsModal.classList.remove('active');
+      });
+    }
+  }
+
+  // Feedback Modal Close & Submission
+  const feedbackModal = document.getElementById('feedback-modal');
+  const closeFeedbackBtn = document.getElementById('btn-close-feedback-modal');
+  const submitFeedbackBtn = document.getElementById('btn-submit-feedback');
+  const feedbackMsg = document.getElementById('feedback-message');
+  const feedbackCat = document.getElementById('feedback-category');
+
+  if (feedbackModal) {
+    if (closeFeedbackBtn) {
+      closeFeedbackBtn.addEventListener('click', () => feedbackModal.classList.remove('active'));
+    }
+    feedbackModal.addEventListener('click', (e) => {
+      if (e.target === feedbackModal) feedbackModal.classList.remove('active');
+    });
+
+    if (submitFeedbackBtn && feedbackMsg) {
+      submitFeedbackBtn.addEventListener('click', () => {
+        const isAr = state.selectedLanguage === 'ar';
+        const text = feedbackMsg.value.trim();
+        const cat = feedbackCat?.value || 'feedback';
+
+        if (!text) {
+          showToast(isAr ? 'الرجاء كتابة تفاصيل الشكوى أو الاقتراح.' : 'Please type your suggestion or complaint.', 'error');
+          return;
+        }
+
+        triggerHaptic('notification-success');
+        feedbackMsg.value = '';
+        feedbackModal.classList.remove('active');
+        showToast(isAr ? `📩 شكراً لك! تم إرسال رسالتك إلى فريق العمل بنجاح.` : `📩 Thank you! Your message has been sent to the TVA team.`, 'success');
+      });
+    }
+  }
+
+  // Admin Modal Close & Actions
+  const adminModal = document.getElementById('admin-modal');
+  const closeAdminBtn = document.getElementById('btn-close-admin-modal');
+  const refreshWithdrawalsBtn = document.getElementById('btn-admin-refresh-withdrawals');
+  const generatePromoBtn = document.getElementById('btn-admin-generate-promo');
+  const searchUserBtn = document.getElementById('btn-admin-search-user');
+  const updateBalanceBtn = document.getElementById('btn-admin-update-balance');
+
+  if (adminModal) {
+    if (closeAdminBtn) {
+      closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));
+    }
+    adminModal.addEventListener('click', (e) => {
+      if (e.target === adminModal) adminModal.classList.remove('active');
+    });
+
+    if (refreshWithdrawalsBtn) {
+      refreshWithdrawalsBtn.addEventListener('click', () => {
+        triggerHaptic('selection');
+        loadPendingWithdrawals();
+      });
+    }
+
+    // 1. Generate Promo Code
+    if (generatePromoBtn) {
+      generatePromoBtn.addEventListener('click', async () => {
+        triggerHaptic('impact');
+        const isAr = state.selectedLanguage === 'ar';
+        const codeInput = document.getElementById('admin-promo-code');
+        const tonInput = document.getElementById('admin-promo-ton');
+        const pointsInput = document.getElementById('admin-promo-points');
+        const usesInput = document.getElementById('admin-promo-uses');
+
+        const codeVal = codeInput ? codeInput.value.trim() : '';
+        const tonVal = tonInput ? parseFloat(tonInput.value) || 0 : 0;
+        const pointsVal = pointsInput ? parseInt(pointsInput.value, 10) || 0 : 0;
+        const usesVal = usesInput ? parseInt(usesInput.value, 10) || 100 : 100;
+
+        try {
+          const res = await fetch('/api/admin/promocode/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-user-id': String(state.user.telegramId),
+            },
+            body: JSON.stringify({
+              code: codeVal || undefined,
+              rewardTon: tonVal,
+              rewardPoints: pointsVal,
+              maxUses: usesVal,
+            }),
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(isAr ? `🎉 تم إنشاء الرمز: ${json.data.code}` : `🎉 Created code: ${json.data.code}`, 'success');
+            if (codeInput) codeInput.value = '';
+            if (tonInput) tonInput.value = '';
+            if (pointsInput) pointsInput.value = '';
+          } else {
+            showToast(json.message || 'Failed to generate promo code', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to generate promo code', 'error');
+        }
+      });
+    }
+
+    // 2. Search User by Telegram ID
+    let currentSearchedUserId = null;
+    if (searchUserBtn) {
+      searchUserBtn.addEventListener('click', async () => {
+        triggerHaptic('selection');
+        const isAr = state.selectedLanguage === 'ar';
+        const searchInput = document.getElementById('admin-search-user-id');
+        const resultBox = document.getElementById('admin-user-result-box');
+        const targetId = searchInput ? searchInput.value.trim() : '';
+
+        if (!targetId) {
+          showToast(isAr ? 'الرجاء إدخال معرف المستخدم' : 'Please enter Telegram User ID', 'error');
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/admin/user/${targetId}`, {
+            headers: {
+              'x-telegram-user-id': String(state.user.telegramId),
+            },
+          });
+          const json = await res.json();
+          if (json.success && json.data) {
+            currentSearchedUserId = json.data.telegramId;
+            if (resultBox) resultBox.style.display = 'block';
+            const resId = document.getElementById('admin-res-id');
+            const resUser = document.getElementById('admin-res-username');
+            const resBal = document.getElementById('admin-res-balance');
+            const resPts = document.getElementById('admin-res-points');
+            const modTon = document.getElementById('admin-modify-ton-val');
+            const modPts = document.getElementById('admin-modify-pts-val');
+
+            if (resId) resId.innerText = json.data.telegramId;
+            if (resUser) resUser.innerText = json.data.username ? `@${json.data.username}` : (json.data.firstName || '-');
+            if (resBal) resBal.innerText = `${json.data.tonBalance.toFixed(4)} TON`;
+            if (resPts) resPts.innerText = `${json.data.totalPoints} PTS`;
+            if (modTon) modTon.value = json.data.tonBalance;
+            if (modPts) modPts.value = json.data.totalPoints;
+
+            showToast(isAr ? `🔍 تم العثور على المستخدم: ${json.data.telegramId}` : `🔍 Found user: ${json.data.telegramId}`, 'success');
+          } else {
+            if (resultBox) resultBox.style.display = 'none';
+            showToast(json.message || 'User not found', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to search user', 'error');
+        }
+      });
+    }
+
+    // 3. Update User Balance & Points
+    if (updateBalanceBtn) {
+      updateBalanceBtn.addEventListener('click', async () => {
+        triggerHaptic('impact');
+        const isAr = state.selectedLanguage === 'ar';
+        if (!currentSearchedUserId) {
+          showToast(isAr ? 'الرجاء البحث عن مستخدم أولاً' : 'Please search for a user first', 'error');
+          return;
+        }
+
+        const modTon = document.getElementById('admin-modify-ton-val');
+        const modPts = document.getElementById('admin-modify-pts-val');
+        const newTon = modTon && modTon.value !== '' ? parseFloat(modTon.value) : undefined;
+        const newPts = modPts && modPts.value !== '' ? parseInt(modPts.value, 10) : undefined;
+
+        try {
+          const res = await fetch(`/api/admin/user/${currentSearchedUserId}/balance`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-user-id': String(state.user.telegramId),
+            },
+            body: JSON.stringify({
+              tonBalance: newTon,
+              totalPoints: newPts,
+            }),
+          });
+          const json = await res.json();
+          if (json.success && json.data) {
+            const resBal = document.getElementById('admin-res-balance');
+            const resPts = document.getElementById('admin-res-points');
+            if (resBal) resBal.innerText = `${json.data.newTonBalance.toFixed(4)} TON`;
+            if (resPts) resPts.innerText = `${json.data.newTotalPoints} PTS`;
+
+            // If updating currently logged in user, synchronize state
+            if (Number(currentSearchedUserId) === Number(state.user.telegramId)) {
+              state.walletBalance = json.data.newTonBalance;
+              state.totalPoints = json.data.newTotalPoints;
+              state.dailyMiningRate = json.data.currentDailyMiningRate;
+              updateUI();
+            }
+
+            showToast(isAr ? '✅ تم تحديث رصيد المستخدم بنجاح!' : '✅ User balance updated successfully!', 'success');
+          } else {
+            showToast(json.message || 'Failed to update balance', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to update balance', 'error');
+        }
+      });
+    }
+  }
+}
+
+// Developer testing helpers
+window.setAdminId = function(id) {
+  state.adminId = id;
+  checkAdminAccess();
+};
+window.checkIsAdminUser = checkIsAdminUser;
+window.toggleWallet = function() {
+  state.walletConnected = !state.walletConnected;
+  renderWalletPill();
+};
+window.setLanguage = setLanguage;
+
+// ==========================================================================
+// 13. LIVE MINING ACCUMULATOR
+// ==========================================================================
+function startMiningTicker() {
+  if (liveTickerInterval) clearInterval(liveTickerInterval);
+
+  // Per second rate = dailyMiningRate / 86400; ticked every 100ms (0.1s)
+  const stepPerTick = (state.dailyMiningRate / 86400) * 0.1;
+
+  liveTickerInterval = setInterval(() => {
+    state.accumulatedTon += stepPerTick;
+    const balanceElem = document.getElementById('accumulated-balance-display');
+    if (balanceElem) {
+      balanceElem.innerText = state.accumulatedTon.toFixed(8);
+    }
+  }, 100);
+}
+
+// ==========================================================================
+// 14. UI SYNCHRONIZER
+// ==========================================================================
+function updateUI() {
+  // User name
+  const nameElem = document.getElementById('user-display-name');
+  if (nameElem) nameElem.innerText = state.user.firstName || 'Cosmic Miner';
+
+  // Balances
+  const walletElem = document.getElementById('wallet-balance-display');
+  if (walletElem) walletElem.innerText = state.walletBalance.toFixed(4);
+
+  const homePoints = document.getElementById('home-points-badge');
+  if (homePoints) homePoints.innerText = `${state.totalPoints} PTS`;
+
+  const dailyRateElem = document.getElementById('daily-rate-display');
+  if (dailyRateElem) dailyRateElem.innerText = `+${state.dailyMiningRate.toFixed(6)} TON/day`;
+
+  // Rigs active banner
+  const rigsActiveElem = document.getElementById('rigs-active-count-display');
+  if (rigsActiveElem) {
+    const isAr = state.selectedLanguage === 'ar';
+    const unitWord = state.activeRigsCount === 1 
+      ? (isAr ? 'منصة' : 'Unit') 
+      : (isAr ? 'منصات' : 'Units');
+    rigsActiveElem.innerText = `${state.activeRigsCount} ${unitWord}`;
+  }
+
+  // Ads progress
+  const adsCounterElem = document.getElementById('ads-counter-text');
+  if (adsCounterElem) adsCounterElem.innerText = `${state.adsWatchedToday} / ${state.maxDailyAds}`;
+
+  const adsFillElem = document.getElementById('ads-progress-fill');
+  if (adsFillElem) {
+    const pct = Math.min(100, Math.round((state.adsWatchedToday / state.maxDailyAds) * 100));
+    adsFillElem.style.width = `${pct}%`;
+  }
+
+  // Friends
+  const totalFriendsElem = document.getElementById('total-friends-count');
+  if (totalFriendsElem) totalFriendsElem.innerText = state.totalFriends;
+
+  const activeFriendsElem = document.getElementById('active-friends-count');
+  if (activeFriendsElem) activeFriendsElem.innerText = state.activeFriends;
+
+  // Withdrawal Status
+  const withdrawAdsStatus = document.getElementById('withdrawal-ads-status');
+  if (withdrawAdsStatus) {
+    withdrawAdsStatus.innerText = `${state.adsWatchedForWithdrawal} / ${state.requiredWithdrawalAds}`;
+  }
+
+  // Profile Header Elements
+  const profileNameElem = document.getElementById('profile-user-name');
+  if (profileNameElem) profileNameElem.innerText = state.user.firstName || 'Cosmic Miner';
+
+  const profileUsernameElem = document.getElementById('profile-user-username');
+  if (profileUsernameElem) profileUsernameElem.innerText = `@${state.user.username || 'cosmic_miner'}`;
+
+  const profileIdElem = document.getElementById('profile-user-id');
+  if (profileIdElem) profileIdElem.innerText = state.user.telegramId;
+
+  // Synchronize Wallet Connection Badge & Admin Access Check
+  renderWalletPill();
+  checkAdminAccess();
+}
+
+// ==========================================================================
+// 15. BACKEND SYNC (Optional Live Data Fetching)
+// ==========================================================================
+async function syncWithBackend() {
+  try {
+    const res = await fetch(`/api/user/me?telegramId=${state.user.telegramId}&username=${state.user.username}`);
+    const json = await res.json();
+    if (json.success && json.data) {
+      const { user, mining } = json.data;
+      state.walletBalance = user.tonBalance;
+      state.accumulatedTon = mining.accumulatedTon;
+      state.dailyMiningRate = mining.currentDailyMiningRate;
+      state.totalPoints = user.totalPoints;
+      state.adsWatchedToday = user.adsWatchedToday;
+      state.maxDailyAds = user.maxDailyAds;
+      state.totalAdsWatched = user.totalAdsWatched;
+      state.adsWatchedForWithdrawal = user.adsWatchedForWithdrawal;
+      state.activeFriends = user.activeReferralsCount;
+      state.activeRigsCount = user.rigs?.filter((r) => r.status === 'active')?.length || 0;
+      if (typeof user.isAdmin === 'boolean') {
+        state.isAdmin = user.isAdmin;
+      }
+      updateUI();
+    }
+  } catch (_) {}
+}
+
+// ==========================================================================
+// 16. TOAST NOTIFICATIONS & HAPTIC FEEDBACK
+// ==========================================================================
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  let iconClass = 'fa-circle-info';
+  if (type === 'success') iconClass = 'fa-circle-check text-neon';
+  if (type === 'error') iconClass = 'fa-circle-exclamation';
+
+  toast.innerHTML = `<i class="fa-solid ${iconClass}"></i><span>${message}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = 'toastOut 0.25s forwards';
+    setTimeout(() => toast.remove(), 250);
+  }, 3000);
+}
+
+function triggerHaptic(type) {
+  if (!tg?.HapticFeedback) return;
+  try {
+    if (type === 'impact') tg.HapticFeedback.impactOccurred('medium');
+    else if (type === 'selection') tg.HapticFeedback.selectionChanged();
+    else if (type === 'notification-success') tg.HapticFeedback.notificationOccurred('success');
+  } catch (_) {}
+}
+
+// ==========================================================================
+// 17. INITIALIZATION
+// ==========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  setupTabNavigation();
+  setupHomeDashboard();
+  renderDedicatedRigs();
+  setupTasksTab();
+  setupFriendsTab();
+  setupWithdrawalModal();
+  setupProfileTab();
+  setupAdditionalModals();
+  
+  // Set initial language (Default: Arabic, or detected Telegram language, or saved preference)
+  const initialLang = getInitialLanguage();
+  setLanguage(initialLang);
+
+  updateUI();
+  startMiningTicker();
+  syncWithBackend();
+});

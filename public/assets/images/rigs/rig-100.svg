@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow100" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.5"/>
+      <stop offset="35%" stop-color="#581c87" stop-opacity="0.3"/>
+      <stop offset="70%" stop-color="#1e1b4b" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="titanCore100" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#f5d0fe"/>
+      <stop offset="55%" stop-color="#d946ef"/>
+      <stop offset="85%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#2e1065"/>
+    </radialGradient>
+    <linearGradient id="goldTitan100" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <filter id="titanGlow100" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="400" height="300" fill="url(#bgGlow100)"/>
+
+  <!-- Celestial Energy Vortex Background Rings -->
+  <g opacity="0.35" stroke="#c084fc" stroke-width="1" fill="none">
+    <circle cx="200" cy="150" r="115" stroke-dasharray="6,8"/>
+    <circle cx="200" cy="150" r="130" stroke-dasharray="4,12"/>
+    <circle cx="200" cy="150" r="142" stroke-dasharray="2,16"/>
+  </g>
+
+  <!-- Deep Ground Energy Pool -->
+  <ellipse cx="200" cy="260" rx="145" ry="24" fill="#000000" opacity="0.9" filter="blur(8px)"/>
+  <ellipse cx="200" cy="245" rx="90" ry="15" fill="none" stroke="url(#goldTitan100)" stroke-width="2" filter="url(#titanGlow100)"/>
+
+  <!-- Floating Multi-Tier Anti-Gravity Titan Monoliths -->
+  <!-- Left Pylon -->
+  <polygon points="80,240 60,95 90,85 105,240" fill="#18181b" stroke="url(#goldTitan100)" stroke-width="1.5"/>
+  <line x1="85" y1="100" x2="95" y2="230" stroke="#c084fc" stroke-width="2" filter="url(#titanGlow100)"/>
+
+  <!-- Right Pylon -->
+  <polygon points="320,240 340,95 310,85 295,240" fill="#18181b" stroke="url(#goldTitan100)" stroke-width="1.5"/>
+  <line x1="315" y1="100" x2="305" y2="230" stroke="#c084fc" stroke-width="2" filter="url(#titanGlow100)"/>
+
+  <!-- QUANTUM CORE TITAN (Center Floating Singularity) -->
+  <g transform="translate(200, 150)">
+    <!-- Rotating Ring 1 (Outer Gyro Ring) -->
+    <ellipse cx="0" cy="0" rx="88" ry="34" fill="none" stroke="#e879f9" stroke-width="3" transform="rotate(-35)" stroke-dasharray="14,4" filter="url(#titanGlow100)"/>
+    <circle cx="72" cy="-50" r="5" fill="#facc15" filter="url(#titanGlow100)"/>
+    <circle cx="-72" cy="50" r="5" fill="#facc15" filter="url(#titanGlow100)"/>
+
+    <!-- Rotating Ring 2 (Middle Gyro Ring) -->
+    <ellipse cx="0" cy="0" rx="88" ry="34" fill="none" stroke="#38bdf8" stroke-width="3" transform="rotate(35)" stroke-dasharray="14,4" filter="url(#titanGlow100)"/>
+    <circle cx="72" cy="50" r="5" fill="#38bdf8" filter="url(#titanGlow100)"/>
+    <circle cx="-72" cy="-50" r="5" fill="#38bdf8" filter="url(#titanGlow100)"/>
+
+    <!-- Rotating Ring 3 (Equatorial Ring) -->
+    <ellipse cx="0" cy="0" rx="96" ry="18" fill="none" stroke="url(#goldTitan100)" stroke-width="3" filter="url(#titanGlow100)"/>
+
+    <!-- Energy Rays from Core -->
+    <line x1="0" y1="-80" x2="0" y2="80" stroke="#ffffff" stroke-width="4" filter="url(#titanGlow100)"/>
+    <line x1="-80" y1="0" x2="80" y2="0" stroke="#ffffff" stroke-width="4" filter="url(#titanGlow100)"/>
+
+    <!-- Central Hyper-Dense Singularity Core -->
+    <circle cx="0" cy="0" r="42" fill="url(#titanCore100)" filter="url(#titanGlow100)"/>
+    <!-- Intense White Plasma Flare -->
+    <circle cx="0" cy="0" r="20" fill="#ffffff" filter="url(#titanGlow100)"/>
+    
+    <!-- Starburst Diamond Cross -->
+    <polygon points="0,-48 8,0 0,48 -8,0" fill="#ffffff" filter="url(#titanGlow100)"/>
+    <polygon points="-48,0 0,8 48,0 0,-8" fill="#ffffff" filter="url(#titanGlow100)"/>
+  </g>
+
+  <!-- Floating Supreme Badge -->
+  <g transform="translate(200, 40)" filter="url(#titanGlow100)">
+    <rect x="-80" y="-14" width="160" height="28" rx="14" fill="rgba(46,16,101,0.9)" stroke="url(#goldTitan100)" stroke-width="2"/>
+    <text x="0" y="5" fill="#ffffff" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" text-anchor="middle" letter-spacing="0.8">👑 100 TON TITAN</text>
+  </g>
+</svg>

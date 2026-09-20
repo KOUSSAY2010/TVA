@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow3" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.38"/>
+      <stop offset="50%" stop-color="#3b0764" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="quantumCrystal3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e9d5ff"/>
+      <stop offset="35%" stop-color="#c084fc"/>
+      <stop offset="70%" stop-color="#7e22ce"/>
+      <stop offset="100%" stop-color="#3b0764"/>
+    </linearGradient>
+    <linearGradient id="laserBeam3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="neonGlow3" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="400" height="300" fill="url(#bgGlow3)" />
+
+  <!-- Quantum Particle Field -->
+  <g fill="#c084fc" opacity="0.6">
+    <circle cx="80" cy="80" r="1.5" filter="url(#neonGlow3)"/>
+    <circle cx="120" cy="60" r="2" filter="url(#neonGlow3)"/>
+    <circle cx="320" cy="90" r="1.5" filter="url(#neonGlow3)"/>
+    <circle cx="280" cy="70" r="2.5" filter="url(#neonGlow3)"/>
+    <circle cx="95" cy="200" r="2" filter="url(#neonGlow3)"/>
+    <circle cx="305" cy="210" r="1.5" filter="url(#neonGlow3)"/>
+  </g>
+
+  <!-- Magnetic Base Pedestal -->
+  <ellipse cx="200" cy="245" rx="110" ry="22" fill="#000000" opacity="0.75" filter="blur(8px)"/>
+  
+  <path d="M 120 230 L 280 230 L 260 250 L 140 250 Z" fill="#18181b" stroke="#3f3f46" stroke-width="1.5"/>
+  <ellipse cx="200" cy="230" rx="80" ry="14" fill="#27272a" stroke="rgba(167,139,250,0.4)" stroke-width="2"/>
+  <ellipse cx="200" cy="230" rx="55" ry="9" fill="#09090b" stroke="#a855f7" stroke-width="1.5" filter="url(#neonGlow3)"/>
+
+  <!-- Lower Emitter Beam -->
+  <path d="M 175 228 L 195 180 L 205 180 L 225 228 Z" fill="url(#laserBeam3)" opacity="0.45" filter="url(#neonGlow3)"/>
+
+  <!-- Upper Magnetic Stabilizer Arch -->
+  <path d="M 110 160 Q 110 70 200 70 Q 290 70 290 160" fill="none" stroke="#27272a" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 110 160 Q 110 70 200 70 Q 290 70 290 160" fill="none" stroke="rgba(192,132,252,0.8)" stroke-width="2" filter="url(#neonGlow3)"/>
+  
+  <!-- Cryogenic Emitter Nodes -->
+  <circle cx="110" cy="160" r="10" fill="#18181b" stroke="#71717a" stroke-width="2"/>
+  <circle cx="110" cy="160" r="5" fill="#38bdf8" filter="url(#neonGlow3)"/>
+  <circle cx="290" cy="160" r="10" fill="#18181b" stroke="#71717a" stroke-width="2"/>
+  <circle cx="290" cy="160" r="5" fill="#38bdf8" filter="url(#neonGlow3)"/>
+  <circle cx="200" cy="70" r="11" fill="#18181b" stroke="#71717a" stroke-width="2"/>
+  <circle cx="200" cy="70" r="6" fill="#c084fc" filter="url(#neonGlow3)"/>
+
+  <!-- FLOATING QUANTUM CRYSTAL CORE (Octahedral Node) -->
+  <g transform="translate(200, 150)">
+    <!-- Energy Rings around Core -->
+    <ellipse cx="0" cy="0" rx="64" ry="20" fill="none" stroke="#c084fc" stroke-width="1.5" transform="rotate(-25)" stroke-dasharray="8,4" filter="url(#neonGlow3)"/>
+    <ellipse cx="0" cy="0" rx="64" ry="20" fill="none" stroke="#38bdf8" stroke-width="1.5" transform="rotate(25)" stroke-dasharray="8,4" filter="url(#neonGlow3)"/>
+
+    <!-- Central Glowing Crystal Facets -->
+    <!-- Top Apex -->
+    <polygon points="0,-48 38,-10 0,14" fill="#a855f7" opacity="0.9"/>
+    <polygon points="0,-48 -38,-10 0,14" fill="#c084fc" opacity="0.95"/>
+    <polygon points="0,-48 0,14 20,-10" fill="#e9d5ff" opacity="0.85"/>
+    <!-- Bottom Apex -->
+    <polygon points="0,48 38,-10 0,14" fill="#6b21a8" opacity="0.9"/>
+    <polygon points="0,48 -38,-10 0,14" fill="#7e22ce" opacity="0.95"/>
+    
+    <!-- Crystal Edges Glow -->
+    <polygon points="0,-48 38,-10 0,48 -38,-10" fill="none" stroke="#ffffff" stroke-width="1.5" filter="url(#neonGlow3)"/>
+    <line x1="-38" y1="-10" x2="38" y2="-10" stroke="#ffffff" stroke-width="1.5"/>
+
+    <!-- Inner Singularity Spark -->
+    <circle cx="0" cy="0" r="10" fill="#ffffff" filter="url(#neonGlow3)"/>
+  </g>
+
+  <!-- Floating Telemetry HUD -->
+  <g transform="translate(200, 38)" filter="url(#neonGlow3)">
+    <rect x="-65" y="-13" width="130" height="26" rx="13" fill="rgba(88,28,135,0.75)" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="0" y="4" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" text-anchor="middle" letter-spacing="0.5">⚛️ 3 TON NODE</text>
+  </g>
+</svg>

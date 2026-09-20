@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow5" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#4c1d95" stop-opacity="0.4"/>
+      <stop offset="60%" stop-color="#1e1b4b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rackGrad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="50%" stop-color="#27272a"/>
+      <stop offset="100%" stop-color="#18181b"/>
+    </linearGradient>
+    <linearGradient id="serverBlade5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#09090b"/>
+      <stop offset="15%" stop-color="#27272a"/>
+      <stop offset="85%" stop-color="#27272a"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="neonBar5" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="neonGlow5" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="400" height="300" fill="url(#bgGlow5)"/>
+
+  <!-- Base Shadow -->
+  <ellipse cx="200" cy="255" rx="140" ry="20" fill="#000000" opacity="0.8" filter="blur(8px)"/>
+
+  <!-- DUAL RACK CABINET (Main Frame) -->
+  <g transform="translate(85, 75)">
+    <!-- Outer Heavy Server Frame -->
+    <rect x="0" y="0" width="230" height="175" rx="10" fill="url(#rackGrad5)" stroke="#3f3f46" stroke-width="2"/>
+    
+    <!-- Central Divider Column -->
+    <rect x="110" y="5" width="10" height="165" fill="#09090b" stroke="#27272a" stroke-width="1"/>
+    
+    <!-- Cable Bundles on Spine -->
+    <path d="M 115 10 Q 112 85 115 160" stroke="#38bdf8" stroke-width="2" fill="none" filter="url(#neonGlow5)"/>
+    <path d="M 116 10 Q 118 85 116 160" stroke="#c084fc" stroke-width="2" fill="none" filter="url(#neonGlow5)"/>
+
+    <!-- LEFT RACK: 5 Server Blades -->
+    <!-- Blade 1 -->
+    <rect x="10" y="12" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <rect x="15" y="17" width="16" height="16" rx="3" fill="#09090b"/>
+    <circle cx="23" cy="25" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="36" cy="25" r="2" fill="#10b981"/>
+    <circle cx="43" cy="25" r="2" fill="#38bdf8"/>
+    <circle cx="50" cy="25" r="2" fill="#c084fc"/>
+    <rect x="60" y="20" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="64" y="28" fill="#34d399" font-family="monospace" font-size="7">RUNNING</text>
+
+    <!-- Blade 2 -->
+    <rect x="10" y="44" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <rect x="15" y="49" width="16" height="16" rx="3" fill="#09090b"/>
+    <circle cx="23" cy="57" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="36" cy="57" r="2" fill="#10b981"/>
+    <circle cx="43" cy="57" r="2" fill="#38bdf8"/>
+    <circle cx="50" cy="57" r="2" fill="#c084fc"/>
+    <rect x="60" y="52" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="64" y="60" fill="#34d399" font-family="monospace" font-size="7">RUNNING</text>
+
+    <!-- Blade 3 -->
+    <rect x="10" y="76" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <rect x="15" y="81" width="16" height="16" rx="3" fill="#09090b"/>
+    <circle cx="23" cy="89" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="36" cy="89" r="2" fill="#10b981"/>
+    <circle cx="43" cy="89" r="2" fill="#38bdf8"/>
+    <circle cx="50" cy="89" r="2" fill="#c084fc"/>
+    <rect x="60" y="84" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="64" y="92" fill="#34d399" font-family="monospace" font-size="7">RUNNING</text>
+
+    <!-- Blade 4 -->
+    <rect x="10" y="108" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <rect x="15" y="113" width="16" height="16" rx="3" fill="#09090b"/>
+    <circle cx="23" cy="121" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="36" cy="121" r="2" fill="#10b981"/>
+    <circle cx="43" cy="121" r="2" fill="#38bdf8"/>
+    <circle cx="50" cy="121" r="2" fill="#c084fc"/>
+    <rect x="60" y="116" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="64" y="124" fill="#34d399" font-family="monospace" font-size="7">RUNNING</text>
+
+    <!-- Blade 5 (Dual Power Unit) -->
+    <rect x="10" y="140" width="95" height="24" rx="4" fill="#09090b" stroke="rgba(167,139,250,0.5)" stroke-width="1"/>
+    <line x1="20" y1="152" x2="95" y2="152" stroke="#c084fc" stroke-width="2" filter="url(#neonGlow5)"/>
+
+    <!-- RIGHT RACK: 5 Server Blades -->
+    <!-- Blade R1 -->
+    <rect x="125" y="12" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <circle cx="138" cy="25" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="152" cy="25" r="2" fill="#10b981"/>
+    <circle cx="160" cy="25" r="2" fill="#38bdf8"/>
+    <rect x="175" y="20" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="179" y="28" fill="#c084fc" font-family="monospace" font-size="7">5.50 TH</text>
+
+    <!-- Blade R2 -->
+    <rect x="125" y="44" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <circle cx="138" cy="57" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="152" cy="57" r="2" fill="#10b981"/>
+    <circle cx="160" cy="57" r="2" fill="#38bdf8"/>
+    <rect x="175" y="52" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="179" y="60" fill="#c084fc" font-family="monospace" font-size="7">5.50 TH</text>
+
+    <!-- Blade R3 -->
+    <rect x="125" y="76" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <circle cx="138" cy="89" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="152" cy="89" r="2" fill="#10b981"/>
+    <circle cx="160" cy="89" r="2" fill="#38bdf8"/>
+    <rect x="175" y="84" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="179" y="92" fill="#c084fc" font-family="monospace" font-size="7">5.50 TH</text>
+
+    <!-- Blade R4 -->
+    <rect x="125" y="108" width="95" height="26" rx="4" fill="url(#serverBlade5)" stroke="#3f3f46" stroke-width="1"/>
+    <circle cx="138" cy="121" r="5" fill="#a855f7" filter="url(#neonGlow5)"/>
+    <circle cx="152" cy="121" r="2" fill="#10b981"/>
+    <circle cx="160" cy="121" r="2" fill="#38bdf8"/>
+    <rect x="175" y="116" width="40" height="10" rx="2" fill="#05030a"/>
+    <text x="179" y="124" fill="#c084fc" font-family="monospace" font-size="7">5.50 TH</text>
+
+    <!-- Blade R5 (Dual Power Unit) -->
+    <rect x="125" y="140" width="95" height="24" rx="4" fill="#09090b" stroke="rgba(167,139,250,0.5)" stroke-width="1"/>
+    <line x1="135" y1="152" x2="210" y2="152" stroke="#38bdf8" stroke-width="2" filter="url(#neonGlow5)"/>
+
+    <!-- Vertical Neon Pillar Guides -->
+    <line x1="3" y1="5" x2="3" y2="170" stroke="#c084fc" stroke-width="3" filter="url(#neonGlow5)"/>
+    <line x1="227" y1="5" x2="227" y2="170" stroke="#c084fc" stroke-width="3" filter="url(#neonGlow5)"/>
+  </g>
+
+  <!-- Floating Badge -->
+  <g transform="translate(200, 42)" filter="url(#neonGlow5)">
+    <rect x="-65" y="-13" width="130" height="26" rx="13" fill="rgba(88,28,135,0.75)" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="0" y="4" fill="#ffffff" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" text-anchor="middle" letter-spacing="0.5">🖥️ 5 TON RACK</text>
+  </g>
+</svg>
