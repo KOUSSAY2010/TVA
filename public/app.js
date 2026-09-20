@@ -263,6 +263,56 @@ const state = {
   activeRigsCount: 1,
 };
 
+// Global LocalStorage Cache for Instant Offline & Zero-Lag Tab Switching
+const CACHE_KEY = 'tva_user_state_cache';
+
+function saveStateCache() {
+  try {
+    const dataToSave = {
+      walletBalance: state.walletBalance,
+      accumulatedTon: state.accumulatedTon,
+      dailyMiningRate: state.dailyMiningRate,
+      totalPoints: state.totalPoints,
+      adsWatchedToday: state.adsWatchedToday,
+      maxDailyAds: state.maxDailyAds,
+      totalAdsWatched: state.totalAdsWatched,
+      adsWatchedForWithdrawal: state.adsWatchedForWithdrawal,
+      totalFriends: state.totalFriends,
+      activeFriends: state.activeFriends,
+      activeRigsCount: state.activeRigsCount,
+      cachedAt: Date.now(),
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(dataToSave));
+  } catch (_) {}
+}
+
+function loadStateCache() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return;
+    const data = JSON.parse(cached);
+    if (!data || typeof data !== 'object') return;
+
+    if (typeof data.walletBalance === 'number') state.walletBalance = data.walletBalance;
+    if (typeof data.dailyMiningRate === 'number') state.dailyMiningRate = data.dailyMiningRate;
+    if (typeof data.totalPoints === 'number') state.totalPoints = data.totalPoints;
+    if (typeof data.adsWatchedToday === 'number') state.adsWatchedToday = data.adsWatchedToday;
+    if (typeof data.maxDailyAds === 'number') state.maxDailyAds = data.maxDailyAds;
+    if (typeof data.totalAdsWatched === 'number') state.totalAdsWatched = data.totalAdsWatched;
+    if (typeof data.adsWatchedForWithdrawal === 'number') state.adsWatchedForWithdrawal = data.adsWatchedForWithdrawal;
+    if (typeof data.totalFriends === 'number') state.totalFriends = data.totalFriends;
+    if (typeof data.activeFriends === 'number') state.activeFriends = data.activeFriends;
+    if (typeof data.activeRigsCount === 'number') state.activeRigsCount = data.activeRigsCount;
+
+    // Calculate elapsed mined TON offline
+    if (typeof data.accumulatedTon === 'number') {
+      const elapsedSeconds = Math.max(0, (Date.now() - (data.cachedAt || Date.now())) / 1000);
+      const offlineMined = (state.dailyMiningRate / 86400) * elapsedSeconds;
+      state.accumulatedTon = data.accumulatedTon + offlineMined;
+    }
+  } catch (_) {}
+}
+
 // Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON with high-end aesthetic tech images
 const RIG_TIERS = [
   {
@@ -415,7 +465,7 @@ function switchTab(targetViewId) {
   });
 
   triggerHaptic('selection');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
 }
 
 function setupTabNavigation() {
@@ -467,45 +517,69 @@ function setupHomeDashboard() {
     });
   }
 
-  // Claim Mined TON Button
+  // Claim Mined TON Button (Optimistic UI Update)
   const claimBtn = document.getElementById('btn-claim-ton');
   if (claimBtn) {
-    claimBtn.addEventListener('click', async () => {
-      triggerHaptic('notification-success');
+    claimBtn.addEventListener('click', () => {
       const isAr = state.selectedLanguage === 'ar';
-
       const claimed = state.accumulatedTon;
+
       if (claimed <= 0.000001) {
+        triggerHaptic('impact');
         showToast(isAr ? 'التعدين جاري... لا توجد أرباح للمطالبة بها بعد.' : 'Mining in progress... Nothing to claim yet.', 'info');
         return;
       }
 
-      // Try API claim
-      try {
-        const res = await fetch('/api/mining/claim', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId: state.user.telegramId }),
-        });
-        const json = await res.json();
-        if (json.success) {
-          state.walletBalance = json.data.newBalance;
-          state.accumulatedTon = 0;
-          updateUI();
-          showToast(isAr ? `💎 تم استلام ${json.data.claimedTon.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed ${json.data.claimedTon.toFixed(6)} TON!`, 'success');
-          return;
-        }
-      } catch (_) {}
+      // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
+      triggerHaptic('notification-success');
 
-      // Fallback
+      // Visual feedback: click bounce & gem pop
+      const reactorGem = document.querySelector('.reactor-gem');
+      if (reactorGem) {
+        reactorGem.classList.add('gem-claim-pop');
+        setTimeout(() => reactorGem.classList.remove('gem-claim-pop'), 500);
+      }
+      claimBtn.classList.add('btn-instant-bounce');
+      setTimeout(() => claimBtn.classList.remove('btn-instant-bounce'), 250);
+
+      const prevBalance = state.walletBalance;
+      const prevAccumulated = state.accumulatedTon;
+
       state.walletBalance += claimed;
       state.accumulatedTon = 0;
       updateUI();
-      showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى محفظتك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
+      saveStateCache();
+
+      showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
+
+      // 2. Asynchronous backend request in the background (non-blocking)
+      fetch('/api/mining/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId: state.user.telegramId }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.data) {
+            state.walletBalance = json.data.newBalance;
+            updateUI();
+            saveStateCache();
+          } else if (json.success === false) {
+            // Rollback on server rejection
+            state.walletBalance = prevBalance;
+            state.accumulatedTon = prevAccumulated;
+            updateUI();
+            saveStateCache();
+            showToast(json.message || 'Claim failed', 'error');
+          }
+        })
+        .catch(() => {
+          saveStateCache();
+        });
     });
   }
 
-  // Promo Code Redemption on Home
+  // Promo Code Redemption on Home (Optimistic & Responsive)
   const redeemBtn = document.getElementById('btn-redeem-promo');
   const promoInput = document.getElementById('promo-code-input');
 
@@ -514,17 +588,21 @@ function setupHomeDashboard() {
       const isAr = state.selectedLanguage === 'ar';
       const code = promoInput.value.trim().toUpperCase();
       if (!code) {
+        triggerHaptic('impact');
         showToast(isAr ? 'الرجاء إدخال الرمز الترويجي.' : 'Please enter a promo code.', 'error');
         return;
       }
 
-      triggerHaptic('impact');
-
       // Rule: Must have watched at least 1 ad
       if (state.totalAdsWatched < 1) {
+        triggerHaptic('impact');
         showToast(isAr ? '⚠️ يجب عليك مشاهدة إعلان واحد على الأقل قبل تفعيل الرموز الترويجية.' : '⚠️ You must watch at least 1 ad before claiming promo codes.', 'error');
         return;
       }
+
+      triggerHaptic('impact');
+      redeemBtn.classList.add('btn-instant-bounce');
+      setTimeout(() => redeemBtn.classList.remove('btn-instant-bounce'), 250);
 
       try {
         const res = await fetch('/api/promocode/redeem', {
@@ -533,12 +611,15 @@ function setupHomeDashboard() {
           body: JSON.stringify({ telegramId: state.user.telegramId, code }),
         });
         const json = await res.json();
-        if (json.success) {
+        if (json.success && json.data) {
+          triggerHaptic('notification-success');
           state.totalPoints = json.data.newPoints;
           state.walletBalance = json.data.newTonBalance;
           state.dailyMiningRate = json.data.newDailyMiningRate;
           promoInput.value = '';
           updateUI();
+          saveStateCache();
+          startMiningTicker();
           showToast(isAr ? `🎁 تم تفعيل الرمز! +${json.data.rewardPoints} نقطة و +${json.data.rewardTon} TON!` : `🎁 Code redeemed! +${json.data.rewardPoints} Pts & +${json.data.rewardTon} TON!`, 'success');
           return;
         } else {
@@ -549,11 +630,14 @@ function setupHomeDashboard() {
 
       // Fallback simulation
       if (code === 'TVA2026' || code === 'SPACE') {
+        triggerHaptic('notification-success');
         state.totalPoints += 20;
         state.walletBalance += 0.5;
         state.dailyMiningRate += 0.002;
         promoInput.value = '';
         updateUI();
+        saveStateCache();
+        startMiningTicker();
         showToast(isAr ? '🎁 تم تفعيل الرمز! +20 نقطة و +0.5 TON!' : '🎁 Promo redeemed! +20 Points & +0.5 TON added!', 'success');
       } else {
         showToast(isAr ? 'الرمز الترويجي غير صالح أو منتهي الصلاحية.' : 'Invalid or expired promo code.', 'error');
@@ -615,93 +699,149 @@ function renderDedicatedRigs() {
   });
 }
 
-// Buy Rig Action
-window.handleBuyRig = async function (cost) {
-  triggerHaptic('impact');
+// Buy Rig Action (Optimistic UI Update)
+window.handleBuyRig = function (cost) {
   const isAr = state.selectedLanguage === 'ar';
 
-  try {
-    const res = await fetch('/api/rigs/buy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: state.user.telegramId, costTon: cost }),
-    });
-    const json = await res.json();
-    if (json.success) {
-      state.walletBalance = json.data.newTonBalance;
-      state.dailyMiningRate = json.data.newDailyMiningRate;
-      state.activeRigsCount = json.data.activeRigsCount;
-      updateUI();
-      showToast(isAr ? `⚡ تم شراء وتشغيل منصة ${cost} TON بنجاح!` : `⚡ Successfully deployed ${cost} TON Rig!`, 'success');
-      return;
-    }
-  } catch (_) {}
-
-  // Local fallback
   if (state.walletBalance < cost) {
+    triggerHaptic('impact');
     showToast(isAr ? `رصيدك غير كافٍ (${state.walletBalance.toFixed(2)} TON). المطلوب ${cost} TON.` : `Insufficient balance (${state.walletBalance.toFixed(2)} TON). Need ${cost} TON.`, 'error');
     return;
   }
 
-  state.walletBalance -= cost;
+  // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
+  triggerHaptic('notification-success');
+
+  const prevBalance = state.walletBalance;
+  const prevRate = state.dailyMiningRate;
+  const prevRigs = state.activeRigsCount;
+
   const yieldBonus = Number((cost * 0.11).toFixed(4));
+  state.walletBalance -= cost;
   state.dailyMiningRate += yieldBonus;
   state.activeRigsCount += 1;
+
   updateUI();
-  showToast(isAr ? `⚡ تم شراء منصة ${cost} TON! تمت إضافة +${yieldBonus} TON/يوم لمعدل التعدين.` : `⚡ Deployed ${cost} TON Rig! +${yieldBonus} TON/day added.`, 'success');
+  saveStateCache();
+  startMiningTicker();
+
+  showToast(isAr ? `⚡ تم شراء وتشغيل منصة ${cost} TON بنجاح! (+${yieldBonus} TON/يوم)` : `⚡ Successfully deployed ${cost} TON Rig! (+${yieldBonus} TON/day)`, 'success');
+
+  // Snappy active button visual response
+  const activeBtn = document.activeElement;
+  if (activeBtn && activeBtn.classList.contains('btn-cta')) {
+    activeBtn.classList.add('btn-instant-bounce');
+    setTimeout(() => activeBtn.classList.remove('btn-instant-bounce'), 250);
+  }
+
+  // 2. Asynchronous backend request in the background (non-blocking)
+  fetch('/api/rigs/buy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telegramId: state.user.telegramId, costTon: cost }),
+  })
+    .then((res) => res.json())
+    .then((json) => {
+      if (json.success && json.data) {
+        state.walletBalance = json.data.newTonBalance;
+        state.dailyMiningRate = json.data.newDailyMiningRate;
+        state.activeRigsCount = json.data.activeRigsCount;
+        updateUI();
+        saveStateCache();
+        startMiningTicker();
+      } else if (json.success === false) {
+        // Rollback on rejection
+        state.walletBalance = prevBalance;
+        state.dailyMiningRate = prevRate;
+        state.activeRigsCount = prevRigs;
+        updateUI();
+        saveStateCache();
+        startMiningTicker();
+        showToast(json.message || 'Failed to deploy rig', 'error');
+      }
+    })
+    .catch(() => {
+      saveStateCache();
+    });
 };
 
 // ==========================================================================
-// 8. TASKS TAB (ADS & PROGRESS)
+// 8. TASKS TAB (ADS & PROGRESS - OPTIMISTIC UI)
 // ==========================================================================
 function setupTasksTab() {
   const watchAdBtn = document.getElementById('btn-watch-ad');
   if (!watchAdBtn) return;
 
-  watchAdBtn.addEventListener('click', async () => {
-    triggerHaptic('impact');
+  watchAdBtn.addEventListener('click', () => {
     const isAr = state.selectedLanguage === 'ar';
 
     if (state.adsWatchedToday >= state.maxDailyAds) {
+      triggerHaptic('impact');
       showToast(isAr ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`, 'error');
       return;
     }
 
-    watchAdBtn.disabled = true;
-    watchAdBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isAr ? 'جاري التحقق من الإعلان (15 ث)...' : 'Verifying Ad Stream (15s)...'}</span>`;
+    // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
+    triggerHaptic('notification-success');
 
-    setTimeout(async () => {
-      watchAdBtn.disabled = false;
-      const t = TRANSLATIONS[isAr ? 'ar' : 'en'];
-      watchAdBtn.innerHTML = `<i class="fa-solid fa-play"></i> <span data-i18n="watch_ad_btn">${t.watch_ad_btn}</span>`;
+    const prevPoints = state.totalPoints;
+    const prevToday = state.adsWatchedToday;
+    const prevTotal = state.totalAdsWatched;
+    const prevWithdraw = state.adsWatchedForWithdrawal;
+    const prevRate = state.dailyMiningRate;
 
-      try {
-        const res = await fetch('/api/ads/reward', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
-        });
-        const json = await res.json();
-        if (json.success) {
+    state.totalPoints += 1;
+    state.adsWatchedToday += 1;
+    state.totalAdsWatched += 1;
+    state.adsWatchedForWithdrawal += 1;
+    state.dailyMiningRate += 0.0001;
+
+    updateUI();
+    saveStateCache();
+    startMiningTicker();
+
+    showToast(isAr ? '🎉 تمت مشاهدة الإعلان! +1 نقطة وزيادة في سرعة التعدين.' : '🎉 Ad watched! +1 Point awarded (+0.0001 TON/day rate increase)', 'success');
+
+    // Instant native button feedback: brief 300ms confirmation bounce without freezing button
+    watchAdBtn.classList.add('btn-instant-bounce');
+    const originalHtml = watchAdBtn.innerHTML;
+    watchAdBtn.innerHTML = `<i class="fa-solid fa-circle-check text-neon"></i> <span>${isAr ? '+1 نقطة مكتسبة!' : '+1 Point Earned!'}</span>`;
+    setTimeout(() => {
+      watchAdBtn.classList.remove('btn-instant-bounce');
+      watchAdBtn.innerHTML = originalHtml;
+    }, 350);
+
+    // 2. Asynchronous backend request in the background (non-blocking)
+    fetch('/api/ads/reward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
           state.totalPoints = json.data.totalPoints;
           state.adsWatchedToday = json.data.adsWatchedToday;
           state.dailyMiningRate = json.data.currentDailyMiningRate;
-          state.totalAdsWatched += 1;
-          state.adsWatchedForWithdrawal += 1;
           updateUI();
-          showToast(isAr ? '🎉 تمت مشاهدة الإعلان! +1 نقطة وزيادة في سرعة التعدين.' : '🎉 Ad watched! +1 Point awarded (+0.0001 TON/day rate increase)', 'success');
-          return;
+          saveStateCache();
+          startMiningTicker();
+        } else if (json.success === false) {
+          // Rollback on rejection
+          state.totalPoints = prevPoints;
+          state.adsWatchedToday = prevToday;
+          state.totalAdsWatched = prevTotal;
+          state.adsWatchedForWithdrawal = prevWithdraw;
+          state.dailyMiningRate = prevRate;
+          updateUI();
+          saveStateCache();
+          startMiningTicker();
+          showToast(json.message || 'Ad reward failed', 'error');
         }
-      } catch (_) {}
-
-      state.adsWatchedToday += 1;
-      state.totalAdsWatched += 1;
-      state.adsWatchedForWithdrawal += 1;
-      state.totalPoints += 1;
-      state.dailyMiningRate += 0.0001;
-      updateUI();
-      showToast(isAr ? '🎉 تم التحقق بنجاح! +1 نقطة وزيادة في سرعة التعدين.' : '🎉 Ad verified! +1 Point awarded (+0.0001 TON/day rate increase)', 'success');
-    }, 1200);
+      })
+      .catch(() => {
+        saveStateCache();
+      });
   });
 }
 
@@ -746,7 +886,7 @@ function setupFriendsTab() {
 }
 
 // ==========================================================================
-// 10. WITHDRAWAL MODAL SUBMISSION
+// 10. WITHDRAWAL MODAL SUBMISSION (OPTIMISTIC UI)
 // ==========================================================================
 function setupWithdrawalModal() {
   const withdrawBtn = document.getElementById('btn-request-withdrawal');
@@ -755,64 +895,78 @@ function setupWithdrawalModal() {
   const modal = document.getElementById('withdrawal-modal');
 
   if (withdrawBtn && walletInput && amountInput) {
-    withdrawBtn.addEventListener('click', async () => {
+    withdrawBtn.addEventListener('click', () => {
       const isAr = state.selectedLanguage === 'ar';
       const wallet = walletInput.value.trim();
       const amount = parseFloat(amountInput.value);
 
       if (!wallet) {
+        triggerHaptic('impact');
         showToast(isAr ? 'الرجاء إدخال عنوان محفظة TON.' : 'Please enter your TON wallet address.', 'error');
         return;
       }
       if (isNaN(amount) || amount < 0.1) {
+        triggerHaptic('impact');
         showToast(isAr ? 'الحد الأدنى للسحب هو 0.1 TON.' : 'Minimum withdrawal is 0.1 TON.', 'error');
         return;
       }
       if (amount > state.walletBalance) {
+        triggerHaptic('impact');
         showToast(isAr ? `رصيدك غير كافٍ (${state.walletBalance.toFixed(4)} TON).` : `Insufficient balance (${state.walletBalance.toFixed(4)} TON).`, 'error');
         return;
       }
 
       // Rule: Must have watched 15 ads
       if (state.adsWatchedForWithdrawal < state.requiredWithdrawalAds) {
+        triggerHaptic('impact');
         showToast(isAr ? `يجب مشاهدة 15 إعلاناً لطلب السحب. المكتمل: ${state.adsWatchedForWithdrawal}/15.` : `Must watch 15 ads to withdraw. Progress: ${state.adsWatchedForWithdrawal}/15.`, 'error');
         return;
       }
 
+      // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
       triggerHaptic('notification-success');
 
       const fee = Number(((amount * 5) / 100).toFixed(4));
       const net = Number((amount - fee).toFixed(4));
 
-      try {
-        const res = await fetch('/api/withdrawals/request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId: state.user.telegramId, walletAddress: wallet, amountTon: amount }),
-        });
-        const json = await res.json();
-        if (json.success) {
-          state.walletBalance = json.data.remainingBalance;
-          state.adsWatchedForWithdrawal = 0;
-          walletInput.value = '';
-          amountInput.value = '';
-          if (modal) modal.classList.remove('active');
-          updateUI();
-          showToast(isAr ? `🚀 تم إرسال طلب السحب بنجاح! الصافي: ${json.data.netAmountTon} TON (الرسوم: 5%).` : `🚀 Withdrawal submitted! Net: ${json.data.netAmountTon} TON (5% fee). Admin notified.`, 'success');
-          return;
-        } else {
-          showToast(json.message, 'error');
-          return;
-        }
-      } catch (_) {}
+      const prevBalance = state.walletBalance;
+      const prevAds = state.adsWatchedForWithdrawal;
 
       state.walletBalance -= amount;
       state.adsWatchedForWithdrawal = 0;
       walletInput.value = '';
       amountInput.value = '';
       if (modal) modal.classList.remove('active');
+
       updateUI();
-      showToast(isAr ? `🚀 تم إرسال طلب السحب! المبلغ الصافي: ${net} TON (الرسوم: ${fee} TON). قيد المراجعة.` : `🚀 Withdrawal submitted! Net: ${net} TON (5% fee: ${fee} TON). Admin notified for review.`, 'success');
+      saveStateCache();
+
+      showToast(isAr ? `🚀 تم إرسال طلب السحب بنجاح! الصافي: ${net} TON (الرسوم: 5%).` : `🚀 Withdrawal submitted! Net: ${net} TON (5% fee). Admin notified.`, 'success');
+
+      // 2. Asynchronous backend request in the background (non-blocking)
+      fetch('/api/withdrawals/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId: state.user.telegramId, walletAddress: wallet, amountTon: amount }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.data) {
+            state.walletBalance = json.data.remainingBalance;
+            updateUI();
+            saveStateCache();
+          } else if (json.success === false) {
+            // Rollback on rejection
+            state.walletBalance = prevBalance;
+            state.adsWatchedForWithdrawal = prevAds;
+            updateUI();
+            saveStateCache();
+            showToast(json.message || 'Withdrawal request failed', 'error');
+          }
+        })
+        .catch(() => {
+          saveStateCache();
+        });
     });
   }
 }
@@ -1378,7 +1532,7 @@ function updateUI() {
 }
 
 // ==========================================================================
-// 15. BACKEND SYNC (Optional Live Data Fetching)
+// 15. BACKEND SYNC (Background & Periodic Synchronization)
 // ==========================================================================
 async function syncWithBackend() {
   try {
@@ -1387,7 +1541,16 @@ async function syncWithBackend() {
     if (json.success && json.data) {
       const { user, mining } = json.data;
       state.walletBalance = user.tonBalance;
-      state.accumulatedTon = mining.accumulatedTon;
+      
+      // Protect continuous client ticker from jumping backwards unless claimed
+      if (typeof mining.accumulatedTon === 'number') {
+        if (mining.accumulatedTon < 0.00001) {
+          state.accumulatedTon = mining.accumulatedTon;
+        } else {
+          state.accumulatedTon = Math.max(state.accumulatedTon, mining.accumulatedTon);
+        }
+      }
+
       state.dailyMiningRate = mining.currentDailyMiningRate;
       state.totalPoints = user.totalPoints;
       state.adsWatchedToday = user.adsWatchedToday;
@@ -1399,7 +1562,9 @@ async function syncWithBackend() {
       if (typeof user.isAdmin === 'boolean') {
         state.isAdmin = user.isAdmin;
       }
+
       updateUI();
+      saveStateCache();
     }
   } catch (_) {}
 }
@@ -1437,9 +1602,12 @@ function triggerHaptic(type) {
 }
 
 // ==========================================================================
-// 17. INITIALIZATION
+// 17. INITIALIZATION (INSTANT UI HYDRATION & NON-BLOCKING SYNC)
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Instant hydration from global cache (0ms DOM paint)
+  loadStateCache();
+
   setupTabNavigation();
   setupHomeDashboard();
   renderDedicatedRigs();
@@ -1455,5 +1623,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateUI();
   startMiningTicker();
+
+  // 2. Initial non-blocking background fetch
   syncWithBackend();
+
+  // 3. Periodic non-blocking background sync every 30 seconds
+  setInterval(syncWithBackend, 30000);
 });

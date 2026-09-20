@@ -78,3 +78,4 @@ assert.strictEqual(config.ads.referralRewardPoints, 10, 'Referral rewards 10 poi
 console.log('✅ Ads limits, anti-cheat (15s minimum), and referral rules verified.');
 
 console.log('\n🎉 ALL LOGIC AND SCHEMA TESTS PASSED SUCCESSFULLY!');
+process.exit(0);
