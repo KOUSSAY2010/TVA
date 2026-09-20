@@ -257,6 +257,87 @@ apiRouter.get('/withdrawals/my', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/channels/check
+ * Verifies if user has joined the mandatory channel using Telegram Bot API (getChatMember)
+ */
+apiRouter.get('/channels/check', async (req, res) => {
+  try {
+    const telegramId = req.telegramId || req.query.telegramId;
+    if (!telegramId) {
+      return res.status(400).json({ success: false, message: 'telegramId is required' });
+    }
+
+    const channelId = config.channels.requiredChannel;
+    const channelUrl = config.channels.channelUrl;
+    const botInstance = req.app.get('botInstance');
+
+    // If bot token is not configured or in dummy mode, return dev pass
+    if (!botInstance || !config.telegram.botToken || config.telegram.botToken === 'your_telegram_bot_token_here') {
+      return res.json({
+        success: true,
+        isMember: true,
+        channelId,
+        channelUrl,
+        devMode: true,
+        message: 'Dev mode: Telegram bot token not configured',
+      });
+    }
+
+    try {
+      const member = await botInstance.telegram.getChatMember(channelId, Number(telegramId));
+      const activeStatuses = ['creator', 'administrator', 'member', 'restricted'];
+      const isMember = member && activeStatuses.includes(member.status);
+
+      return res.json({
+        success: true,
+        isMember: Boolean(isMember),
+        status: member ? member.status : 'left',
+        channelId,
+        channelUrl,
+      });
+    } catch (err) {
+      console.warn(`[ForceSub] getChatMember check for user ${telegramId} in ${channelId}:`, err.message);
+      // User is not participant in chat
+      if (err.description?.includes('USER_NOT_PARTICIPANT') || err.message?.includes('USER_NOT_PARTICIPANT')) {
+        return res.json({
+          success: true,
+          isMember: false,
+          status: 'left',
+          channelId,
+          channelUrl,
+        });
+      }
+      // If error occurs, report non-member with channelUrl
+      return res.json({
+        success: true,
+        isMember: false,
+        error: err.message,
+        channelId,
+        channelUrl,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * GET /api/config/public
+ * Returns public app configuration for frontend (support contact, channels, deposit address)
+ */
+apiRouter.get('/config/public', (req, res) => {
+  return res.json({
+    success: true,
+    data: {
+      supportUsername: config.support.adminUsername,
+      requiredChannel: config.channels.requiredChannel,
+      channelUrl: config.channels.channelUrl,
+      depositAddress: config.deposit.recipientAddress,
+    },
+  });
+});
+
 // ==========================================================================
 // ADMIN-ONLY SECURED ROUTES (Protected by isAdmin middleware)
 // ==========================================================================

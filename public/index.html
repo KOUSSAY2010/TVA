@@ -8,6 +8,9 @@
   <!-- Official Telegram Web App Script -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- TON Connect UI Script -->
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
   <!-- Google Fonts: Cairo (for Arabic), Inter & Poppins (for English/Numerals) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -92,8 +95,18 @@
           </button>
         </div>
 
-        <!-- BELOW MINING: Two Large Quick-Action Buttons Side-by-Side -->
+        <!-- BELOW MINING: Quick-Action Buttons -->
         <div class="quick-actions-row">
+          <button id="btn-goto-deposit" class="btn-quick-action action-deposit">
+            <div class="quick-action-icon text-neon">
+              <i class="fa-solid fa-circle-arrow-down"></i>
+            </div>
+            <div class="quick-action-text">
+              <span class="quick-action-title" data-i18n="go_to_deposit">إيداع TON</span>
+              <span class="quick-action-subtitle" data-i18n="deposit_sub">TON Connect</span>
+            </div>
+          </button>
+
           <button id="btn-goto-withdraw" class="btn-quick-action">
             <div class="quick-action-icon">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
@@ -287,6 +300,25 @@
             </div>
           </div>
 
+          <!-- Prominent Admin Support Contact Card -->
+          <div class="glass-card profile-menu-item profile-support-item" id="profile-menu-support" role="button" tabindex="0">
+            <div class="menu-item-left">
+              <div class="menu-item-icon-box support-icon-box">
+                <i class="fa-brands fa-telegram text-neon"></i>
+              </div>
+              <div class="menu-item-content">
+                <div class="menu-title-with-badge">
+                  <span class="menu-item-title" data-i18n="profile_support_title">الدعم الفني المباشر</span>
+                  <span class="support-chip">24/7</span>
+                </div>
+                <span class="menu-item-subtitle" id="profile-support-sub-text" data-i18n="profile_support_sub">تواصل مباشر مع الإدارة عبر تلغرام</span>
+              </div>
+            </div>
+            <div class="menu-item-right">
+              <i class="fa-solid fa-arrow-up-right-from-square menu-chevron"></i>
+            </div>
+          </div>
+
           <!-- 2. Settings Card (Opens Language & Preferences Modal) -->
           <div class="glass-card profile-menu-item" id="profile-menu-settings" role="button" tabindex="0">
             <div class="menu-item-left">
@@ -341,6 +373,122 @@
       </section>
 
     </main>
+
+    <!-- Modal: TON Deposit (TON Connect UI & Direct Transfer) -->
+    <div id="deposit-modal" class="modal-backdrop">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-gem text-neon"></i>
+            <h3 data-i18n="modal_deposit_title">إيداع رصيد TON</h3>
+          </div>
+          <button id="btn-close-deposit-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" data-i18n="modal_deposit_caption">
+          اشحن رصيدك فورياً لشراء منصات التعدين الآلية ومضاعفة دخلك اليومي.
+        </p>
+
+        <!-- TON Connect Wallet Connector -->
+        <div class="ton-connect-section mb-3">
+          <label class="input-label" data-i18n="connect_wallet_label">ربط المحفظة (Tonkeeper / Telegram Wallet)</label>
+          <div id="ton-connect-btn-container" class="ton-connect-box"></div>
+        </div>
+
+        <!-- Deposit Presets Grid -->
+        <div class="form-group mb-3">
+          <label class="input-label" data-i18n="select_deposit_amount">المبلغ المراد إيداعه (TON)</label>
+          <div class="deposit-presets-grid" id="deposit-presets">
+            <button type="button" class="preset-chip active" data-amount="1">1 TON</button>
+            <button type="button" class="preset-chip" data-amount="3">3 TON</button>
+            <button type="button" class="preset-chip" data-amount="5">5 TON</button>
+            <button type="button" class="preset-chip" data-amount="10">10 TON</button>
+            <button type="button" class="preset-chip" data-amount="25">25 TON</button>
+            <button type="button" class="preset-chip" data-amount="50">50 TON</button>
+          </div>
+          <input type="number" id="deposit-amount-ton" class="form-input mt-2" placeholder="1.0" step="0.5" min="0.1" value="1" />
+        </div>
+
+        <!-- Submit Button via TON Connect -->
+        <button id="btn-send-deposit-tx" class="btn-cta glow-btn mb-3">
+          <i class="fa-solid fa-bolt"></i>
+          <span data-i18n="btn_send_deposit">إرسال المعاملة عبر المحفظة</span>
+        </button>
+
+        <!-- Manual Transfer Fallback -->
+        <div class="manual-deposit-box">
+          <span class="manual-box-title" data-i18n="manual_deposit_title">أو التحويل المباشر لعنوان المحفظة:</span>
+          <div class="address-copy-row">
+            <span class="deposit-address-text" id="deposit-wallet-address-display">UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H</span>
+            <button id="btn-copy-deposit-addr" class="btn-copy-mini" title="Copy Address">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Ad Stream on Claim TON -->
+    <div id="video-ad-modal" class="modal-backdrop">
+      <div class="modal-sheet ad-modal-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-play text-neon"></i>
+            <h3 data-i18n="modal_claim_ad_title">إعلان استلام الأرباح</h3>
+          </div>
+          <span class="ad-timer-badge" id="claim-ad-timer">15s</span>
+        </div>
+
+        <div class="ad-visual-container">
+          <div class="ad-reactor-pulse">
+            <i class="fa-solid fa-gem reactor-gem text-neon"></i>
+          </div>
+          <p class="ad-caption-text" data-i18n="claim_ad_stream_text">جاري بث الإعلان الترويجي عبر نظام Adsgram... يرجى الانتظار للمطالبة بأرباح TON.</p>
+          <div class="ad-progress-track">
+            <div class="ad-progress-bar-fill" id="claim-ad-progress-fill"></div>
+          </div>
+        </div>
+
+        <button id="btn-claim-ad-complete" class="btn-cta glow-btn" disabled>
+          <i class="fa-solid fa-lock" id="claim-ad-btn-icon"></i>
+          <span id="claim-ad-btn-text" data-i18n="wait_ad_finish">يرجى مشاهدة الإعلان كاملاً (15 ث)...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Strict Force Subscription Fullscreen Overlay (Non-Dismissible) -->
+    <div id="force-sub-overlay" class="force-sub-overlay">
+      <div class="force-sub-card glass-card">
+        <div class="force-sub-icon-wrap">
+          <div class="pulse-ring"></div>
+          <i class="fa-solid fa-shield-halved force-sub-icon text-neon"></i>
+        </div>
+
+        <h2 class="force-sub-title" data-i18n="force_sub_title">اشتراك إجباري في القناة</h2>
+        <p class="force-sub-desc" data-i18n="force_sub_desc">
+          لضمان أمان حسابك واستمرار عمل منصات التعدين وسحب الأرباح، يجب الانضمام إلى قناتنا الرسمية على تلغرام.
+        </p>
+
+        <div class="force-sub-channel-box">
+          <i class="fa-brands fa-telegram text-neon"></i>
+          <span id="force-sub-channel-name">@TVACryptoMining</span>
+        </div>
+
+        <div class="force-sub-actions">
+          <a id="btn-join-channel" href="https://t.me/TVACryptoMining" target="_blank" class="btn-cta channel-join-btn">
+            <i class="fa-brands fa-telegram"></i>
+            <span data-i18n="btn_join_channel">الانضمام إلى القناة الرسمية</span>
+          </a>
+
+          <button id="btn-verify-channel-sub" class="btn-cta glow-btn">
+            <i class="fa-solid fa-rotate"></i>
+            <span data-i18n="btn_verify_sub">التحقق من الاشتراك وتفعيل الحساب</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal: Request Withdrawal -->
     <div id="withdrawal-modal" class="modal-backdrop">

@@ -39,6 +39,19 @@ export const config = {
     requireRigForWithdrawal: process.env.REQUIRE_RIG_FOR_WITHDRAWAL === 'true',
   },
 
+  channels: {
+    requiredChannel: process.env.REQUIRED_CHANNEL_ID || '@TVACryptoMining',
+    channelUrl: process.env.REQUIRED_CHANNEL_URL || 'https://t.me/TVACryptoMining',
+  },
+
+  support: {
+    adminUsername: process.env.SUPPORT_ADMIN_USERNAME || 'AdminUsername',
+  },
+
+  deposit: {
+    recipientAddress: process.env.DEPOSIT_WALLET_ADDRESS || 'UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H',
+  },
+
   // Rig presets: [1, 3, 5, 10, 25, 50, 100] TON
   // Each lasts exactly 10 days and yields 11% daily (0.11 * cost per day)
   rigTiers: [1, 3, 5, 10, 25, 50, 100].map((cost) => ({

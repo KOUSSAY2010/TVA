@@ -123,6 +123,33 @@ const TRANSLATIONS = {
     nav_tasks: 'المهام',
     nav_friends: 'الأصدقاء',
     nav_profile: 'حسابي',
+
+    // Support
+    profile_support_title: 'الدعم الفني المباشر',
+    profile_support_sub: 'تواصل مباشر مع الإدارة عبر تلغرام',
+    support_chip_247: '24/7',
+
+    // Deposit
+    go_to_deposit: 'إيداع TON',
+    deposit_sub: 'TON Connect',
+    modal_deposit_title: 'إيداع رصيد TON',
+    modal_deposit_caption: 'اشحن رصيدك فورياً لشراء منصات التعدين الآلية ومضاعفة دخلك اليومي.',
+    connect_wallet_label: 'ربط المحفظة (Tonkeeper / Telegram Wallet)',
+    select_deposit_amount: 'المبلغ المراد إيداعه (TON)',
+    btn_send_deposit: 'إرسال المعاملة عبر المحفظة',
+    manual_deposit_title: 'أو التحويل المباشر لعنوان المحفظة:',
+
+    // Force Sub
+    force_sub_title: 'اشتراك إجباري في القناة',
+    force_sub_desc: 'لضمان أمان حسابك واستمرار عمل منصات التعدين وسحب الأرباح، يجب الانضمام إلى قناتنا الرسمية على تلغرام.',
+    btn_join_channel: 'الانضمام إلى القناة الرسمية',
+    btn_verify_sub: 'التحقق من الاشتراك وتفعيل الحساب',
+
+    // Claim Ad
+    modal_claim_ad_title: 'إعلان استلام الأرباح',
+    claim_ad_stream_text: 'جاري بث الإعلان الترويجي عبر نظام Adsgram... يرجى الانتظار للمطالبة بأرباح TON.',
+    wait_ad_finish: 'يرجى مشاهدة الإعلان كاملاً (15 ث)...',
+    claim_ad_ready: 'استلام أرباح التعدين الآن!',
   },
   en: {
     // Header
@@ -233,6 +260,33 @@ const TRANSLATIONS = {
     nav_tasks: 'Tasks',
     nav_friends: 'Friends',
     nav_profile: 'Profile',
+
+    // Support
+    profile_support_title: 'Direct Support',
+    profile_support_sub: 'Contact management directly via Telegram',
+    support_chip_247: '24/7',
+
+    // Deposit
+    go_to_deposit: 'Deposit TON',
+    deposit_sub: 'TON Connect',
+    modal_deposit_title: 'Deposit TON Balance',
+    modal_deposit_caption: 'Instantly top up your balance to deploy automated mining rigs and boost daily yield.',
+    connect_wallet_label: 'Connect Wallet (Tonkeeper / Telegram Wallet)',
+    select_deposit_amount: 'Amount to Deposit (TON)',
+    btn_send_deposit: 'Send Transaction via Wallet',
+    manual_deposit_title: 'Or direct transfer to wallet address:',
+
+    // Force Sub
+    force_sub_title: 'Mandatory Channel Subscription',
+    force_sub_desc: 'To secure your account and enable mining operations and withdrawals, you must join our official Telegram channel.',
+    btn_join_channel: 'Join Official Channel',
+    btn_verify_sub: 'Verify Membership & Activate Account',
+
+    // Claim Ad
+    modal_claim_ad_title: 'Claim Reward Ad Stream',
+    claim_ad_stream_text: 'Streaming verified ad via Adsgram network... Please watch to claim your mined TON.',
+    wait_ad_finish: 'Please watch full ad (15s)...',
+    claim_ad_ready: 'Claim Mined TON Now!',
   }
 };
 
@@ -309,6 +363,50 @@ function loadStateCache() {
       const elapsedSeconds = Math.max(0, (Date.now() - (data.cachedAt || Date.now())) / 1000);
       const offlineMined = (state.dailyMiningRate / 86400) * elapsedSeconds;
       state.accumulatedTon = data.accumulatedTon + offlineMined;
+    }
+  } catch (_) {}
+}
+
+// Configurable App Parameters
+const APP_CONFIG = {
+  supportAdminUsername: 'AdminUsername', // Easily configurable Telegram username
+  requiredChannelId: '@TVACryptoMining',
+  requiredChannelUrl: 'https://t.me/TVACryptoMining',
+  depositWalletAddress: 'UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H',
+};
+
+let tonConnectUI = null;
+function initTonConnect() {
+  if (window.TON_CONNECT_UI) {
+    try {
+      tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+        buttonRootId: 'ton-connect-btn-container',
+      });
+    } catch (e) {
+      console.warn('TonConnectUI init warning:', e.message);
+    }
+  }
+}
+
+async function loadPublicConfig() {
+  try {
+    const res = await fetch('/api/config/public');
+    const json = await res.json();
+    if (json.success && json.data) {
+      if (json.data.supportUsername) APP_CONFIG.supportAdminUsername = json.data.supportUsername;
+      if (json.data.requiredChannel) APP_CONFIG.requiredChannelId = json.data.requiredChannel;
+      if (json.data.channelUrl) APP_CONFIG.requiredChannelUrl = json.data.channelUrl;
+      if (json.data.depositAddress) APP_CONFIG.depositWalletAddress = json.data.depositAddress;
+
+      const depositAddrDisp = document.getElementById('deposit-wallet-address-display');
+      if (depositAddrDisp) depositAddrDisp.innerText = APP_CONFIG.depositWalletAddress;
+
+      const channelNameEl = document.getElementById('force-sub-channel-name');
+      if (channelNameEl) channelNameEl.innerText = APP_CONFIG.requiredChannelId;
+
+      const joinBtn = document.getElementById('btn-join-channel');
+      if (joinBtn) joinBtn.href = APP_CONFIG.requiredChannelUrl;
     }
   } catch (_) {}
 }
@@ -479,9 +577,95 @@ function setupTabNavigation() {
 }
 
 // ==========================================================================
-// 6. HOME TAB DASHBOARD ACTIONS
+// 6. HOME TAB DASHBOARD ACTIONS & VIDEO AD ON CLAIM
 // ==========================================================================
+function playClaimVideoAd(onSuccess) {
+  const modal = document.getElementById('video-ad-modal');
+  const timerBadge = document.getElementById('claim-ad-timer');
+  const fillBar = document.getElementById('claim-ad-progress-fill');
+  const actionBtn = document.getElementById('btn-claim-ad-complete');
+  const btnText = document.getElementById('claim-ad-btn-text');
+  const btnIcon = document.getElementById('claim-ad-btn-icon');
+  const isAr = state.selectedLanguage === 'ar';
+
+  if (!modal) {
+    onSuccess();
+    return;
+  }
+
+  modal.classList.add('active');
+  triggerHaptic('impact');
+
+  let remaining = 15;
+  if (timerBadge) timerBadge.innerText = `${remaining}s`;
+  if (fillBar) fillBar.style.width = '0%';
+  if (actionBtn) actionBtn.disabled = true;
+  if (btnIcon) btnIcon.className = 'fa-solid fa-lock';
+  if (btnText) btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
+
+  const interval = setInterval(() => {
+    remaining -= 1;
+    if (timerBadge) timerBadge.innerText = `${remaining}s`;
+    const pct = Math.round(((15 - remaining) / 15) * 100);
+    if (fillBar) fillBar.style.width = `${pct}%`;
+
+    if (btnText && remaining > 0) {
+      btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
+    }
+
+    if (remaining <= 0) {
+      clearInterval(interval);
+      if (timerBadge) timerBadge.innerText = '0s';
+      if (fillBar) fillBar.style.width = '100%';
+      if (actionBtn) {
+        actionBtn.disabled = false;
+        actionBtn.classList.add('btn-instant-bounce');
+        setTimeout(() => actionBtn.classList.remove('btn-instant-bounce'), 300);
+      }
+      if (btnIcon) btnIcon.className = 'fa-solid fa-gift text-neon';
+      if (btnText) btnText.innerText = isAr ? '🎉 استلام أرباح التعدين الآن!' : '🎉 Claim Mined TON Now!';
+
+      const handleClaimCompletion = () => {
+        actionBtn.removeEventListener('click', handleClaimCompletion);
+        modal.classList.remove('active');
+        onSuccess();
+      };
+
+      if (actionBtn) {
+        actionBtn.addEventListener('click', handleClaimCompletion, { once: true });
+      } else {
+        modal.classList.remove('active');
+        onSuccess();
+      }
+    }
+  }, 1000);
+}
+
 function setupHomeDashboard() {
+  // Quick Action: Go to Deposit (Opens Modal)
+  const gotoDepositBtn = document.getElementById('btn-goto-deposit');
+  const depositModal = document.getElementById('deposit-modal');
+  const closeDepositBtn = document.getElementById('btn-close-deposit-modal');
+
+  if (gotoDepositBtn && depositModal) {
+    gotoDepositBtn.addEventListener('click', () => {
+      triggerHaptic('impact');
+      depositModal.classList.add('active');
+    });
+  }
+
+  if (closeDepositBtn && depositModal) {
+    closeDepositBtn.addEventListener('click', () => {
+      depositModal.classList.remove('active');
+    });
+  }
+
+  if (depositModal) {
+    depositModal.addEventListener('click', (e) => {
+      if (e.target === depositModal) depositModal.classList.remove('active');
+    });
+  }
+
   // Quick Action: Go to Withdraw (Opens Modal)
   const gotoWithdrawBtn = document.getElementById('btn-goto-withdraw');
   const withdrawModal = document.getElementById('withdrawal-modal');
@@ -517,7 +701,7 @@ function setupHomeDashboard() {
     });
   }
 
-  // Claim Mined TON Button (Optimistic UI Update)
+  // Claim Mined TON Button (Video Ad stream required before claim)
   const claimBtn = document.getElementById('btn-claim-ton');
   if (claimBtn) {
     claimBtn.addEventListener('click', () => {
@@ -530,52 +714,55 @@ function setupHomeDashboard() {
         return;
       }
 
-      // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
-      triggerHaptic('notification-success');
+      // Intercept with 15s Video Ad before executing claim!
+      playClaimVideoAd(() => {
+        // Execute claim logic strictly after the ad completes
+        triggerHaptic('notification-success');
 
-      // Visual feedback: click bounce & gem pop
-      const reactorGem = document.querySelector('.reactor-gem');
-      if (reactorGem) {
-        reactorGem.classList.add('gem-claim-pop');
-        setTimeout(() => reactorGem.classList.remove('gem-claim-pop'), 500);
-      }
-      claimBtn.classList.add('btn-instant-bounce');
-      setTimeout(() => claimBtn.classList.remove('btn-instant-bounce'), 250);
+        // Visual feedback: click bounce & gem pop
+        const reactorGem = document.querySelector('.reactor-gem');
+        if (reactorGem) {
+          reactorGem.classList.add('gem-claim-pop');
+          setTimeout(() => reactorGem.classList.remove('gem-claim-pop'), 500);
+        }
+        claimBtn.classList.add('btn-instant-bounce');
+        setTimeout(() => claimBtn.classList.remove('btn-instant-bounce'), 250);
 
-      const prevBalance = state.walletBalance;
-      const prevAccumulated = state.accumulatedTon;
+        const prevBalance = state.walletBalance;
+        const prevAccumulated = state.accumulatedTon;
 
-      state.walletBalance += claimed;
-      state.accumulatedTon = 0;
-      updateUI();
-      saveStateCache();
+        state.walletBalance += claimed;
+        state.accumulatedTon = 0;
+        updateUI();
+        saveStateCache();
 
-      showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
+        showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
 
-      // 2. Asynchronous backend request in the background (non-blocking)
-      fetch('/api/mining/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId: state.user.telegramId }),
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.success && json.data) {
-            state.walletBalance = json.data.newBalance;
-            updateUI();
-            saveStateCache();
-          } else if (json.success === false) {
-            // Rollback on server rejection
-            state.walletBalance = prevBalance;
-            state.accumulatedTon = prevAccumulated;
-            updateUI();
-            saveStateCache();
-            showToast(json.message || 'Claim failed', 'error');
-          }
+        // Asynchronous backend request in the background (non-blocking)
+        fetch('/api/mining/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: state.user.telegramId }),
         })
-        .catch(() => {
-          saveStateCache();
-        });
+          .then((res) => res.json())
+          .then((json) => {
+            if (json.success && json.data) {
+              state.walletBalance = json.data.newBalance;
+              updateUI();
+              saveStateCache();
+            } else if (json.success === false) {
+              // Rollback on server rejection
+              state.walletBalance = prevBalance;
+              state.accumulatedTon = prevAccumulated;
+              updateUI();
+              saveStateCache();
+              showToast(json.message || 'Claim failed', 'error');
+            }
+          })
+          .catch(() => {
+            saveStateCache();
+          });
+      });
     });
   }
 
@@ -1067,17 +1254,37 @@ function setupProfileTab() {
   }
 
   // 3. Menu List Click Handlers
-  // 3a. Wallet Menu Item -> Opens Withdrawal Modal
+  // 3a. Wallet Menu Item -> Opens Deposit & Wallet Modal
   const menuWallet = document.getElementById('profile-menu-wallet');
+  const depositModal = document.getElementById('deposit-modal');
   const withdrawModal = document.getElementById('withdrawal-modal');
-  if (menuWallet && withdrawModal) {
+  if (menuWallet) {
     menuWallet.addEventListener('click', () => {
       triggerHaptic('selection');
-      withdrawModal.classList.add('active');
+      if (depositModal) {
+        depositModal.classList.add('active');
+      } else if (withdrawModal) {
+        withdrawModal.classList.add('active');
+      }
     });
   }
 
-  // 3b. Settings Menu Item -> Opens Settings & Language Modal
+  // 3b. Prominent Support Menu Item -> Opens Direct Telegram Admin Chat
+  const menuSupport = document.getElementById('profile-menu-support');
+  if (menuSupport) {
+    menuSupport.addEventListener('click', () => {
+      triggerHaptic('impact');
+      const supportUsername = APP_CONFIG.supportAdminUsername || 'AdminUsername';
+      const supportUrl = `https://t.me/${supportUsername}`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(supportUrl);
+      } else {
+        window.open(supportUrl, '_blank');
+      }
+    });
+  }
+
+  // 3c. Settings Menu Item -> Opens Settings & Language Modal
   const menuSettings = document.getElementById('profile-menu-settings');
   const settingsModal = document.getElementById('settings-modal');
   if (menuSettings && settingsModal) {
@@ -1087,7 +1294,7 @@ function setupProfileTab() {
     });
   }
 
-  // 3c. Complaints & Suggestions Menu Item -> Opens Feedback Modal
+  // 3d. Complaints & Suggestions Menu Item -> Opens Feedback Modal
   const menuFeedback = document.getElementById('profile-menu-feedback');
   const feedbackModal = document.getElementById('feedback-modal');
   if (menuFeedback && feedbackModal) {
@@ -1097,7 +1304,7 @@ function setupProfileTab() {
     });
   }
 
-  // 3d. Admin Panel Menu Item -> Opens Admin Modal
+  // 3e. Admin Panel Menu Item -> Opens Admin Modal
   const menuAdmin = document.getElementById('profile-menu-admin');
   const adminModal = document.getElementById('admin-modal');
   if (menuAdmin && adminModal) {
@@ -1435,6 +1642,179 @@ function setupAdditionalModals() {
   }
 }
 
+// ==========================================================================
+// 12B. TON DEPOSIT MODAL & TON CONNECT INTEGRATION
+// ==========================================================================
+function setupDepositModal() {
+  const depositModal = document.getElementById('deposit-modal');
+  const closeDepositBtn = document.getElementById('btn-close-deposit-modal');
+  const presetChips = document.querySelectorAll('#deposit-presets .preset-chip');
+  const depositInput = document.getElementById('deposit-amount-ton');
+  const sendTxBtn = document.getElementById('btn-send-deposit-tx');
+  const copyAddrBtn = document.getElementById('btn-copy-deposit-addr');
+
+  if (depositModal) {
+    if (closeDepositBtn) {
+      closeDepositBtn.addEventListener('click', () => depositModal.classList.remove('active'));
+    }
+    depositModal.addEventListener('click', (e) => {
+      if (e.target === depositModal) depositModal.classList.remove('active');
+    });
+  }
+
+  // Preset Chips selection
+  if (presetChips && depositInput) {
+    presetChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        triggerHaptic('selection');
+        presetChips.forEach((c) => c.classList.remove('active'));
+        chip.classList.add('active');
+        const amount = chip.getAttribute('data-amount');
+        if (amount) depositInput.value = amount;
+      });
+    });
+  }
+
+  // Copy Address Button
+  if (copyAddrBtn) {
+    copyAddrBtn.addEventListener('click', () => {
+      triggerHaptic('notification-success');
+      const isAr = state.selectedLanguage === 'ar';
+      const addr = APP_CONFIG.depositWalletAddress;
+      navigator.clipboard.writeText(addr).then(() => {
+        showToast(isAr ? '📋 تم نسخ عنوان المحفظة بنجاح!' : '📋 Deposit address copied!', 'success');
+      }).catch(() => {
+        showToast(`Address: ${addr}`, 'info');
+      });
+    });
+  }
+
+  // Send Transaction Button via TON Connect UI
+  if (sendTxBtn) {
+    sendTxBtn.addEventListener('click', async () => {
+      triggerHaptic('impact');
+      const isAr = state.selectedLanguage === 'ar';
+      const amount = parseFloat(depositInput?.value) || 1;
+
+      if (isNaN(amount) || amount < 0.1) {
+        showToast(isAr ? 'الحد الأدنى للإيداع هو 0.1 TON' : 'Minimum deposit is 0.1 TON', 'error');
+        return;
+      }
+
+      if (tonConnectUI) {
+        if (!tonConnectUI.connected) {
+          showToast(isAr ? 'يرجى ربط محفظة TON أولاً' : 'Please connect your TON wallet first', 'info');
+          tonConnectUI.openModal();
+          return;
+        }
+
+        try {
+          const nanoAmount = (BigInt(Math.floor(amount * 1e9))).toString();
+          const tx = {
+            validUntil: Math.floor(Date.now() / 1000) + 360,
+            messages: [
+              {
+                address: APP_CONFIG.depositWalletAddress,
+                amount: nanoAmount,
+              },
+            ],
+          };
+
+          showToast(isAr ? 'جاري فتح المحفظة لتأكيد المعاملة...' : 'Opening wallet to confirm transaction...', 'info');
+          const result = await tonConnectUI.sendTransaction(tx);
+          if (result) {
+            triggerHaptic('notification-success');
+            showToast(isAr ? `✅ تم إرسال معاملة إيداع ${amount} TON بنجاح!` : `✅ Successfully sent ${amount} TON deposit transaction!`, 'success');
+            if (depositModal) depositModal.classList.remove('active');
+          }
+        } catch (err) {
+          console.warn('TonConnect tx error:', err);
+          showToast(isAr ? 'تم إلغاء المعاملة أو حدث خطأ في المحفظة' : 'Transaction canceled or wallet error', 'error');
+        }
+      } else {
+        // Fallback if TON Connect library was blocked or not yet ready
+        showToast(isAr ? `يرجى التحويل المباشر لعنوان المحفظة: ${APP_CONFIG.depositWalletAddress}` : `Please send manually to: ${APP_CONFIG.depositWalletAddress}`, 'info');
+      }
+    });
+  }
+}
+
+// ==========================================================================
+// 12C. STRICT FORCE SUBSCRIPTION CHECKER & OVERLAY
+// ==========================================================================
+async function checkChannelSubscription(manualClick = false) {
+  const overlay = document.getElementById('force-sub-overlay');
+  const verifyBtn = document.getElementById('btn-verify-channel-sub');
+  const isAr = state.selectedLanguage === 'ar';
+
+  if (manualClick && verifyBtn) {
+    triggerHaptic('selection');
+    verifyBtn.disabled = true;
+    const origHtml = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isAr ? 'جاري التحقق...' : 'Verifying...'}</span>`;
+    setTimeout(() => {
+      verifyBtn.disabled = false;
+      verifyBtn.innerHTML = origHtml;
+    }, 1500);
+  }
+
+  try {
+    const res = await fetch(`/api/channels/check?telegramId=${state.user.telegramId}`);
+    const json = await res.json();
+    if (json.success) {
+      if (json.channelUrl) APP_CONFIG.requiredChannelUrl = json.channelUrl;
+      if (json.channelId) APP_CONFIG.requiredChannelId = json.channelId;
+
+      const joinBtn = document.getElementById('btn-join-channel');
+      if (joinBtn && json.channelUrl) joinBtn.href = json.channelUrl;
+
+      const channelNameEl = document.getElementById('force-sub-channel-name');
+      if (channelNameEl && json.channelId) channelNameEl.innerText = json.channelId;
+
+      if (json.isMember) {
+        if (overlay) overlay.classList.remove('active');
+        if (manualClick) {
+          triggerHaptic('notification-success');
+          showToast(isAr ? '✅ تم التحقق بنجاح! مرحباً بك في التطبيق.' : '✅ Verified channel membership! Welcome to TVA.', 'success');
+        }
+        return true;
+      } else {
+        // Strict blocking: overlay cannot be dismissed
+        if (overlay) overlay.classList.add('active');
+        if (manualClick) {
+          triggerHaptic('impact');
+          showToast(isAr ? '⚠️ لم يتم العثور على اشتراكك في القناة بعد. يرجى الانضمام أولاً.' : '⚠️ Channel subscription not found. Please join the channel first.', 'error');
+        }
+        return false;
+      }
+    }
+  } catch (err) {
+    console.warn('Channel sub check error:', err);
+  }
+  return true;
+}
+
+function setupForceSubOverlay() {
+  const verifyBtn = document.getElementById('btn-verify-channel-sub');
+  const joinBtn = document.getElementById('btn-join-channel');
+
+  if (verifyBtn) {
+    verifyBtn.addEventListener('click', () => {
+      checkChannelSubscription(true);
+    });
+  }
+
+  if (joinBtn) {
+    joinBtn.addEventListener('click', (e) => {
+      triggerHaptic('impact');
+      if (tg?.openTelegramLink) {
+        e.preventDefault();
+        tg.openTelegramLink(APP_CONFIG.requiredChannelUrl);
+      }
+    });
+  }
+}
+
 // Developer testing helpers
 window.setAdminId = function(id) {
   state.adminId = id;
@@ -1616,6 +1996,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupWithdrawalModal();
   setupProfileTab();
   setupAdditionalModals();
+  setupDepositModal();
+  setupForceSubOverlay();
   
   // Set initial language (Default: Arabic, or detected Telegram language, or saved preference)
   const initialLang = getInitialLanguage();
@@ -1624,9 +2006,18 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUI();
   startMiningTicker();
 
-  // 2. Initial non-blocking background fetch
+  // 2. Initialize TON Connect SDK & load public configs
+  initTonConnect();
+  loadPublicConfig();
+
+  // 3. Strict Force Subscription Check on Launch
+  checkChannelSubscription(false);
+  // Recurring subscription verification every 1 hour (3600000 ms)
+  setInterval(() => checkChannelSubscription(false), 3600000);
+
+  // 4. Initial non-blocking background fetch
   syncWithBackend();
 
-  // 3. Periodic non-blocking background sync every 30 seconds
+  // 5. Periodic non-blocking background sync every 30 seconds
   setInterval(syncWithBackend, 30000);
 });
