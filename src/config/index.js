@@ -40,12 +40,33 @@ export const config = {
   },
 
   channels: {
-    requiredChannel: process.env.REQUIRED_CHANNEL_ID || '@TVACryptoMining',
-    channelUrl: process.env.REQUIRED_CHANNEL_URL || 'https://t.me/TVACryptoMining',
+    requiredChannel: process.env.REQUIRED_CHANNEL_ID || '@TVA_Mining_News_Arabic',
+    channelUrl: process.env.REQUIRED_CHANNEL_URL || 'https://t.me/TVA_Mining_News_Arabic',
+    list: [
+      {
+        id: '@TVA_Mining_News_Arabic',
+        username: 'TVA_Mining_News_Arabic',
+        title: 'TVA الأخبار العربية 📢',
+        url: 'https://t.me/TVA_Mining_News_Arabic',
+      },
+      {
+        id: '@TVA_Mining_News',
+        username: 'TVA_Mining_News',
+        title: 'TVA Official News 🌐',
+        url: 'https://t.me/TVA_Mining_News',
+      },
+      {
+        id: '@TVA_Payment',
+        username: 'TVA_Payment',
+        title: 'TVA إثباتات السحب والدفع 💎',
+        url: 'https://t.me/TVA_Payment',
+      },
+    ],
   },
 
   support: {
-    adminUsername: process.env.SUPPORT_ADMIN_USERNAME || 'AdminUsername',
+    adminUsername: process.env.SUPPORT_ADMIN_USERNAME || 'AdminUser',
+    adminUrl: process.env.SUPPORT_ADMIN_URL || 'https://t.me/AdminUser',
   },
 
   deposit: {

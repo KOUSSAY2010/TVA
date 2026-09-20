@@ -2061,6 +2061,161 @@ body[dir="rtl"] .rig-badge-overlay {
   transition: width 1s linear;
 }
 
+/* ==========================================================================
+   BALANCE CARD INSTANT DEPOSIT BUTTON
+   ========================================================================== */
+.balance-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-deposit-mini {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(139, 92, 246, 0.25));
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-deposit-mini:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(139, 92, 246, 0.4));
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+}
+
+.btn-deposit-mini:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   3-CHANNEL STRICT FORCE SUBSCRIPTION STYLES
+   ========================================================================== */
+.force-sub-channels-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 18px 0;
+}
+
+.force-sub-channel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.force-sub-channel-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.force-sub-channel-item.is-subscribed {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.channel-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: right;
+}
+
+[dir="ltr"] .channel-item-left {
+  text-align: left;
+}
+
+.channel-item-icon {
+  font-size: 1.6rem;
+  color: #38bdf8;
+}
+
+.channel-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.channel-item-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.channel-item-handle {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.channel-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-channel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-channel-link:hover {
+  background: #0284c7;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.channel-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+}
+
+.channel-status-badge.pending {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  color: #eab308;
+}
+
+.channel-status-badge.subscribed {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: #22c55e;
+}
+
+.channel-status-badge.unsubscribed {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
 
 
 

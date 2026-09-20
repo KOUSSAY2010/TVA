@@ -258,8 +258,97 @@ apiRouter.get('/withdrawals/my', async (req, res) => {
 });
 
 /**
+ * Helper to check membership of a Telegram user in a channel
+ */
+async function verifyTelegramChannelMember(botInstance, botToken, channelId, telegramId) {
+  const activeStatuses = ['creator', 'administrator', 'member', 'restricted'];
+
+  // If bot token is not configured or in dummy mode, return dev pass
+  if (!botToken || botToken === 'your_telegram_bot_token_here') {
+    return { isSubscribed: true, status: 'dev_pass' };
+  }
+
+  // 1. Try Telegraf bot instance if available
+  if (botInstance?.telegram?.getChatMember) {
+    try {
+      const member = await botInstance.telegram.getChatMember(channelId, Number(telegramId));
+      const isMember = member && activeStatuses.includes(member.status);
+      return { isSubscribed: Boolean(isMember), status: member ? member.status : 'left' };
+    } catch (err) {
+      if (err.description?.includes('USER_NOT_PARTICIPANT') || err.message?.includes('USER_NOT_PARTICIPANT')) {
+        return { isSubscribed: false, status: 'left' };
+      }
+      console.warn(`[ForceSub] Telegraf check for user ${telegramId} in ${channelId}:`, err.message);
+    }
+  }
+
+  // 2. Direct Telegram Bot API HTTP fallback
+  try {
+    const apiUrl = `https://api.telegram.org/bot${botToken}/getChatMember?chat_id=${encodeURIComponent(channelId)}&user_id=${telegramId}`;
+    const res = await fetch(apiUrl, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    if (data.ok && data.result) {
+      const isMember = activeStatuses.includes(data.result.status);
+      return { isSubscribed: Boolean(isMember), status: data.result.status };
+    }
+    return { isSubscribed: false, status: data.description || 'left' };
+  } catch (err) {
+    console.warn(`[ForceSub] HTTP check for user ${telegramId} in ${channelId}:`, err.message);
+    return { isSubscribed: false, status: 'error', error: err.message };
+  }
+}
+
+/**
+ * GET /api/check-subscription
+ * Strictly verifies membership across all 3 mandatory channels:
+ * - @TVA_Mining_News_Arabic
+ * - @TVA_Mining_News
+ * - @TVA_Payment
+ */
+apiRouter.get('/check-subscription', async (req, res) => {
+  try {
+    const telegramId = req.telegramId || req.query.telegramId;
+    if (!telegramId) {
+      return res.status(400).json({ success: false, message: 'telegramId is required' });
+    }
+
+    const botInstance = req.app.get('botInstance');
+    const botToken = config.telegram.botToken;
+    const channelList = config.channels.list || [
+      { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
+      { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
+      { id: '@TVA_Payment', username: 'TVA_Payment', title: 'TVA إثباتات السحب والدفع 💎', url: 'https://t.me/TVA_Payment' },
+    ];
+
+    const results = await Promise.all(
+      channelList.map(async (ch) => {
+        const check = await verifyTelegramChannelMember(botInstance, botToken, ch.id, telegramId);
+        return {
+          id: ch.id,
+          username: ch.username,
+          title: ch.title,
+          url: ch.url,
+          isSubscribed: check.isSubscribed,
+          status: check.status,
+        };
+      })
+    );
+
+    const isAllSubscribed = results.every((r) => r.isSubscribed);
+
+    return res.json({
+      success: true,
+      isSubscribed: isAllSubscribed,
+      channels: results,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
  * GET /api/channels/check
- * Verifies if user has joined the mandatory channel using Telegram Bot API (getChatMember)
+ * Backwards compatibility alias for /api/check-subscription
  */
 apiRouter.get('/channels/check', async (req, res) => {
   try {
@@ -268,55 +357,34 @@ apiRouter.get('/channels/check', async (req, res) => {
       return res.status(400).json({ success: false, message: 'telegramId is required' });
     }
 
-    const channelId = config.channels.requiredChannel;
-    const channelUrl = config.channels.channelUrl;
     const botInstance = req.app.get('botInstance');
+    const botToken = config.telegram.botToken;
+    const channelList = config.channels.list || [];
 
-    // If bot token is not configured or in dummy mode, return dev pass
-    if (!botInstance || !config.telegram.botToken || config.telegram.botToken === 'your_telegram_bot_token_here') {
-      return res.json({
-        success: true,
-        isMember: true,
-        channelId,
-        channelUrl,
-        devMode: true,
-        message: 'Dev mode: Telegram bot token not configured',
-      });
-    }
+    const results = await Promise.all(
+      channelList.map(async (ch) => {
+        const check = await verifyTelegramChannelMember(botInstance, botToken, ch.id, telegramId);
+        return {
+          id: ch.id,
+          username: ch.username,
+          title: ch.title,
+          url: ch.url,
+          isSubscribed: check.isSubscribed,
+          status: check.status,
+        };
+      })
+    );
 
-    try {
-      const member = await botInstance.telegram.getChatMember(channelId, Number(telegramId));
-      const activeStatuses = ['creator', 'administrator', 'member', 'restricted'];
-      const isMember = member && activeStatuses.includes(member.status);
+    const isAllSubscribed = results.every((r) => r.isSubscribed);
 
-      return res.json({
-        success: true,
-        isMember: Boolean(isMember),
-        status: member ? member.status : 'left',
-        channelId,
-        channelUrl,
-      });
-    } catch (err) {
-      console.warn(`[ForceSub] getChatMember check for user ${telegramId} in ${channelId}:`, err.message);
-      // User is not participant in chat
-      if (err.description?.includes('USER_NOT_PARTICIPANT') || err.message?.includes('USER_NOT_PARTICIPANT')) {
-        return res.json({
-          success: true,
-          isMember: false,
-          status: 'left',
-          channelId,
-          channelUrl,
-        });
-      }
-      // If error occurs, report non-member with channelUrl
-      return res.json({
-        success: true,
-        isMember: false,
-        error: err.message,
-        channelId,
-        channelUrl,
-      });
-    }
+    return res.json({
+      success: true,
+      isMember: isAllSubscribed,
+      isSubscribed: isAllSubscribed,
+      channels: results,
+      channelId: config.channels.requiredChannel,
+      channelUrl: config.channels.channelUrl,
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -331,8 +399,10 @@ apiRouter.get('/config/public', (req, res) => {
     success: true,
     data: {
       supportUsername: config.support.adminUsername,
+      supportUrl: config.support.adminUrl,
       requiredChannel: config.channels.requiredChannel,
       channelUrl: config.channels.channelUrl,
+      channels: config.channels.list,
       depositAddress: config.deposit.recipientAddress,
     },
   });

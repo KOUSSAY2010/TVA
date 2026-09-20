@@ -11,6 +11,9 @@
   <!-- TON Connect UI Script -->
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
+  <!-- Adsgram SDK for Telegram Mini Apps -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
   <!-- Google Fonts: Cairo (for Arabic), Inter & Poppins (for English/Numerals) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +35,7 @@
         </div>
         <div class="user-meta">
           <span class="user-greeting" data-i18n="welcome_back">مرحباً بك،</span>
-          <h2 class="user-name" id="user-display-name">Cosmic Miner</h2>
+          <h2 class="user-name" id="user-display-name">...</h2>
         </div>
       </div>
       <div class="header-badge">
@@ -53,10 +56,16 @@
               <i class="fa-solid fa-wallet text-neon"></i>
               <span data-i18n="total_balance">الرصيد الكلي</span>
             </div>
-            <span class="points-pill" id="home-points-badge">15 PTS</span>
+            <div class="balance-header-actions">
+              <button id="btn-balance-card-deposit" class="btn-deposit-mini" title="Deposit TON">
+                <i class="fa-solid fa-plus"></i>
+                <span data-i18n="deposit_short">إيداع</span>
+              </button>
+              <span class="points-pill" id="home-points-badge">0 PTS</span>
+            </div>
           </div>
           <div class="balance-amount-row">
-            <span class="wallet-ton-number" id="wallet-balance-display">4.8250</span>
+            <span class="wallet-ton-number" id="wallet-balance-display">0.0000</span>
             <span class="ton-symbol">TON</span>
           </div>
           <div class="balance-subtext">
@@ -69,7 +78,7 @@
           <div class="hero-top-tag">
             <i class="fa-solid fa-bolt text-neon"></i>
             <span data-i18n="current_daily_rate">معدل التعدين اليومي</span>
-            <strong id="daily-rate-display" class="daily-rate-highlight">+0.126500 TON/day</strong>
+            <strong id="daily-rate-display" class="daily-rate-highlight">+0.000000 TON/day</strong>
           </div>
 
           <!-- Animated Reactor Core -->
@@ -84,7 +93,7 @@
           <div class="balance-meta">
             <span class="balance-label" data-i18n="mined_ready_claim">عملات TON الجاهزة للمطالبة</span>
             <div class="balance-value-row">
-              <span class="balance-ton-number" id="accumulated-balance-display">0.04185200</span>
+              <span class="balance-ton-number" id="accumulated-balance-display">0.00000000</span>
               <span class="ton-symbol">TON</span>
             </div>
           </div>
@@ -159,7 +168,7 @@
           </p>
           <div class="active-rigs-banner">
             <span data-i18n="active_rigs_label">المنصات النشطة حالياً:</span>
-            <strong id="rigs-active-count-display">1 منصة</strong>
+            <strong id="rigs-active-count-display">0 منصة</strong>
           </div>
         </div>
 
@@ -185,10 +194,10 @@
           <div class="ads-progress-container">
             <div class="progress-info-row">
               <span data-i18n="daily_limit">الحد اليومي</span>
-              <span id="ads-counter-text" class="progress-count-text">6 / 40</span>
+              <span id="ads-counter-text" class="progress-count-text">0 / 40</span>
             </div>
             <div class="progress-bar-track">
-              <div class="progress-bar-fill" id="ads-progress-fill" style="width: 15%;"></div>
+              <div class="progress-bar-fill" id="ads-progress-fill" style="width: 0%;"></div>
             </div>
             <div class="progress-helper" data-i18n="resets_daily">يتجدد يومياً في 00:00 UTC</div>
           </div>
@@ -223,12 +232,12 @@
           <div class="stats-cards-row">
             <div class="mini-stat-card">
               <span class="stat-icon"><i class="fa-solid fa-users"></i></span>
-              <span class="stat-number" id="total-friends-count">8</span>
+              <span class="stat-number" id="total-friends-count">0</span>
               <span class="stat-label" data-i18n="total_friends">إجمالي الأصدقاء</span>
             </div>
             <div class="mini-stat-card highlight-stat">
               <span class="stat-icon text-neon"><i class="fa-solid fa-circle-check"></i></span>
-              <span class="stat-number" id="active-friends-count">3</span>
+              <span class="stat-number" id="active-friends-count">0</span>
               <span class="stat-label" data-i18n="active_friends">الأصدقاء النشطون (10 إعلانات)</span>
             </div>
           </div>
@@ -237,7 +246,7 @@
           <div class="referral-box">
             <label class="input-label" data-i18n="your_ref_link">رابط الدعوة الخاص بك</label>
             <div class="copy-input-group">
-              <input type="text" id="referral-link-input" readonly value="https://t.me/tva_bot?start=ref_12345" />
+              <input type="text" id="referral-link-input" readonly value="..." />
               <button id="btn-copy-ref" class="btn-copy" title="Copy link">
                 <i class="fa-regular fa-copy"></i>
                 <span data-i18n="copy_btn">نسخ</span>
@@ -260,12 +269,12 @@
             <i class="fa-solid fa-user-astronaut"></i>
           </div>
 
-          <h2 class="profile-user-name" id="profile-user-name">Cosmic Miner</h2>
-          <span class="profile-user-handle" id="profile-user-username">@cosmic_miner</span>
+          <h2 class="profile-user-name" id="profile-user-name">...</h2>
+          <span class="profile-user-handle" id="profile-user-username">@...</span>
 
           <div class="profile-id-row">
             <span class="profile-id-label" data-i18n="id_label">المعرف:</span>
-            <span class="profile-id-value" id="profile-user-id">782491024</span>
+            <span class="profile-id-value" id="profile-user-id">-</span>
             <button id="btn-copy-user-id" class="btn-copy-mini" title="Copy ID" aria-label="Copy User ID">
               <i class="fa-regular fa-copy"></i>
             </button>
@@ -438,7 +447,12 @@
             <i class="fa-solid fa-play text-neon"></i>
             <h3 data-i18n="modal_claim_ad_title">إعلان استلام الأرباح</h3>
           </div>
-          <span class="ad-timer-badge" id="claim-ad-timer">15s</span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="ad-timer-badge" id="claim-ad-timer">15s</span>
+            <button id="btn-close-claim-ad" class="btn-modal-close" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
         </div>
 
         <div class="ad-visual-container">
@@ -466,22 +480,72 @@
           <i class="fa-solid fa-shield-halved force-sub-icon text-neon"></i>
         </div>
 
-        <h2 class="force-sub-title" data-i18n="force_sub_title">اشتراك إجباري في القناة</h2>
+        <h2 class="force-sub-title" data-i18n="force_sub_title">يجب الاشتراك في قنواتنا لتتمكن من استخدام البوت</h2>
         <p class="force-sub-desc" data-i18n="force_sub_desc">
-          لضمان أمان حسابك واستمرار عمل منصات التعدين وسحب الأرباح، يجب الانضمام إلى قناتنا الرسمية على تلغرام.
+          لضمان أمان حسابك واستمرار عمل منصات التعدين وسحب الأرباح، يجب الانضمام إلى جميع القنوات الرسمية التالية:
         </p>
 
-        <div class="force-sub-channel-box">
-          <i class="fa-brands fa-telegram text-neon"></i>
-          <span id="force-sub-channel-name">@TVACryptoMining</span>
+        <!-- 3 Mandatory Channels List -->
+        <div class="force-sub-channels-list" id="force-sub-channels-list">
+          <div class="force-sub-channel-item" data-channel-id="@TVA_Mining_News_Arabic">
+            <div class="channel-item-left">
+              <i class="fa-brands fa-telegram channel-item-icon text-neon"></i>
+              <div class="channel-item-meta">
+                <span class="channel-item-name">TVA الأخبار العربية 📢</span>
+                <span class="channel-item-handle">@TVA_Mining_News_Arabic</span>
+              </div>
+            </div>
+            <div class="channel-item-right">
+              <a href="https://t.me/TVA_Mining_News_Arabic" target="_blank" class="btn-channel-link">
+                <span>انضمام</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+              <span class="channel-status-badge pending" id="sub-status-TVA_Mining_News_Arabic">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              </span>
+            </div>
+          </div>
+
+          <div class="force-sub-channel-item" data-channel-id="@TVA_Mining_News">
+            <div class="channel-item-left">
+              <i class="fa-brands fa-telegram channel-item-icon text-neon"></i>
+              <div class="channel-item-meta">
+                <span class="channel-item-name">TVA News Official 🌐</span>
+                <span class="channel-item-handle">@TVA_Mining_News</span>
+              </div>
+            </div>
+            <div class="channel-item-right">
+              <a href="https://t.me/TVA_Mining_News" target="_blank" class="btn-channel-link">
+                <span>انضمام</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+              <span class="channel-status-badge pending" id="sub-status-TVA_Mining_News">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              </span>
+            </div>
+          </div>
+
+          <div class="force-sub-channel-item" data-channel-id="@TVA_Payment">
+            <div class="channel-item-left">
+              <i class="fa-brands fa-telegram channel-item-icon text-neon"></i>
+              <div class="channel-item-meta">
+                <span class="channel-item-name">TVA إثباتات الدفع 💎</span>
+                <span class="channel-item-handle">@TVA_Payment</span>
+              </div>
+            </div>
+            <div class="channel-item-right">
+              <a href="https://t.me/TVA_Payment" target="_blank" class="btn-channel-link">
+                <span>انضمام</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+              <span class="channel-status-badge pending" id="sub-status-TVA_Payment">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              </span>
+            </div>
+          </div>
         </div>
 
         <div class="force-sub-actions">
-          <a id="btn-join-channel" href="https://t.me/TVACryptoMining" target="_blank" class="btn-cta channel-join-btn">
-            <i class="fa-brands fa-telegram"></i>
-            <span data-i18n="btn_join_channel">الانضمام إلى القناة الرسمية</span>
-          </a>
-
           <button id="btn-verify-channel-sub" class="btn-cta glow-btn">
             <i class="fa-solid fa-rotate"></i>
             <span data-i18n="btn_verify_sub">التحقق من الاشتراك وتفعيل الحساب</span>

@@ -290,31 +290,31 @@ const TRANSLATIONS = {
   }
 };
 
-// 3. State & Mock Data (Provides complete visual state for instant previews & demo)
+// 3. State & Clean Initial Data (Hydrated directly from live backend /api/user/me)
 const state = {
   user: {
-    telegramId: tg?.initDataUnsafe?.user?.id || 782491024,
-    firstName: tg?.initDataUnsafe?.user?.first_name || 'Cosmic Miner',
-    username: tg?.initDataUnsafe?.user?.username || 'cosmic_miner',
+    telegramId: tg?.initDataUnsafe?.user?.id || 0,
+    firstName: tg?.initDataUnsafe?.user?.first_name || '...',
+    username: tg?.initDataUnsafe?.user?.username || '',
   },
   adminId: 7834260387, // Primary Client Admin ID
   isAdmin: false,
   walletConnected: false,
-  connectedWalletAddress: 'UQDU7b2Kq9...R92M',
+  connectedWalletAddress: '',
   selectedLanguage: 'ar', // Default to Arabic as primary audience
-  walletBalance: 4.8250,
-  accumulatedTon: 0.04185200,
-  dailyMiningRate: 0.126500, // Base + points + active rigs
+  walletBalance: 0.0000,
+  accumulatedTon: 0.00000000,
+  dailyMiningRate: 0.000000, // Base + points + active rigs
   baseRate: 0.001000,
-  totalPoints: 15, // 15 points = +0.0015 TON/day
-  adsWatchedToday: 6,
+  totalPoints: 0,
+  adsWatchedToday: 0,
   maxDailyAds: 40,
-  totalAdsWatched: 24,
-  adsWatchedForWithdrawal: 11,
+  totalAdsWatched: 0,
+  adsWatchedForWithdrawal: 0,
   requiredWithdrawalAds: 15,
-  totalFriends: 8,
-  activeFriends: 3,
-  activeRigsCount: 1,
+  totalFriends: 0,
+  activeFriends: 0,
+  activeRigsCount: 0,
 };
 
 // Global LocalStorage Cache for Instant Offline & Zero-Lag Tab Switching
@@ -369,10 +369,15 @@ function loadStateCache() {
 
 // Configurable App Parameters
 const APP_CONFIG = {
-  supportAdminUsername: 'AdminUsername', // Easily configurable Telegram username
-  requiredChannelId: '@TVACryptoMining',
-  requiredChannelUrl: 'https://t.me/TVACryptoMining',
+  supportAdminUsername: 'AdminUser', // Easily configurable Telegram username
+  supportAdminUrl: 'https://t.me/AdminUser',
+  adsgramBlockId: 'int-8765', // Adsgram video ad block placement
   depositWalletAddress: 'UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H',
+  channels: [
+    { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
+    { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
+    { id: '@TVA_Payment', username: 'TVA_Payment', title: 'TVA إثباتات السحب والدفع 💎', url: 'https://t.me/TVA_Payment' },
+  ],
 };
 
 let tonConnectUI = null;
@@ -394,30 +399,29 @@ async function loadPublicConfig() {
     const res = await fetch('/api/config/public');
     const json = await res.json();
     if (json.success && json.data) {
-      if (json.data.supportUsername) APP_CONFIG.supportAdminUsername = json.data.supportUsername;
-      if (json.data.requiredChannel) APP_CONFIG.requiredChannelId = json.data.requiredChannel;
-      if (json.data.channelUrl) APP_CONFIG.requiredChannelUrl = json.data.channelUrl;
+      if (json.data.supportUsername) {
+        APP_CONFIG.supportAdminUsername = json.data.supportUsername;
+        APP_CONFIG.supportAdminUrl = `https://t.me/${json.data.supportUsername.replace(/^@/, '')}`;
+      }
+      if (json.data.supportUrl) APP_CONFIG.supportAdminUrl = json.data.supportUrl;
       if (json.data.depositAddress) APP_CONFIG.depositWalletAddress = json.data.depositAddress;
+      if (Array.isArray(json.data.channels) && json.data.channels.length > 0) {
+        APP_CONFIG.channels = json.data.channels;
+      }
 
       const depositAddrDisp = document.getElementById('deposit-wallet-address-display');
       if (depositAddrDisp) depositAddrDisp.innerText = APP_CONFIG.depositWalletAddress;
-
-      const channelNameEl = document.getElementById('force-sub-channel-name');
-      if (channelNameEl) channelNameEl.innerText = APP_CONFIG.requiredChannelId;
-
-      const joinBtn = document.getElementById('btn-join-channel');
-      if (joinBtn) joinBtn.href = APP_CONFIG.requiredChannelUrl;
     }
   } catch (_) {}
 }
 
-// Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON with high-end aesthetic tech images
+// Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON featuring RoboHash Robot Visuals
 const RIG_TIERS = [
   {
     cost: 1,
     dailyYield: 0.11,
     totalYield: 1.10,
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-1TON.png?set=set1&size=300x300',
     nameEn: 'Quantum Microchip',
     nameAr: 'شريحة معالجة كمومية',
   },
@@ -425,7 +429,7 @@ const RIG_TIERS = [
     cost: 3,
     dailyYield: 0.33,
     totalYield: 3.30,
-    image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-3TON.png?set=set1&size=300x300',
     nameEn: 'RTX Titan GPU',
     nameAr: 'كارت شاشة Titan RTX',
   },
@@ -433,7 +437,7 @@ const RIG_TIERS = [
     cost: 5,
     dailyYield: 0.55,
     totalYield: 5.50,
-    image: 'https://images.unsplash.com/photo-1624996379697-f01d168b1a52?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-5TON.png?set=set1&size=300x300',
     nameEn: 'Multi-GPU Mining Rig',
     nameAr: 'منصة تعدين متعددة الكروت',
   },
@@ -441,7 +445,7 @@ const RIG_TIERS = [
     cost: 10,
     dailyYield: 1.10,
     totalYield: 11.00,
-    image: 'https://images.unsplash.com/photo-1516245834210-c4c142787335?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-10TON.png?set=set1&size=300x300',
     nameEn: 'Hydro ASIC Miner',
     nameAr: 'معدن هيدرو ASIC فائق',
   },
@@ -449,7 +453,7 @@ const RIG_TIERS = [
     cost: 25,
     dailyYield: 2.75,
     totalYield: 27.50,
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-25TON.png?set=set1&size=300x300',
     nameEn: 'High-Density Server Rack',
     nameAr: 'خزانة خوادم فائقة الكثافة',
   },
@@ -457,7 +461,7 @@ const RIG_TIERS = [
     cost: 50,
     dailyYield: 5.50,
     totalYield: 55.00,
-    image: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-50TON.png?set=set1&size=300x300',
     nameEn: 'Cyber Data Center Room',
     nameAr: 'غرفة مركز بيانات سايبر',
   },
@@ -465,7 +469,7 @@ const RIG_TIERS = [
     cost: 100,
     dailyYield: 11.00,
     totalYield: 110.00,
-    image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80',
+    image: 'https://robohash.org/TVA-Rig-100TON.png?set=set1&size=300x300',
     nameEn: 'Quantum Supercomputer',
     nameAr: 'حاسوب كمومي فائق التطور',
   },
@@ -577,16 +581,58 @@ function setupTabNavigation() {
 }
 
 // ==========================================================================
-// 6. HOME TAB DASHBOARD ACTIONS & VIDEO AD ON CLAIM
+// 6. HOME TAB DASHBOARD ACTIONS & ADSGRAM VIDEO AD ON CLAIM
 // ==========================================================================
-function playClaimVideoAd(onSuccess) {
+let adsgramController = null;
+function getAdsgramController() {
+  if (window.Adsgram) {
+    try {
+      if (!adsgramController) {
+        adsgramController = window.Adsgram.init({
+          blockId: APP_CONFIG.adsgramBlockId || 'int-8765',
+        });
+      }
+      return adsgramController;
+    } catch (e) {
+      console.warn('Adsgram init error:', e.message);
+    }
+  }
+  return null;
+}
+
+function playClaimVideoAd(onSuccess, onCancel) {
+  const isAr = state.selectedLanguage === 'ar';
+  const controller = getAdsgramController();
+
+  // If Adsgram SDK is available in the Telegram Mini App environment, stream the video ad
+  if (controller) {
+    triggerHaptic('impact');
+    controller.show()
+      .then((result) => {
+        // Successful completion: proceed to claim
+        if (result?.done !== false) {
+          onSuccess();
+        } else {
+          showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
+          if (onCancel) onCancel();
+        }
+      })
+      .catch((err) => {
+        console.warn('Adsgram error or dismissed by user:', err);
+        showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
+        if (onCancel) onCancel();
+      });
+    return;
+  }
+
+  // Fallback interactive 15s modal with early cancellation guard
   const modal = document.getElementById('video-ad-modal');
   const timerBadge = document.getElementById('claim-ad-timer');
   const fillBar = document.getElementById('claim-ad-progress-fill');
   const actionBtn = document.getElementById('btn-claim-ad-complete');
   const btnText = document.getElementById('claim-ad-btn-text');
   const btnIcon = document.getElementById('claim-ad-btn-icon');
-  const isAr = state.selectedLanguage === 'ar';
+  const closeBtn = document.getElementById('btn-close-claim-ad');
 
   if (!modal) {
     onSuccess();
@@ -597,6 +643,7 @@ function playClaimVideoAd(onSuccess) {
   triggerHaptic('impact');
 
   let remaining = 15;
+  let isCompleted = false;
   if (timerBadge) timerBadge.innerText = `${remaining}s`;
   if (fillBar) fillBar.style.width = '0%';
   if (actionBtn) actionBtn.disabled = true;
@@ -615,6 +662,7 @@ function playClaimVideoAd(onSuccess) {
 
     if (remaining <= 0) {
       clearInterval(interval);
+      isCompleted = true;
       if (timerBadge) timerBadge.innerText = '0s';
       if (fillBar) fillBar.style.width = '100%';
       if (actionBtn) {
@@ -639,16 +687,39 @@ function playClaimVideoAd(onSuccess) {
       }
     }
   }, 1000);
+
+  // Close early without watching: abort claim and notify user
+  const handleEarlyDismiss = () => {
+    clearInterval(interval);
+    modal.classList.remove('active');
+    if (!isCompleted) {
+      showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
+      if (onCancel) onCancel();
+    }
+  };
+
+  if (closeBtn) {
+    closeBtn.onclick = handleEarlyDismiss;
+  }
 }
 
 function setupHomeDashboard() {
-  // Quick Action: Go to Deposit (Opens Modal)
-  const gotoDepositBtn = document.getElementById('btn-goto-deposit');
   const depositModal = document.getElementById('deposit-modal');
   const closeDepositBtn = document.getElementById('btn-close-deposit-modal');
 
+  // Quick Action: Go to Deposit (Opens Modal)
+  const gotoDepositBtn = document.getElementById('btn-goto-deposit');
   if (gotoDepositBtn && depositModal) {
     gotoDepositBtn.addEventListener('click', () => {
+      triggerHaptic('impact');
+      depositModal.classList.add('active');
+    });
+  }
+
+  // Balance Highlight Card Quick Deposit Button
+  const balanceCardDepositBtn = document.getElementById('btn-balance-card-deposit');
+  if (balanceCardDepositBtn && depositModal) {
+    balanceCardDepositBtn.addEventListener('click', () => {
       triggerHaptic('impact');
       depositModal.classList.add('active');
     });
@@ -714,55 +785,65 @@ function setupHomeDashboard() {
         return;
       }
 
-      // Intercept with 15s Video Ad before executing claim!
-      playClaimVideoAd(() => {
-        // Execute claim logic strictly after the ad completes
-        triggerHaptic('notification-success');
+      // Intercept with Adsgram Video Ad stream before executing claim!
+      playClaimVideoAd(
+        () => {
+          // Execute claim logic strictly after the ad completes
+          triggerHaptic('notification-success');
 
-        // Visual feedback: click bounce & gem pop
-        const reactorGem = document.querySelector('.reactor-gem');
-        if (reactorGem) {
-          reactorGem.classList.add('gem-claim-pop');
-          setTimeout(() => reactorGem.classList.remove('gem-claim-pop'), 500);
-        }
-        claimBtn.classList.add('btn-instant-bounce');
-        setTimeout(() => claimBtn.classList.remove('btn-instant-bounce'), 250);
+          // Visual feedback: click bounce & gem pop
+          const reactorGem = document.querySelector('.reactor-gem');
+          if (reactorGem) {
+            reactorGem.classList.add('gem-claim-pop');
+            setTimeout(() => reactorGem.classList.remove('gem-claim-pop'), 500);
+          }
+          claimBtn.classList.add('btn-instant-bounce');
+          setTimeout(() => claimBtn.classList.remove('btn-instant-bounce'), 250);
 
-        const prevBalance = state.walletBalance;
-        const prevAccumulated = state.accumulatedTon;
+          const prevBalance = state.walletBalance;
+          const prevAccumulated = state.accumulatedTon;
 
-        state.walletBalance += claimed;
-        state.accumulatedTon = 0;
-        updateUI();
-        saveStateCache();
+          state.walletBalance += claimed;
+          state.accumulatedTon = 0;
+          updateUI();
+          saveStateCache();
 
-        showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
+          showToast(isAr ? `💎 تم استلام +${claimed.toFixed(6)} TON إلى رصيدك!` : `💎 Claimed +${claimed.toFixed(6)} TON to your balance!`, 'success');
 
-        // Asynchronous backend request in the background (non-blocking)
-        fetch('/api/mining/claim', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId: state.user.telegramId }),
-        })
-          .then((res) => res.json())
-          .then((json) => {
-            if (json.success && json.data) {
-              state.walletBalance = json.data.newBalance;
-              updateUI();
-              saveStateCache();
-            } else if (json.success === false) {
-              // Rollback on server rejection
+          // Asynchronous backend request in the background (non-blocking)
+          fetch('/api/mining/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegramId: state.user.telegramId }),
+          })
+            .then((res) => res.json())
+            .then((json) => {
+              if (json.success && json.data) {
+                state.walletBalance = json.data.newBalance;
+                updateUI();
+                saveStateCache();
+              } else if (json.success === false) {
+                // Rollback on server rejection
+                state.walletBalance = prevBalance;
+                state.accumulatedTon = prevAccumulated;
+                updateUI();
+                saveStateCache();
+                showToast(json.message || 'Claim failed', 'error');
+              }
+            })
+            .catch(() => {
+              // Network error rollback
               state.walletBalance = prevBalance;
               state.accumulatedTon = prevAccumulated;
               updateUI();
               saveStateCache();
-              showToast(json.message || 'Claim failed', 'error');
-            }
-          })
-          .catch(() => {
-            saveStateCache();
-          });
-      });
+            });
+        },
+        () => {
+          // On early cancel: claim is not executed
+          triggerHaptic('impact');
+        }
+      );
     });
   }
 
@@ -1274,8 +1355,7 @@ function setupProfileTab() {
   if (menuSupport) {
     menuSupport.addEventListener('click', () => {
       triggerHaptic('impact');
-      const supportUsername = APP_CONFIG.supportAdminUsername || 'AdminUsername';
-      const supportUrl = `https://t.me/${supportUsername}`;
+      const supportUrl = APP_CONFIG.supportAdminUrl || `https://t.me/${(APP_CONFIG.supportAdminUsername || 'AdminUser').replace(/^@/, '')}`;
       if (tg?.openTelegramLink) {
         tg.openTelegramLink(supportUrl);
       } else {
@@ -1740,7 +1820,7 @@ function setupDepositModal() {
 }
 
 // ==========================================================================
-// 12C. STRICT FORCE SUBSCRIPTION CHECKER & OVERLAY
+// 12C. STRICT 3-CHANNEL FORCE SUBSCRIPTION CHECKER & OVERLAY
 // ==========================================================================
 async function checkChannelSubscription(manualClick = false) {
   const overlay = document.getElementById('force-sub-overlay');
@@ -1751,31 +1831,49 @@ async function checkChannelSubscription(manualClick = false) {
     triggerHaptic('selection');
     verifyBtn.disabled = true;
     const origHtml = verifyBtn.innerHTML;
-    verifyBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isAr ? 'جاري التحقق...' : 'Verifying...'}</span>`;
+    verifyBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isAr ? 'جاري التحقق من القنوات...' : 'Verifying channels...'}</span>`;
     setTimeout(() => {
       verifyBtn.disabled = false;
       verifyBtn.innerHTML = origHtml;
-    }, 1500);
+    }, 1800);
   }
 
   try {
-    const res = await fetch(`/api/channels/check?telegramId=${state.user.telegramId}`);
+    const res = await fetch(`/api/check-subscription?telegramId=${state.user.telegramId}`);
     const json = await res.json();
     if (json.success) {
-      if (json.channelUrl) APP_CONFIG.requiredChannelUrl = json.channelUrl;
-      if (json.channelId) APP_CONFIG.requiredChannelId = json.channelId;
+      if (Array.isArray(json.channels)) {
+        json.channels.forEach((ch) => {
+          const statusBadge = document.getElementById(`sub-status-${ch.username}`);
+          const channelItem = document.querySelector(`.force-sub-channel-item[data-channel-id="${ch.id}"]`);
 
-      const joinBtn = document.getElementById('btn-join-channel');
-      if (joinBtn && json.channelUrl) joinBtn.href = json.channelUrl;
+          if (ch.isSubscribed) {
+            if (statusBadge) {
+              statusBadge.className = 'channel-status-badge subscribed';
+              statusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+              statusBadge.title = isAr ? 'مشترك ✅' : 'Subscribed ✅';
+            }
+            if (channelItem) {
+              channelItem.classList.add('is-subscribed');
+            }
+          } else {
+            if (statusBadge) {
+              statusBadge.className = 'channel-status-badge unsubscribed';
+              statusBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+              statusBadge.title = isAr ? 'غير مشترك ❌' : 'Not Subscribed ❌';
+            }
+            if (channelItem) {
+              channelItem.classList.remove('is-subscribed');
+            }
+          }
+        });
+      }
 
-      const channelNameEl = document.getElementById('force-sub-channel-name');
-      if (channelNameEl && json.channelId) channelNameEl.innerText = json.channelId;
-
-      if (json.isMember) {
+      if (json.isSubscribed) {
         if (overlay) overlay.classList.remove('active');
         if (manualClick) {
           triggerHaptic('notification-success');
-          showToast(isAr ? '✅ تم التحقق بنجاح! مرحباً بك في التطبيق.' : '✅ Verified channel membership! Welcome to TVA.', 'success');
+          showToast(isAr ? '✅ تم التحقق بنجاح من اشتراكك في جميع القنوات!' : '✅ Successfully verified membership in all 3 channels!', 'success');
         }
         return true;
       } else {
@@ -1783,7 +1881,7 @@ async function checkChannelSubscription(manualClick = false) {
         if (overlay) overlay.classList.add('active');
         if (manualClick) {
           triggerHaptic('impact');
-          showToast(isAr ? '⚠️ لم يتم العثور على اشتراكك في القناة بعد. يرجى الانضمام أولاً.' : '⚠️ Channel subscription not found. Please join the channel first.', 'error');
+          showToast(isAr ? '⚠️ يجب الاشتراك في جميع القنوات الـ 3 لتتمكن من استخدام البوت.' : '⚠️ You must join all 3 channels to continue using the bot.', 'error');
         }
         return false;
       }
@@ -1796,23 +1894,34 @@ async function checkChannelSubscription(manualClick = false) {
 
 function setupForceSubOverlay() {
   const verifyBtn = document.getElementById('btn-verify-channel-sub');
-  const joinBtn = document.getElementById('btn-join-channel');
-
   if (verifyBtn) {
     verifyBtn.addEventListener('click', () => {
       checkChannelSubscription(true);
     });
   }
 
-  if (joinBtn) {
-    joinBtn.addEventListener('click', (e) => {
+  // Telegram deep-link click handler for channel join buttons
+  const channelLinks = document.querySelectorAll('.btn-channel-link');
+  channelLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
       triggerHaptic('impact');
-      if (tg?.openTelegramLink) {
+      const href = link.getAttribute('href');
+      if (tg?.openTelegramLink && href) {
         e.preventDefault();
-        tg.openTelegramLink(APP_CONFIG.requiredChannelUrl);
+        tg.openTelegramLink(href);
       }
     });
-  }
+  });
+
+  // Automatically check subscription whenever user switches back to the mini app
+  window.addEventListener('focus', () => {
+    checkChannelSubscription(false);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkChannelSubscription(false);
+    }
+  });
 }
 
 // Developer testing helpers
