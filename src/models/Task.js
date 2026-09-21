@@ -24,7 +24,12 @@ const TaskSchema = new mongoose.Schema(
     },
     rewardPoints: {
       type: Number,
-      default: 1,
+      default: 10,
+      min: 0,
+    },
+    rewardAmount: {
+      type: Number,
+      default: 10,
       min: 0,
     },
     rewardTon: {
@@ -32,10 +37,19 @@ const TaskSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    autoVerify: {
+      type: Boolean,
+      default: true,
+    },
+    memberLimit: {
+      type: Number,
+      default: 0, // 0 = unlimited
+      min: 0,
+    },
     type: {
       type: String,
-      enum: ['ad', 'telegram', 'partner', 'custom'],
-      default: 'ad',
+      enum: ['ad', 'telegram', 'partner', 'custom', 'social'],
+      default: 'telegram',
     },
     actionUrl: {
       type: String,
@@ -44,7 +58,7 @@ const TaskSchema = new mongoose.Schema(
     },
     durationSeconds: {
       type: Number,
-      default: 15,
+      default: 0,
       min: 0,
     },
     isActive: {

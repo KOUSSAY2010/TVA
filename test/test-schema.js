@@ -76,5 +76,36 @@ assert.strictEqual(config.ads.adsForActiveReferral, 10, 'Active referral require
 assert.strictEqual(config.ads.referralRewardPoints, 10, 'Referral rewards 10 points');
 console.log('✅ Ads limits, anti-cheat (15s minimum), and referral rules verified.');
 
+// 5. Test Task Schema Defaults & Features
+console.log('\nTest 5: Verifying Task Schema (autoVerify, memberLimit, rewardAmount)');
+import Task from '../src/models/Task.js';
+import PromoCode from '../src/models/PromoCode.js';
+
+const testTask = new Task({
+  title: 'Join Community Channel',
+  actionUrl: 'https://t.me/TVA_Mining_News',
+  rewardAmount: 25,
+  memberLimit: 100,
+  autoVerify: true,
+});
+assert.strictEqual(testTask.autoVerify, true, 'autoVerify should default/set to true');
+assert.strictEqual(testTask.memberLimit, 100, 'memberLimit should be 100');
+assert.strictEqual(testTask.rewardAmount, 25, 'rewardAmount should be 25');
+assert.strictEqual(testTask.isActive, true, 'Task should be active by default');
+console.log('✅ Task schema with autoVerify toggle, memberLimit, and rewardAmount verified.');
+
+// 6. Test PromoCode Schema
+console.log('\nTest 6: Verifying PromoCode Schema');
+const testPromo = new PromoCode({
+  code: 'DAILY2026',
+  rewardPoints: 50,
+  maxUses: 200,
+});
+assert.strictEqual(testPromo.code, 'DAILY2026');
+assert.strictEqual(testPromo.rewardPoints, 50);
+assert.strictEqual(testPromo.maxUses, 200);
+assert.strictEqual(testPromo.isActive, true);
+console.log('✅ PromoCode schema with reward points and usage limits verified.');
+
 console.log('\n🎉 ALL LOGIC AND SCHEMA TESTS PASSED SUCCESSFULLY!');
 process.exit(0);

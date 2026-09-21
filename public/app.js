@@ -607,6 +607,10 @@ function switchTab(targetViewId) {
 
   triggerHaptic('selection');
   window.scrollTo(0, 0);
+
+  if (targetViewId === 'view-tasks') {
+    loadUserTasks();
+  }
 }
 
 function setupTabNavigation() {
@@ -1157,6 +1161,16 @@ function setupTasksTab() {
         saveStateCache();
       });
   });
+
+  // Setup Community Tasks Refresh Button & Initial Load
+  const refreshTasksBtn = document.getElementById('btn-refresh-user-tasks');
+  if (refreshTasksBtn) {
+    refreshTasksBtn.addEventListener('click', () => {
+      triggerHaptic('selection');
+      loadUserTasks();
+    });
+  }
+  loadUserTasks();
 }
 
 // ==========================================================================
@@ -1459,14 +1473,388 @@ function setupProfileTab() {
     menuAdmin.addEventListener('click', () => {
       triggerHaptic('impact');
       adminModal.classList.add('active');
+      loadAdminTasks();
+      loadAdminPromoCodes();
       loadPendingWithdrawals();
     });
   }
 }
 
 // ==========================================================================
-// 12. SETUP SETTINGS, FEEDBACK, AND ADMIN MODALS
+// 12. ADVANCED ADMIN DASHBOARD & USER COMMUNITY TASKS
 // ==========================================================================
+
+// Global in-memory cache for admin tasks editing
+let adminTasksMemory = [];
+
+/**
+ * Loads Community Tasks for standard users in the Tasks tab
+ */
+async function loadUserTasks() {
+  const container = document.getElementById('user-tasks-container');
+  if (!container) return;
+
+  const isAr = state.selectedLanguage === 'ar';
+
+  try {
+    const res = await fetch('/api/tasks', {
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      if (json.data.length === 0) {
+        container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام مجتمعية إضافية حالياً. تحقق لاحقاً!' : 'No community tasks available right now.'}</span></div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      json.data.forEach((task) => {
+        const item = document.createElement('div');
+        item.className = 'user-task-item';
+
+        let actionBtnHtml = '';
+        if (task.isCompleted) {
+          actionBtnHtml = `<span class="user-task-btn action-completed"><i class="fa-solid fa-check"></i> ${isAr ? 'مكتملة' : 'Done'}</span>`;
+        } else if (task.isFull) {
+          actionBtnHtml = `<span class="user-task-btn action-full">${isAr ? 'مكتمل العدد' : 'Full'}</span>`;
+        } else {
+          actionBtnHtml = `<button type="button" class="user-task-btn action-go" onclick="handleCompleteUserTask('${task.id}', '${task.actionUrl}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${isAr ? 'تنفيذ' : 'Start'}</button>`;
+        }
+
+        const memberLimitText = task.memberLimit > 0
+          ? `${task.completedCount} / ${task.memberLimit} ${isAr ? 'عضو' : 'users'}`
+          : (isAr ? 'مفتوح للجميع' : 'Unlimited');
+
+        item.innerHTML = `
+          <div class="user-task-info">
+            <div class="user-task-icon-box">
+              <i class="fa-solid fa-bolt text-neon"></i>
+            </div>
+            <div class="user-task-texts">
+              <div class="user-task-name">${task.titleAr || task.title}</div>
+              <div class="user-task-sub">
+                <span class="user-task-reward">+${task.rewardAmount} PTS</span>
+                <span>•</span>
+                <span>${memberLimitText}</span>
+              </div>
+            </div>
+          </div>
+          <div class="user-task-actions">
+            ${actionBtnHtml}
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      return;
+    }
+  } catch (err) {
+    console.error('Failed to load user tasks:', err);
+  }
+
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام متاحة حالياً.' : 'No tasks available.'}</span></div>`;
+}
+
+/**
+ * Handles completing a community task by user
+ */
+window.handleCompleteUserTask = async function (taskId, actionUrl) {
+  triggerHaptic('impact');
+  const isAr = state.selectedLanguage === 'ar';
+
+  if (actionUrl) {
+    try {
+      if (window.Telegram?.WebApp?.openLink && (actionUrl.startsWith('http://') || actionUrl.startsWith('https://'))) {
+        window.Telegram.WebApp.openLink(actionUrl);
+      } else if (window.Telegram?.WebApp?.openTelegramLink && actionUrl.includes('t.me')) {
+        window.Telegram.WebApp.openTelegramLink(actionUrl);
+      } else {
+        window.open(actionUrl, '_blank');
+      }
+    } catch (_) {
+      window.open(actionUrl, '_blank');
+    }
+  }
+
+  try {
+    const res = await fetch(`/api/tasks/${taskId}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success) {
+      triggerHaptic('notification-success');
+      showToast(json.message || (isAr ? '🎉 تم إكمال المهمة بنجاح!' : '🎉 Task completed!'), 'success');
+      if (json.data && json.data.totalPoints !== undefined) {
+        state.totalPoints = json.data.totalPoints;
+        if (json.data.currentDailyMiningRate) {
+          state.dailyMiningRate = json.data.currentDailyMiningRate;
+        }
+        updateUI();
+        saveStateCache();
+      }
+      loadUserTasks();
+    } else if (json.pending) {
+      showToast(json.message, 'info');
+      loadUserTasks();
+    } else {
+      showToast(json.message || (isAr ? 'تعذر إكمال المهمة' : 'Failed to complete task'), 'error');
+    }
+  } catch (err) {
+    showToast(isAr ? 'خطأ في الاتصال بالخادم' : 'Connection error', 'error');
+  }
+};
+
+/**
+ * Loads all tasks for the Admin Control Center
+ */
+async function loadAdminTasks() {
+  const container = document.getElementById('admin-tasks-list');
+  if (!container) return;
+
+  const isAr = state.selectedLanguage === 'ar';
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'جاري تحميل المهام...' : 'Loading tasks...'}</span></div>`;
+
+  try {
+    const res = await fetch('/api/admin/tasks', {
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      adminTasksMemory = json.data;
+      if (json.data.length === 0) {
+        container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام مسجلة بعد. أنشئ مهمة جديدة أعلاه!' : 'No tasks created yet.'}</span></div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      json.data.forEach((task) => {
+        const card = document.createElement('div');
+        card.className = 'admin-item-card';
+
+        const autoVerifyBadge = task.autoVerify
+          ? `<span class="badge-autoverify on"><i class="fa-solid fa-bolt"></i> تحقق فوري</span>`
+          : `<span class="badge-autoverify off"><i class="fa-solid fa-clock"></i> تحقق يدوي</span>`;
+
+        const limitStr = task.memberLimit > 0
+          ? `${task.completedCount} / ${task.memberLimit}`
+          : `${task.completedCount} (مفتوح)`;
+
+        card.innerHTML = `
+          <div class="admin-item-top">
+            <span class="admin-item-title">${task.titleAr || task.title}</span>
+            <div class="admin-item-badges">
+              <span class="badge-reward">+${task.rewardAmount} PTS</span>
+              ${autoVerifyBadge}
+            </div>
+          </div>
+          <div class="admin-item-meta">
+            <span><i class="fa-solid fa-users"></i> المكتملين: ${limitStr}</span>
+            <span style="direction: ltr; font-size: 0.68rem; opacity: 0.7;">${task.actionUrl ? task.actionUrl.slice(0, 32) + '...' : 'بدون رابط'}</span>
+          </div>
+          <div class="admin-item-actions">
+            <button type="button" class="btn-admin-action btn-admin-edit" onclick="handleEditAdminTask('${task._id}')">
+              <i class="fa-solid fa-pen-to-square"></i> تعديل
+            </button>
+            <button type="button" class="btn-admin-action btn-admin-del" onclick="handleDeleteAdminTask('${task._id}')">
+              <i class="fa-solid fa-trash-can"></i> حذف
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      return;
+    }
+  } catch (err) {
+    console.error('Failed to load admin tasks:', err);
+  }
+
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'فشل تحميل المهام' : 'Failed to load tasks'}</span></div>`;
+}
+
+/**
+ * Pre-populates the admin task form for editing
+ */
+window.handleEditAdminTask = function (taskId) {
+  const task = adminTasksMemory.find((t) => String(t._id) === String(taskId));
+  if (!task) return;
+
+  const idInput = document.getElementById('admin-task-id');
+  const titleInput = document.getElementById('admin-task-title');
+  const urlInput = document.getElementById('admin-task-url');
+  const rewardInput = document.getElementById('admin-task-reward');
+  const limitInput = document.getElementById('admin-task-limit');
+  const autoVerifySwitch = document.getElementById('admin-task-autoverify');
+  const cancelBtn = document.getElementById('btn-admin-cancel-task');
+  const formTitle = document.getElementById('admin-task-form-title');
+  const saveBtnText = document.getElementById('btn-admin-save-task-text');
+
+  if (idInput) idInput.value = task._id;
+  if (titleInput) titleInput.value = task.titleAr || task.title;
+  if (urlInput) urlInput.value = task.actionUrl || '';
+  if (rewardInput) rewardInput.value = task.rewardAmount || 10;
+  if (limitInput) limitInput.value = task.memberLimit || 0;
+  if (autoVerifySwitch) {
+    autoVerifySwitch.checked = task.autoVerify !== false;
+    const desc = document.getElementById('admin-autoverify-desc');
+    if (desc) {
+      desc.innerText = autoVerifySwitch.checked
+        ? 'مفعل: يحصل المستخدم على النقاط فور الضغط وإكمال المهمة'
+        : 'معطل: تتطلب المهمة فحصاً يدوياً قبل منح النقاط';
+    }
+  }
+
+  if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+  if (formTitle) formTitle.innerText = 'تعديل المهمة';
+  if (saveBtnText) saveBtnText.innerText = 'حفظ التعديلات';
+
+  titleInput?.focus();
+  titleInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+/**
+ * Cancels editing mode and resets the admin task form
+ */
+function cancelEditAdminTask() {
+  const idInput = document.getElementById('admin-task-id');
+  const titleInput = document.getElementById('admin-task-title');
+  const urlInput = document.getElementById('admin-task-url');
+  const rewardInput = document.getElementById('admin-task-reward');
+  const limitInput = document.getElementById('admin-task-limit');
+  const autoVerifySwitch = document.getElementById('admin-task-autoverify');
+  const cancelBtn = document.getElementById('btn-admin-cancel-task');
+  const formTitle = document.getElementById('admin-task-form-title');
+  const saveBtnText = document.getElementById('btn-admin-save-task-text');
+
+  if (idInput) idInput.value = '';
+  if (titleInput) titleInput.value = '';
+  if (urlInput) urlInput.value = '';
+  if (rewardInput) rewardInput.value = '10';
+  if (limitInput) limitInput.value = '0';
+  if (autoVerifySwitch) {
+    autoVerifySwitch.checked = true;
+    const desc = document.getElementById('admin-autoverify-desc');
+    if (desc) desc.innerText = 'مفعل: يحصل المستخدم على النقاط فور الضغط وإكمال المهمة';
+  }
+
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  if (formTitle) formTitle.innerText = 'إضافة مهمة جديدة';
+  if (saveBtnText) saveBtnText.innerText = 'حفظ ونشر المهمة';
+}
+
+/**
+ * Handles deleting a task by admin
+ */
+window.handleDeleteAdminTask = async function (taskId) {
+  triggerHaptic('impact');
+  const isAr = state.selectedLanguage === 'ar';
+  try {
+    const res = await fetch(`/api/admin/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(isAr ? '🗑️ تم حذف المهمة بنجاح' : '🗑️ Task deleted', 'success');
+      loadAdminTasks();
+      loadUserTasks();
+    } else {
+      showToast(json.message || 'Failed to delete task', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to delete task', 'error');
+  }
+};
+
+/**
+ * Loads Promo Codes for the Admin Control Center
+ */
+async function loadAdminPromoCodes() {
+  const container = document.getElementById('admin-promos-list');
+  if (!container) return;
+
+  const isAr = state.selectedLanguage === 'ar';
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'جاري تحميل الأكواد...' : 'Loading promo codes...'}</span></div>`;
+
+  try {
+    const res = await fetch('/api/admin/promocodes', {
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      if (json.data.length === 0) {
+        container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد أكواد ترويجية حالياً.' : 'No promo codes found.'}</span></div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      json.data.forEach((promo) => {
+        const card = document.createElement('div');
+        card.className = 'admin-item-card';
+        card.innerHTML = `
+          <div class="admin-item-top">
+            <span class="admin-item-title" style="font-family: monospace; font-size: 0.95rem; color: #a855f7; font-weight: 800;">${promo.code}</span>
+            <span class="badge-reward">+${promo.rewardPoints || 0} PTS</span>
+          </div>
+          <div class="admin-item-meta">
+            <span><i class="fa-solid fa-users"></i> الاستخدام: ${promo.timesUsed || 0} / ${promo.maxUses || 100}</span>
+            <span>${new Date(promo.createdAt).toLocaleDateString()}</span>
+          </div>
+          <div class="admin-item-actions">
+            <button type="button" class="btn-admin-action btn-admin-del" onclick="handleDeleteAdminPromo('${promo._id}')">
+              <i class="fa-solid fa-trash-can"></i> حذف الكود
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      return;
+    }
+  } catch (err) {
+    console.error('Failed to load admin promo codes:', err);
+  }
+
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'فشل تحميل الأكواد' : 'Failed to load promo codes'}</span></div>`;
+}
+
+/**
+ * Handles deleting a promo code by admin
+ */
+window.handleDeleteAdminPromo = async function (promoId) {
+  triggerHaptic('impact');
+  const isAr = state.selectedLanguage === 'ar';
+  try {
+    const res = await fetch(`/api/admin/promocode/${promoId}`, {
+      method: 'DELETE',
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast(isAr ? '🗑️ تم حذف الرمز الترويجي' : '🗑️ Promo code deleted', 'success');
+      loadAdminPromoCodes();
+    } else {
+      showToast(json.message || 'Failed to delete promo code', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to delete promo code', 'error');
+  }
+};
+
+/**
+ * Loads pending withdrawals for admin review
+ */
 async function loadPendingWithdrawals() {
   const container = document.getElementById('admin-withdrawals-list');
   if (!container) return;
@@ -1492,10 +1880,10 @@ async function loadPendingWithdrawals() {
       container.innerHTML = '';
       json.data.forEach((item) => {
         const card = document.createElement('div');
-        card.className = 'admin-withdrawal-card';
+        card.className = 'admin-item-card';
         card.innerHTML = `
-          <div class="flex-align-center justify-between">
-            <span style="font-weight: 600; font-size: 0.82rem; color: #fff;">User: ${item.telegramId}</span>
+          <div class="admin-item-top">
+            <span style="font-weight: 700; font-size: 0.82rem; color: #fff;">User: ${item.telegramId}</span>
             <span style="color: #34d399; font-weight: 700; font-size: 0.85rem;">${item.amountTon} TON</span>
           </div>
           <div style="font-size: 0.72rem; color: var(--text-muted); word-break: break-all;">
@@ -1504,11 +1892,11 @@ async function loadPendingWithdrawals() {
           <div style="font-size: 0.7rem; color: var(--text-muted);">
             Net: ${item.netAmountTon} TON (Fee: ${item.feeTon} TON) • ${new Date(item.createdAt).toLocaleDateString()}
           </div>
-          <div class="admin-withdrawal-actions">
-            <button class="btn-admin-action btn-admin-approve" onclick="handleReviewWithdrawal('${item._id}', 'approved')">
+          <div class="admin-item-actions">
+            <button type="button" class="btn-admin-action btn-admin-edit" onclick="handleReviewWithdrawal('${item._id}', 'approved')">
               <i class="fa-solid fa-check"></i> ${t.admin_approve_btn}
             </button>
-            <button class="btn-admin-action btn-admin-reject" onclick="handleReviewWithdrawal('${item._id}', 'rejected')">
+            <button type="button" class="btn-admin-action btn-admin-del" onclick="handleReviewWithdrawal('${item._id}', 'rejected')">
               <i class="fa-solid fa-xmark"></i> ${t.admin_reject_btn}
             </button>
           </div>
@@ -1562,7 +1950,6 @@ function setupAdditionalModals() {
       if (e.target === settingsModal) settingsModal.classList.remove('active');
     });
 
-    // Language options selector (Clicking directly calls setLanguage and closes modal)
     const langCards = settingsModal.querySelectorAll('.language-option-card');
     langCards.forEach((card) => {
       card.addEventListener('click', () => {
@@ -1619,13 +2006,11 @@ function setupAdditionalModals() {
     }
   }
 
-  // Admin Modal Close & Actions
+  // ==========================================================================
+  // FULL-FEATURED ADMIN CONTROL CENTER SETUP
+  // ==========================================================================
   const adminModal = document.getElementById('admin-modal');
   const closeAdminBtn = document.getElementById('btn-close-admin-modal');
-  const refreshWithdrawalsBtn = document.getElementById('btn-admin-refresh-withdrawals');
-  const generatePromoBtn = document.getElementById('btn-admin-generate-promo');
-  const searchUserBtn = document.getElementById('btn-admin-search-user');
-  const updateBalanceBtn = document.getElementById('btn-admin-update-balance');
 
   if (adminModal) {
     if (closeAdminBtn) {
@@ -1635,26 +2020,130 @@ function setupAdditionalModals() {
       if (e.target === adminModal) adminModal.classList.remove('active');
     });
 
-    if (refreshWithdrawalsBtn) {
-      refreshWithdrawalsBtn.addEventListener('click', () => {
+    // 1. Admin Tabs Switching
+    const adminTabs = adminModal.querySelectorAll('.admin-tab-btn');
+    const adminPanels = adminModal.querySelectorAll('.admin-tab-panel');
+    adminTabs.forEach((btn) => {
+      btn.addEventListener('click', () => {
         triggerHaptic('selection');
-        loadPendingWithdrawals();
+        const targetPanelId = btn.getAttribute('data-admin-tab');
+
+        adminTabs.forEach((b) => b.classList.remove('active'));
+        adminPanels.forEach((p) => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        const panel = document.getElementById(targetPanelId);
+        if (panel) panel.classList.add('active');
+
+        if (targetPanelId === 'admin-tab-tasks') loadAdminTasks();
+        if (targetPanelId === 'admin-tab-promo') loadAdminPromoCodes();
+        if (targetPanelId === 'admin-tab-withdrawals') loadPendingWithdrawals();
+      });
+    });
+
+    // 2. Auto-Verify Toggle Description
+    const autoVerifySwitch = document.getElementById('admin-task-autoverify');
+    const autoVerifyDesc = document.getElementById('admin-autoverify-desc');
+    if (autoVerifySwitch && autoVerifyDesc) {
+      autoVerifySwitch.addEventListener('change', () => {
+        autoVerifyDesc.innerText = autoVerifySwitch.checked
+          ? 'مفعل: يحصل المستخدم على النقاط فور الضغط وإكمال المهمة'
+          : 'معطل: تتطلب المهمة فحصاً يدوياً قبل منح النقاط';
       });
     }
 
-    // 1. Generate Promo Code
+    // 3. Save Task (Add or Edit)
+    const saveTaskBtn = document.getElementById('btn-admin-save-task');
+    const cancelTaskBtn = document.getElementById('btn-admin-cancel-task');
+    const refreshTasksBtn = document.getElementById('btn-admin-refresh-tasks');
+
+    if (cancelTaskBtn) {
+      cancelTaskBtn.addEventListener('click', () => {
+        triggerHaptic('selection');
+        cancelEditAdminTask();
+      });
+    }
+
+    if (refreshTasksBtn) {
+      refreshTasksBtn.addEventListener('click', () => {
+        triggerHaptic('selection');
+        loadAdminTasks();
+      });
+    }
+
+    if (saveTaskBtn) {
+      saveTaskBtn.addEventListener('click', async () => {
+        triggerHaptic('impact');
+        const isAr = state.selectedLanguage === 'ar';
+
+        const taskId = document.getElementById('admin-task-id')?.value;
+        const title = document.getElementById('admin-task-title')?.value.trim();
+        const actionUrl = document.getElementById('admin-task-url')?.value.trim();
+        const reward = parseInt(document.getElementById('admin-task-reward')?.value, 10) || 10;
+        const limit = parseInt(document.getElementById('admin-task-limit')?.value, 10) || 0;
+        const autoVerify = document.getElementById('admin-task-autoverify')?.checked ?? true;
+
+        if (!title) {
+          showToast(isAr ? 'الرجاء إدخال عنوان المهمة' : 'Please enter task title', 'error');
+          return;
+        }
+
+        const isEditing = !!taskId;
+        const endpoint = isEditing ? `/api/admin/tasks/${taskId}` : '/api/admin/tasks';
+        const method = isEditing ? 'PUT' : 'POST';
+
+        try {
+          const res = await fetch(endpoint, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-user-id': String(state.user.telegramId),
+            },
+            body: JSON.stringify({
+              title,
+              titleAr: title,
+              actionUrl,
+              rewardAmount: reward,
+              memberLimit: limit,
+              autoVerify,
+            }),
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(isAr ? `✅ تم ${isEditing ? 'تعديل' : 'إضافة'} المهمة بنجاح!` : `✅ Task ${isEditing ? 'updated' : 'created'} successfully!`, 'success');
+            cancelEditAdminTask();
+            loadAdminTasks();
+            loadUserTasks();
+          } else {
+            showToast(json.message || 'Action failed', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to save task', 'error');
+        }
+      });
+    }
+
+    // 4. Promo Code Engine Setup
+    const generatePromoBtn = document.getElementById('btn-admin-generate-promo');
+    const refreshPromosBtn = document.getElementById('btn-admin-refresh-promos');
+
+    if (refreshPromosBtn) {
+      refreshPromosBtn.addEventListener('click', () => {
+        triggerHaptic('selection');
+        loadAdminPromoCodes();
+      });
+    }
+
     if (generatePromoBtn) {
       generatePromoBtn.addEventListener('click', async () => {
         triggerHaptic('impact');
         const isAr = state.selectedLanguage === 'ar';
         const codeInput = document.getElementById('admin-promo-code');
-        const tonInput = document.getElementById('admin-promo-ton');
         const pointsInput = document.getElementById('admin-promo-points');
         const usesInput = document.getElementById('admin-promo-uses');
 
         const codeVal = codeInput ? codeInput.value.trim() : '';
-        const tonVal = tonInput ? parseFloat(tonInput.value) || 0 : 0;
-        const pointsVal = pointsInput ? parseInt(pointsInput.value, 10) || 0 : 0;
+        const pointsVal = pointsInput ? parseInt(pointsInput.value, 10) || 25 : 25;
         const usesVal = usesInput ? parseInt(usesInput.value, 10) || 100 : 100;
 
         try {
@@ -1666,8 +2155,8 @@ function setupAdditionalModals() {
             },
             body: JSON.stringify({
               code: codeVal || undefined,
-              rewardTon: tonVal,
               rewardPoints: pointsVal,
+              rewardTon: 0,
               maxUses: usesVal,
             }),
           });
@@ -1675,8 +2164,7 @@ function setupAdditionalModals() {
           if (json.success) {
             showToast(isAr ? `🎉 تم إنشاء الرمز: ${json.data.code}` : `🎉 Created code: ${json.data.code}`, 'success');
             if (codeInput) codeInput.value = '';
-            if (tonInput) tonInput.value = '';
-            if (pointsInput) pointsInput.value = '';
+            loadAdminPromoCodes();
           } else {
             showToast(json.message || 'Failed to generate promo code', 'error');
           }
@@ -1686,8 +2174,20 @@ function setupAdditionalModals() {
       });
     }
 
-    // 2. Search User by Telegram ID
+    // 5. Withdrawals Refresh
+    const refreshWithdrawalsBtn = document.getElementById('btn-admin-refresh-withdrawals');
+    if (refreshWithdrawalsBtn) {
+      refreshWithdrawalsBtn.addEventListener('click', () => {
+        triggerHaptic('selection');
+        loadPendingWithdrawals();
+      });
+    }
+
+    // 6. User Search & Balance Modification
+    const searchUserBtn = document.getElementById('btn-admin-search-user');
+    const updateBalanceBtn = document.getElementById('btn-admin-update-balance');
     let currentSearchedUserId = null;
+
     if (searchUserBtn) {
       searchUserBtn.addEventListener('click', async () => {
         triggerHaptic('selection');
@@ -1736,7 +2236,6 @@ function setupAdditionalModals() {
       });
     }
 
-    // 3. Update User Balance & Points
     if (updateBalanceBtn) {
       updateBalanceBtn.addEventListener('click', async () => {
         triggerHaptic('impact');
@@ -1770,7 +2269,6 @@ function setupAdditionalModals() {
             if (resBal) resBal.innerText = `${json.data.newTonBalance.toFixed(4)} TON`;
             if (resPts) resPts.innerText = `${json.data.newTotalPoints} PTS`;
 
-            // If updating currently logged in user, synchronize state
             if (Number(currentSearchedUserId) === Number(state.user.telegramId)) {
               state.walletBalance = json.data.newTonBalance;
               state.totalPoints = json.data.newTotalPoints;

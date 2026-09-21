@@ -229,6 +229,29 @@
             <span data-i18n="anti_cheat_note">محمي بنظام AdsGram للتحقق ومنع الاحتيال (15 ثانية)</span>
           </div>
         </div>
+
+        <!-- Community & Partner Tasks Section -->
+        <div class="glass-card mt-3">
+          <div class="card-header-simple justify-between">
+            <div class="flex-align-center gap-2">
+              <i class="fa-solid fa-list-check text-neon"></i>
+              <h3 class="view-title-sm" data-i18n="community_tasks_title">مهام سريعة ومكافآت فورية</h3>
+            </div>
+            <button id="btn-refresh-user-tasks" class="btn-icon-tiny" title="تحديث المهام">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+          <p class="card-caption" data-i18n="community_tasks_desc">
+            أكمل المهام البسيطة التالية واحصل على نقاط فورية تزيد من سرعتك في تعدين TON!
+          </p>
+
+          <div id="user-tasks-container" class="user-tasks-container">
+            <!-- Populated dynamically by app.js -->
+            <div class="admin-placeholder-text">
+              <span>جاري تحميل المهام...</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ================= 4. VIEW: FRIENDS (REFERRALS) ================= -->
@@ -719,123 +742,250 @@
       </div>
     </div>
 
-    <!-- Modal: Admin Panel (Authorized Admins Only) -->
-    <div id="admin-modal" class="modal-backdrop">
-      <div class="modal-sheet admin-sheet">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <i class="fa-solid fa-shield-halved text-neon"></i>
-            <h3 data-i18n="modal_admin_title">لوحة إدارة المسؤول</h3>
+    <!-- Modal: Admin Control Center (Authorized Admins Only) -->
+    <div id="admin-modal" class="modal-backdrop admin-modal-backdrop">
+      <div class="modal-sheet admin-sheet-fullscreen">
+        <!-- Admin Header -->
+        <div class="admin-header">
+          <div class="admin-header-left">
+            <div class="admin-badge-icon">
+              <i class="fa-solid fa-shield-halved text-neon"></i>
+            </div>
+            <div>
+              <div class="admin-title-row">
+                <h3 class="admin-title">لوحة تحكم المسؤول</h3>
+                <span class="admin-role-pill">SUPER ADMIN</span>
+              </div>
+              <p class="admin-subtitle">إدارة المهام والرموز الترويجية، السحوبات، وأرصدة المستخدمين</p>
+            </div>
           </div>
           <button id="btn-close-admin-modal" class="btn-modal-close" aria-label="Close">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        <p class="card-caption" data-i18n="modal_admin_caption">
-          مركز تحكم المسؤول لإدارة البوت ومتابعة الطلبات.
-        </p>
-
-        <!-- Admin Section 1: Generate Promo Code -->
-        <div class="glass-card mb-4 admin-section-card">
-          <div class="card-header-simple">
-            <i class="fa-solid fa-ticket text-neon"></i>
-            <h4 data-i18n="admin_promo_title">إنشاء رمز ترويجي</h4>
-          </div>
-          <div class="admin-form-grid">
-            <div class="form-group">
-              <label class="input-label" data-i18n="admin_code_label">رمز الكوبون (اختياري)</label>
-              <input type="text" id="admin-promo-code" placeholder="e.g. VIP2026" style="text-transform: uppercase;" />
-            </div>
-            <div class="form-group">
-              <label class="input-label" data-i18n="admin_ton_label">مكافأة TON</label>
-              <input type="number" id="admin-promo-ton" placeholder="0.5" step="0.1" />
-            </div>
-            <div class="form-group">
-              <label class="input-label" data-i18n="admin_points_label">مكافأة النقاط</label>
-              <input type="number" id="admin-promo-points" placeholder="20" step="1" />
-            </div>
-            <div class="form-group">
-              <label class="input-label" data-i18n="admin_uses_label">عدد مرات الاستخدام</label>
-              <input type="number" id="admin-promo-uses" placeholder="100" step="1" />
-            </div>
-          </div>
-          <button id="btn-admin-generate-promo" class="btn-cta btn-compact mt-2">
-            <i class="fa-solid fa-plus"></i>
-            <span data-i18n="admin_btn_generate">إنشاء الكود</span>
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-tabs-nav">
+          <button type="button" class="admin-tab-btn active" data-admin-tab="admin-tab-tasks">
+            <i class="fa-solid fa-list-check"></i>
+            <span>إدارة المهام</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-promo">
+            <i class="fa-solid fa-ticket"></i>
+            <span>الرموز الترويجية</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-withdrawals">
+            <i class="fa-solid fa-money-bill-transfer"></i>
+            <span>طلبات السحب</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-users">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>المستخدمين</span>
           </button>
         </div>
 
-        <!-- Admin Section 2: Pending Withdrawals -->
-        <div class="glass-card mb-4 admin-section-card">
-          <div class="card-header-simple justify-between">
-            <div class="flex-align-center gap-2">
-              <i class="fa-solid fa-money-bill-transfer text-neon"></i>
-              <h4 data-i18n="admin_withdrawals_title">طلبات السحب المعلقة</h4>
-            </div>
-            <button id="btn-admin-refresh-withdrawals" class="btn-icon-tiny" title="Refresh">
-              <i class="fa-solid fa-rotate-right"></i>
-            </button>
-          </div>
-          <div id="admin-withdrawals-list" class="admin-withdrawals-container">
-            <!-- Populated dynamically by app.js -->
-            <div class="admin-placeholder-text">
-              <span>جاري تحميل طلبات السحب...</span>
-            </div>
-          </div>
-        </div>
+        <!-- Admin Tab Panels Container -->
+        <div class="admin-tab-panels">
 
-        <!-- Admin Section 3: Search User & Modify Balance -->
-        <div class="glass-card admin-section-card">
-          <div class="card-header-simple">
-            <i class="fa-solid fa-user-pen text-neon"></i>
-            <h4 data-i18n="admin_search_title">بحث عن مستخدم وتعديل الرصيد</h4>
-          </div>
-          <div class="promo-input-group mb-2">
-            <input type="number" id="admin-search-user-id" placeholder="Telegram User ID (e.g. 782491024)" />
-            <button id="btn-admin-search-user" class="btn-cta btn-compact">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <span data-i18n="admin_btn_search">بحث</span>
-            </button>
-          </div>
+          <!-- ================= TAB 1: TASK MANAGER ================= -->
+          <div id="admin-tab-tasks" class="admin-tab-panel active">
+            <!-- Add / Edit Task Form Card -->
+            <div class="glass-card mb-3 admin-card">
+              <div class="card-header-simple justify-between">
+                <div class="flex-align-center gap-2">
+                  <i class="fa-solid fa-plus-circle text-neon"></i>
+                  <h4 id="admin-task-form-title">إضافة مهمة جديدة</h4>
+                </div>
+                <button type="button" id="btn-admin-cancel-task" class="btn-text-danger" style="display: none;">
+                  <i class="fa-solid fa-rotate-left"></i> إلغاء التعديل
+                </button>
+              </div>
 
-          <!-- User Search Result Details Box -->
-          <div id="admin-user-result-box" class="admin-user-details" style="display: none;">
-            <div class="profile-details-list mb-2">
-              <div class="profile-detail-item">
-                <span class="detail-label">Telegram ID:</span>
-                <span class="detail-val" id="admin-res-id">-</span>
-              </div>
-              <div class="profile-detail-item">
-                <span class="detail-label">Username:</span>
-                <span class="detail-val" id="admin-res-username">-</span>
-              </div>
-              <div class="profile-detail-item">
-                <span class="detail-label">Current Balance:</span>
-                <span class="detail-val text-neon" id="admin-res-balance">0.0000 TON</span>
-              </div>
-              <div class="profile-detail-item">
-                <span class="detail-label">Total Points:</span>
-                <span class="detail-val" id="admin-res-points">0 PTS</span>
-              </div>
-            </div>
+              <input type="hidden" id="admin-task-id" value="" />
 
-            <!-- Modify Balance Inputs -->
-            <div class="admin-modify-controls">
-              <div class="form-group mb-2">
-                <label class="input-label">تعديل رصيد TON الجديد:</label>
-                <input type="number" id="admin-modify-ton-val" placeholder="New TON Balance" step="0.01" />
+              <div class="admin-form-grid">
+                <div class="form-group span-2">
+                  <label class="input-label">عنوان المهمة (بالعربية)</label>
+                  <input type="text" id="admin-task-title" placeholder="مثال: الانضمام لقناة الأخبار الرسمية" />
+                </div>
+
+                <div class="form-group span-2">
+                  <label class="input-label">رابط المهمة (Action URL)</label>
+                  <input type="url" id="admin-task-url" placeholder="https://t.me/your_channel" />
+                </div>
+
+                <div class="form-group">
+                  <label class="input-label">مكافأة النقاط (Points)</label>
+                  <input type="number" id="admin-task-reward" placeholder="10" min="1" step="1" value="10" />
+                </div>
+
+                <div class="form-group">
+                  <label class="input-label">الحد الأقصى للمشاركين (0 = غير محدود)</label>
+                  <input type="number" id="admin-task-limit" placeholder="0" min="0" step="1" value="0" />
+                </div>
+
+                <!-- Auto-Verify Switch Toggle -->
+                <div class="form-group span-2 switch-field-group">
+                  <div class="switch-field-info">
+                    <span class="switch-label-title">التحقق التلقائي والفوري (Auto-Verify)</span>
+                    <span class="switch-label-sub" id="admin-autoverify-desc">مفعل: يحصل المستخدم على النقاط فور الضغط وإكمال المهمة</span>
+                  </div>
+                  <label class="cyber-switch">
+                    <input type="checkbox" id="admin-task-autoverify" checked />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
               </div>
-              <div class="form-group mb-2">
-                <label class="input-label">تعديل مجموع النقاط الجديد:</label>
-                <input type="number" id="admin-modify-pts-val" placeholder="New Total Points" step="1" />
-              </div>
-              <button id="btn-admin-update-balance" class="btn-cta glow-btn">
+
+              <button type="button" id="btn-admin-save-task" class="btn-cta glow-btn mt-3">
                 <i class="fa-solid fa-floppy-disk"></i>
-                <span data-i18n="admin_btn_update">حفظ وتحديث رصيد المستخدم</span>
+                <span id="btn-admin-save-task-text">حفظ ونشر المهمة</span>
               </button>
             </div>
+
+            <!-- Existing Tasks Table / List -->
+            <div class="glass-card admin-card">
+              <div class="card-header-simple justify-between">
+                <div class="flex-align-center gap-2">
+                  <i class="fa-solid fa-list-check text-neon"></i>
+                  <h4>قائمة المهام النشطة</h4>
+                </div>
+                <button type="button" id="btn-admin-refresh-tasks" class="btn-icon-tiny" title="تحديث">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+
+              <div id="admin-tasks-list" class="admin-items-container">
+                <div class="admin-placeholder-text">
+                  <span>جاري تحميل المهام...</span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <!-- ================= TAB 2: PROMO CODE ENGINE ================= -->
+          <div id="admin-tab-promo" class="admin-tab-panel">
+            <div class="glass-card mb-3 admin-card">
+              <div class="card-header-simple">
+                <i class="fa-solid fa-wand-magic-sparkles text-neon"></i>
+                <h4>محرك توليد الأكواد الترويجية اليومية</h4>
+              </div>
+              <div class="admin-form-grid">
+                <div class="form-group span-2">
+                  <label class="input-label">اسم الكود الترويجي (اختياري - يترك فارغاً للتوليد التلقائي)</label>
+                  <input type="text" id="admin-promo-code" placeholder="مثال: TVA_DAILY_BONUS" style="text-transform: uppercase;" />
+                </div>
+                <div class="form-group">
+                  <label class="input-label">مكافأة الكود (نقاط Points)</label>
+                  <input type="number" id="admin-promo-points" placeholder="25" min="1" step="1" value="25" />
+                </div>
+                <div class="form-group">
+                  <label class="input-label">أقصى عدد مستخدمين (Usage Limit)</label>
+                  <input type="number" id="admin-promo-uses" placeholder="100" min="1" step="1" value="100" />
+                </div>
+              </div>
+
+              <button type="button" id="btn-admin-generate-promo" class="btn-cta glow-btn mt-3">
+                <i class="fa-solid fa-ticket"></i>
+                <span>توليد وحفظ الكود</span>
+              </button>
+            </div>
+
+            <!-- Active Promo Codes Table -->
+            <div class="glass-card admin-card">
+              <div class="card-header-simple justify-between">
+                <div class="flex-align-center gap-2">
+                  <i class="fa-solid fa-tags text-neon"></i>
+                  <h4>الأكواد الترويجية المتاحة</h4>
+                </div>
+                <button type="button" id="btn-admin-refresh-promos" class="btn-icon-tiny" title="تحديث">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+
+              <div id="admin-promos-list" class="admin-items-container">
+                <div class="admin-placeholder-text">
+                  <span>جاري تحميل الأكواد...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= TAB 3: PENDING WITHDRAWALS ================= -->
+          <div id="admin-tab-withdrawals" class="admin-tab-panel">
+            <div class="glass-card admin-card">
+              <div class="card-header-simple justify-between">
+                <div class="flex-align-center gap-2">
+                  <i class="fa-solid fa-money-bill-transfer text-neon"></i>
+                  <h4>طلبات السحب المعلقة</h4>
+                </div>
+                <button type="button" id="btn-admin-refresh-withdrawals" class="btn-icon-tiny" title="تحديث">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+              <div id="admin-withdrawals-list" class="admin-withdrawals-container">
+                <div class="admin-placeholder-text">
+                  <span>جاري تحميل طلبات السحب...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= TAB 4: USERS MANAGEMENT ================= -->
+          <div id="admin-tab-users" class="admin-tab-panel">
+            <div class="glass-card admin-card">
+              <div class="card-header-simple">
+                <i class="fa-solid fa-user-pen text-neon"></i>
+                <h4>بحث عن مستخدم وتعديل الرصيد</h4>
+              </div>
+              <div class="promo-input-group mb-2">
+                <input type="number" id="admin-search-user-id" placeholder="Telegram User ID (e.g. 782491024)" />
+                <button type="button" id="btn-admin-search-user" class="btn-cta btn-compact">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <span>بحث</span>
+                </button>
+              </div>
+
+              <!-- User Search Result Details Box -->
+              <div id="admin-user-result-box" class="admin-user-details" style="display: none;">
+                <div class="profile-details-list mb-3">
+                  <div class="profile-detail-item">
+                    <span class="detail-label">Telegram ID:</span>
+                    <span class="detail-val" id="admin-res-id">-</span>
+                  </div>
+                  <div class="profile-detail-item">
+                    <span class="detail-label">اسم المستخدم:</span>
+                    <span class="detail-val" id="admin-res-username">-</span>
+                  </div>
+                  <div class="profile-detail-item">
+                    <span class="detail-label">رصيد TON الحالي:</span>
+                    <span class="detail-val text-neon" id="admin-res-balance">0.0000 TON</span>
+                  </div>
+                  <div class="profile-detail-item">
+                    <span class="detail-label">إجمالي النقاط:</span>
+                    <span class="detail-val" id="admin-res-points">0 PTS</span>
+                  </div>
+                </div>
+
+                <!-- Modify Balance Inputs -->
+                <div class="admin-modify-controls">
+                  <div class="form-group mb-2">
+                    <label class="input-label">تعديل رصيد TON الجديد:</label>
+                    <input type="number" id="admin-modify-ton-val" placeholder="New TON Balance" step="0.01" />
+                  </div>
+                  <div class="form-group mb-2">
+                    <label class="input-label">تعديل مجموع النقاط الجديد:</label>
+                    <input type="number" id="admin-modify-pts-val" placeholder="New Total Points" step="1" />
+                  </div>
+                  <button type="button" id="btn-admin-update-balance" class="btn-cta glow-btn">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>حفظ وتحديث رصيد المستخدم</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

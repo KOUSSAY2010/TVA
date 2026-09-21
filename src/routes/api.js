@@ -1,6 +1,6 @@
 import express from 'express';
 import MiningService from '../services/miningService.js';
-import { User, WithdrawalRequest, PromoCode } from '../models/index.js';
+import { User, WithdrawalRequest, PromoCode, Task } from '../models/index.js';
 import config from '../config/index.js';
 
 export const apiRouter = express.Router();
@@ -409,6 +409,117 @@ apiRouter.get('/config/public', (req, res) => {
   });
 });
 
+/**
+ * GET /api/tasks
+ * Returns list of active tasks for users with completion status and member limits
+ */
+apiRouter.get('/tasks', async (req, res) => {
+  try {
+    const telegramId = req.telegramId;
+    const tasks = await Task.find({ isActive: true }).sort({ createdAt: -1 });
+
+    const userTasks = tasks.map((t) => {
+      const completedCount = t.completedBy ? t.completedBy.length : 0;
+      const isCompleted = telegramId && t.completedBy ? t.completedBy.some((c) => c.telegramId === telegramId) : false;
+      const isFull = t.memberLimit > 0 && completedCount >= t.memberLimit;
+
+      return {
+        id: t._id,
+        title: t.title,
+        titleAr: t.titleAr || t.title,
+        description: t.description || '',
+        descriptionAr: t.descriptionAr || t.description || '',
+        rewardPoints: t.rewardAmount || t.rewardPoints || 10,
+        rewardAmount: t.rewardAmount || t.rewardPoints || 10,
+        rewardTon: t.rewardTon || 0,
+        actionUrl: t.actionUrl || '',
+        type: t.type || 'telegram',
+        autoVerify: t.autoVerify !== false,
+        memberLimit: t.memberLimit || 0,
+        completedCount,
+        isCompleted,
+        isFull,
+      };
+    });
+
+    return res.json({
+      success: true,
+      data: userTasks,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * POST /api/tasks/:id/complete
+ * Completes a task and claims reward points
+ */
+apiRouter.post('/tasks/:id/complete', async (req, res) => {
+  try {
+    const telegramId = req.telegramId;
+    if (!telegramId) {
+      return res.status(400).json({ success: false, message: 'Missing telegramId' });
+    }
+
+    const task = await Task.findById(req.params.id);
+    if (!task || !task.isActive) {
+      return res.status(404).json({ success: false, message: 'المهمة غير متوفرة أو تم إيقافها' });
+    }
+
+    // Check if already completed
+    const alreadyCompleted = task.completedBy.some((c) => c.telegramId === telegramId);
+    if (alreadyCompleted) {
+      return res.status(400).json({ success: false, message: 'لقد أكملت هذه المهمة بالفعل واستلمت المكافأة!' });
+    }
+
+    // Check member limit
+    const completedCount = task.completedBy.length;
+    if (task.memberLimit > 0 && completedCount >= task.memberLimit) {
+      return res.status(400).json({ success: false, message: 'عذراً، اكتمل العدد الأقصى للمشاركين في هذه المهمة!' });
+    }
+
+    // Check autoVerify: if false, require manual verification
+    if (task.autoVerify === false) {
+      return res.json({
+        success: false,
+        pending: true,
+        message: 'تم تسجيل طلب الإكمال، جاري التحقق من التنفيذ يدوياً بواسطة الإدارة قبل إضافة النقاط.',
+      });
+    }
+
+    const user = await User.findOne({ telegramId });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const reward = Number(task.rewardAmount || task.rewardPoints || 10);
+
+    // Record completion
+    task.completedBy.push({
+      telegramId,
+      completedAt: new Date(),
+    });
+    await task.save();
+
+    // Award points to user
+    user.totalPoints = (user.totalPoints || 0) + reward;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: `🎉 أحسنت! تم إكمال المهمة وإضافة +${reward} نقطة لرصيدك!`,
+      data: {
+        totalPoints: user.totalPoints,
+        rewardAdded: reward,
+        currentDailyMiningRate: user.calculateDailyMiningRate(),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ==========================================================================
 // ADMIN-ONLY SECURED ROUTES (Protected by isAdmin middleware)
 // ==========================================================================
@@ -583,6 +694,203 @@ apiRouter.post('/admin/user/:telegramId/balance', isAdmin, async (req, res) => {
         currentDailyMiningRate: user.calculateDailyMiningRate(),
       },
       message: `User ${targetId} updated successfully.`,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================================================
+// ADMIN TASK MANAGER ROUTES (CRUD + AutoVerify + MemberLimit)
+// ==========================================================================
+
+/**
+ * GET /api/admin/tasks
+ * Returns all tasks for the Admin Control Center
+ */
+apiRouter.get('/admin/tasks', isAdmin, async (req, res) => {
+  try {
+    const tasks = await Task.find({}).sort({ createdAt: -1 });
+    const formatted = tasks.map((t) => ({
+      _id: t._id,
+      title: t.title,
+      titleAr: t.titleAr || t.title,
+      description: t.description || '',
+      descriptionAr: t.descriptionAr || '',
+      actionUrl: t.actionUrl || '',
+      rewardAmount: t.rewardAmount ?? t.rewardPoints ?? 10,
+      rewardPoints: t.rewardAmount ?? t.rewardPoints ?? 10,
+      autoVerify: t.autoVerify !== false,
+      memberLimit: t.memberLimit || 0,
+      completedCount: t.completedBy ? t.completedBy.length : 0,
+      isActive: t.isActive !== false,
+      type: t.type || 'telegram',
+      createdAt: t.createdAt,
+    }));
+
+    return res.json({
+      success: true,
+      data: formatted,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * POST /api/admin/tasks
+ * Creates a new task
+ */
+apiRouter.post('/admin/tasks', isAdmin, async (req, res) => {
+  try {
+    const {
+      title,
+      titleAr,
+      description,
+      actionUrl,
+      rewardAmount = 10,
+      autoVerify = true,
+      memberLimit = 0,
+      type = 'telegram',
+    } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'عنوان المهمة مطلوب' });
+    }
+
+    const reward = Math.max(0, Number(rewardAmount) || 10);
+    const task = await Task.create({
+      title: title.trim(),
+      titleAr: (titleAr || title).trim(),
+      description: description || '',
+      actionUrl: (actionUrl || '').trim(),
+      rewardAmount: reward,
+      rewardPoints: reward,
+      autoVerify: autoVerify !== false && autoVerify !== 'false',
+      memberLimit: Math.max(0, Number(memberLimit) || 0),
+      type: type || 'telegram',
+      isActive: true,
+    });
+
+    return res.json({
+      success: true,
+      data: task,
+      message: 'تم إضافة المهمة بنجاح!',
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * PUT /api/admin/tasks/:id
+ * Updates an existing task
+ */
+apiRouter.put('/api/admin/tasks/:id', isAdmin, async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'المهمة غير موجودة' });
+    }
+
+    const {
+      title,
+      titleAr,
+      description,
+      actionUrl,
+      rewardAmount,
+      autoVerify,
+      memberLimit,
+      isActive,
+      type,
+    } = req.body;
+
+    if (title !== undefined) task.title = title.trim();
+    if (titleAr !== undefined) task.titleAr = titleAr.trim();
+    if (description !== undefined) task.description = description;
+    if (actionUrl !== undefined) task.actionUrl = actionUrl.trim();
+    if (rewardAmount !== undefined) {
+      const r = Math.max(0, Number(rewardAmount) || 10);
+      task.rewardAmount = r;
+      task.rewardPoints = r;
+    }
+    if (autoVerify !== undefined) {
+      task.autoVerify = autoVerify === true || autoVerify === 'true';
+    }
+    if (memberLimit !== undefined) {
+      task.memberLimit = Math.max(0, Number(memberLimit) || 0);
+    }
+    if (isActive !== undefined) {
+      task.isActive = isActive === true || isActive === 'true';
+    }
+    if (type !== undefined) task.type = type;
+
+    await task.save();
+
+    return res.json({
+      success: true,
+      data: task,
+      message: 'تم تحديث المهمة بنجاح!',
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * DELETE /api/admin/tasks/:id
+ * Deletes a task
+ */
+apiRouter.delete('/api/admin/tasks/:id', isAdmin, async (req, res) => {
+  try {
+    const deleted = await Task.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'المهمة غير موجودة' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'تم حذف المهمة بنجاح!',
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================================================
+// ADMIN PROMO CODE ENGINE ROUTES
+// ==========================================================================
+
+/**
+ * GET /api/admin/promocodes
+ * Lists all promo codes with stats
+ */
+apiRouter.get('/admin/promocodes', isAdmin, async (req, res) => {
+  try {
+    const codes = await PromoCode.find({}).sort({ createdAt: -1 });
+    return res.json({
+      success: true,
+      data: codes,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * DELETE /api/admin/promocode/:id
+ * Deletes a promo code
+ */
+apiRouter.delete('/api/admin/promocode/:id', isAdmin, async (req, res) => {
+  try {
+    const deleted = await PromoCode.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'الرمز الترويجي غير موجود' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'تم حذف الرمز الترويجي بنجاح!',
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
