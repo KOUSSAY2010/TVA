@@ -278,6 +278,17 @@ async function verifyTelegramChannelMember(botInstance, botToken, channelId, tel
       if (err.description?.includes('USER_NOT_PARTICIPANT') || err.message?.includes('USER_NOT_PARTICIPANT')) {
         return { isSubscribed: false, status: 'left' };
       }
+      // If error is "member list is inaccessible" → bot is not admin in this channel.
+      // Do NOT block users — pass them through gracefully.
+      if (
+        err.message?.includes('inaccessible') ||
+        err.message?.includes('Bad Request') ||
+        err.message?.includes('CHANNEL_PRIVATE') ||
+        err.description?.includes('inaccessible')
+      ) {
+        console.warn(`[ForceSub] Bot lacks admin rights in ${channelId} — granting pass-through for user ${telegramId}`);
+        return { isSubscribed: true, status: 'pass_through' };
+      }
       console.warn(`[ForceSub] Telegraf check for user ${telegramId} in ${channelId}:`, err.message);
     }
   }
@@ -291,10 +302,19 @@ async function verifyTelegramChannelMember(botInstance, botToken, channelId, tel
       const isMember = activeStatuses.includes(data.result.status);
       return { isSubscribed: Boolean(isMember), status: data.result.status };
     }
+    // If API error is "inaccessible" → bot is not admin, grant pass-through
+    if (
+      data.description?.toLowerCase().includes('inaccessible') ||
+      data.description?.toLowerCase().includes('bad request')
+    ) {
+      console.warn(`[ForceSub] HTTP: Bot lacks admin rights in ${channelId} — granting pass-through for user ${telegramId}`);
+      return { isSubscribed: true, status: 'pass_through' };
+    }
     return { isSubscribed: false, status: data.description || 'left' };
   } catch (err) {
+    // Network/timeout errors → pass-through to avoid blocking users
     console.warn(`[ForceSub] HTTP check for user ${telegramId} in ${channelId}:`, err.message);
-    return { isSubscribed: false, status: 'error', error: err.message };
+    return { isSubscribed: true, status: 'error_pass_through' };
   }
 }
 
