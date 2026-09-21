@@ -5,18 +5,17 @@ import User from '../src/models/User.js';
 console.log('🧪 Running Business Logic & Schema Verification Tests...\n');
 
 // 1. Verify Rig Tiers Configuration
-console.log('Test 1: Verifying Rig Tiers & Yield Math');
+console.log('Test 1: Verifying Rig Tiers & Points Math');
 const expectedPrices = [1, 3, 5, 10, 25, 50, 100];
 assert.strictEqual(config.rigTiers.length, expectedPrices.length, 'Rig tiers length mismatch');
 config.rigTiers.forEach((rig, idx) => {
   const price = expectedPrices[idx];
   assert.strictEqual(rig.costTon, price);
-  assert.strictEqual(rig.durationDays, 10);
-  assert.strictEqual(rig.dailyYieldPercent, 11);
-  const expectedDailyYield = +(price * 0.11).toFixed(4);
-  assert.strictEqual(rig.dailyYieldTon, expectedDailyYield, `Daily yield mismatch for ${price} TON`);
+  assert.strictEqual(rig.isLifetime, true);
+  const expectedPoints = price * 1100;
+  assert.strictEqual(rig.pointsReward, expectedPoints, `Points reward mismatch for ${price} TON`);
 });
-console.log('✅ Rig tiers yield 11% daily over 10 days verified.');
+console.log('✅ Rig tiers lifetime points upgrades (1100 pts / 1 TON) verified.');
 
 // 2. Test Mining Rate Calculation on User Model
 console.log('\nTest 2: Verifying Dynamic Mining Rate Calculation');

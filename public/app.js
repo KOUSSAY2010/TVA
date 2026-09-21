@@ -37,11 +37,15 @@ const TRANSLATIONS = {
     // Rigs Store
     rigs_store_badge: 'متجر منصات التعدين',
     rigs_store_title: 'وحدات التعدين الآلية',
-    rigs_store_desc: 'شغل منصات التعدين المتقدمة. تعمل كل منصة لمدة 10 أيام وتمنحك عائداً 11% يومياً (10% رأس المال + 1% أرباح صافية).',
+    rigs_store_desc: 'شغل منصات التعدين المتقدمة لترقية حسابك بشكل دائم وكسب آلاف النقاط لمضاعفة سرعة التعدين.',
     active_rigs_label: 'المنصات النشطة حالياً:',
-    days_contract_tag: '10 أيام • 11% يومياً',
-    daily_yield: 'العائد اليومي',
-    total_return: 'إجمالي العائد',
+    days_contract_tag: 'ترقية دائمة مدى الحياة',
+    lifetime_contract_tag: 'ترقية دائمة مدى الحياة',
+    daily_yield: 'مكافأة النقاط',
+    rig_points_reward: 'مكافأة النقاط',
+    rig_upgrade_type: 'نوع الترقية',
+    lifetime_type: 'دائمة مدى الحياة',
+    total_return: 'النوع',
     buy_for: 'شراء بـ',
     unit: 'منصة',
     units: 'منصات',
@@ -49,7 +53,7 @@ const TRANSLATIONS = {
     // Tasks
     boost_hashrate: 'زيادة سرعة التعدين',
     watch_ads_title: 'شاهد الإعلانات وضاعف أرباحك',
-    watch_ads_desc: 'كل إعلان فيديو تشاهده يمنحك +1 نقطة، مما يزيد معدل التعدين اليومي لديك بمقدار +0.0001 TON/يوم بشكل دائم!',
+    watch_ads_desc: 'كل إعلان فيديو تشاهده يمنحك +1 نقطة تضاف مباشرة إلى رصيد نقاطك لزيادة قوة وسرعة التعدين!',
     daily_limit: 'الحد اليومي',
     resets_daily: 'يتجدد يومياً في 00:00 UTC',
     watch_ad_btn: 'مشاهدة إعلان وكسب النقاط',
@@ -58,7 +62,7 @@ const TRANSLATIONS = {
     // Friends
     referral_program: 'برنامج الإحالة',
     invite_miners_title: 'ادعُ أصدقاءك وضاعف دخلك',
-    referral_desc: 'شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط (0.001 TON/يوم) لكل صديق نشط!',
+    referral_desc: 'شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط لكل صديق نشط!',
     total_friends: 'إجمالي الأصدقاء',
     active_friends: 'الأصدقاء النشطون (10 إعلانات)',
     your_ref_link: 'رابط الدعوة الخاص بك',
@@ -174,11 +178,15 @@ const TRANSLATIONS = {
     // Rigs Store
     rigs_store_badge: 'Mining Rig Store',
     rigs_store_title: 'Automated Mining Units',
-    rigs_store_desc: 'Deploy advanced cyborg rigs. Each rig runs for 10 days and yields 11% daily (10% capital return + 1% net profit).',
+    rigs_store_desc: 'Deploy advanced mining rigs for lifetime upgrades and earn thousands of points to boost your mining speed.',
     active_rigs_label: 'Currently Active Rigs:',
-    days_contract_tag: '10 Days • 11%/day',
-    daily_yield: 'Daily Yield',
-    total_return: 'Total Return',
+    days_contract_tag: 'Lifetime Upgrade',
+    lifetime_contract_tag: 'Lifetime Upgrade',
+    daily_yield: 'Points Reward',
+    rig_points_reward: 'Points Reward',
+    rig_upgrade_type: 'Upgrade Type',
+    lifetime_type: 'Lifetime',
+    total_return: 'Type',
     buy_for: 'Buy for',
     unit: 'Unit',
     units: 'Units',
@@ -186,7 +194,7 @@ const TRANSLATIONS = {
     // Tasks
     boost_hashrate: 'Boost Your Hashrate',
     watch_ads_title: 'Watch Ads & Multiply Power',
-    watch_ads_desc: 'Each completed video ad rewards you with +1 Point, permanently boosting your daily mining rate by +0.0001 TON/day!',
+    watch_ads_desc: 'Each completed video ad rewards you with +1 Point directly to your points balance to boost your mining speed!',
     daily_limit: 'Daily Limit',
     resets_daily: 'Resets daily at 00:00 UTC',
     watch_ad_btn: 'Watch Ad & Earn Points',
@@ -195,7 +203,7 @@ const TRANSLATIONS = {
     // Friends
     referral_program: 'Referral Program',
     invite_miners_title: 'Invite Miners & Expand',
-    referral_desc: 'Share your invite link with friends. Earn 10 points (0.001 TON/day) per active friend!',
+    referral_desc: 'Share your invite link with friends. Earn 10 points for each active friend!',
     total_friends: 'Total Friends',
     active_friends: 'Active Friends (10 ads)',
     your_ref_link: 'Your Unique Referral Link',
@@ -368,11 +376,13 @@ function loadStateCache() {
 }
 
 // Configurable App Parameters
+// Configurable App Parameters
 const APP_CONFIG = {
-  supportAdminUsername: 'AdminUser', // Easily configurable Telegram username
-  supportAdminUrl: 'https://t.me/AdminUser',
+  botUsername: 'TVAMining_bot', // Configurable Telegram bot username for referral links
+  supportAdminUsername: 'TVA_Support_Help', // Official Support Telegram username
+  supportAdminUrl: 'https://t.me/TVA_Support_Help',
   adsgramBlockId: 'int-8765', // Adsgram video ad block placement
-  depositWalletAddress: 'UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H',
+  depositWalletAddress: 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   channels: [
     { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
     { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
@@ -384,10 +394,38 @@ let tonConnectUI = null;
 function initTonConnect() {
   if (window.TON_CONNECT_UI) {
     try {
-      tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
-        manifestUrl: window.location.origin + '/tonconnect-manifest.json',
-        buttonRootId: 'ton-connect-btn-container',
-      });
+      if (!tonConnectUI) {
+        tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
+          manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+          buttonRootId: 'ton-connect-btn-container',
+        });
+
+        // Real-time listener for TON Connect wallet state
+        tonConnectUI.onStatusChange((wallet) => {
+          if (wallet && wallet.account) {
+            state.walletConnected = true;
+            let displayAddress = '';
+            try {
+              if (window.TON_CONNECT_UI.toUserFriendlyAddress) {
+                displayAddress = window.TON_CONNECT_UI.toUserFriendlyAddress(wallet.account.address);
+              }
+            } catch (_) {}
+            if (!displayAddress) {
+              displayAddress = wallet.account.address || '';
+            }
+            state.connectedWalletAddress = displayAddress.length > 10
+              ? `${displayAddress.slice(0, 4)}...${displayAddress.slice(-4)}`
+              : displayAddress;
+            state.fullWalletAddress = displayAddress;
+          } else {
+            state.walletConnected = false;
+            state.connectedWalletAddress = '';
+            state.fullWalletAddress = '';
+          }
+          renderWalletPill();
+          saveStateCache();
+        });
+      }
     } catch (e) {
       console.warn('TonConnectUI init warning:', e.message);
     }
@@ -399,6 +437,7 @@ async function loadPublicConfig() {
     const res = await fetch('/api/config/public');
     const json = await res.json();
     if (json.success && json.data) {
+      if (json.data.botUsername) APP_CONFIG.botUsername = json.data.botUsername;
       if (json.data.supportUsername) {
         APP_CONFIG.supportAdminUsername = json.data.supportUsername;
         APP_CONFIG.supportAdminUrl = `https://t.me/${json.data.supportUsername.replace(/^@/, '')}`;
@@ -411,64 +450,64 @@ async function loadPublicConfig() {
 
       const depositAddrDisp = document.getElementById('deposit-wallet-address-display');
       if (depositAddrDisp) depositAddrDisp.innerText = APP_CONFIG.depositWalletAddress;
+      
+      // Update referral link in UI if friends tab input exists
+      const linkInput = document.getElementById('referral-link-input');
+      if (linkInput && state.user?.telegramId) {
+        linkInput.value = `https://t.me/${APP_CONFIG.botUsername}?start=ref_${state.user.telegramId}`;
+      }
     }
   } catch (_) {}
 }
 
 // Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON featuring RoboHash Robot Visuals
+// Lifetime upgrades granting Points (1100 points per 1 TON)
 const RIG_TIERS = [
   {
     cost: 1,
-    dailyYield: 0.11,
-    totalYield: 1.10,
+    pointsYield: 1100,
     image: 'https://robohash.org/TVA-Rig-1TON.png?set=set1&size=300x300',
     nameEn: 'Quantum Microchip',
     nameAr: 'شريحة معالجة كمومية',
   },
   {
     cost: 3,
-    dailyYield: 0.33,
-    totalYield: 3.30,
+    pointsYield: 3300,
     image: 'https://robohash.org/TVA-Rig-3TON.png?set=set1&size=300x300',
     nameEn: 'RTX Titan GPU',
     nameAr: 'كارت شاشة Titan RTX',
   },
   {
     cost: 5,
-    dailyYield: 0.55,
-    totalYield: 5.50,
+    pointsYield: 5500,
     image: 'https://robohash.org/TVA-Rig-5TON.png?set=set1&size=300x300',
     nameEn: 'Multi-GPU Mining Rig',
     nameAr: 'منصة تعدين متعددة الكروت',
   },
   {
     cost: 10,
-    dailyYield: 1.10,
-    totalYield: 11.00,
+    pointsYield: 11000,
     image: 'https://robohash.org/TVA-Rig-10TON.png?set=set1&size=300x300',
     nameEn: 'Hydro ASIC Miner',
     nameAr: 'معدن هيدرو ASIC فائق',
   },
   {
     cost: 25,
-    dailyYield: 2.75,
-    totalYield: 27.50,
+    pointsYield: 27500,
     image: 'https://robohash.org/TVA-Rig-25TON.png?set=set1&size=300x300',
     nameEn: 'High-Density Server Rack',
     nameAr: 'خزانة خوادم فائقة الكثافة',
   },
   {
     cost: 50,
-    dailyYield: 5.50,
-    totalYield: 55.00,
+    pointsYield: 55000,
     image: 'https://robohash.org/TVA-Rig-50TON.png?set=set1&size=300x300',
     nameEn: 'Cyber Data Center Room',
     nameAr: 'غرفة مركز بيانات سايبر',
   },
   {
     cost: 100,
-    dailyYield: 11.00,
-    totalYield: 110.00,
+    pointsYield: 110000,
     image: 'https://robohash.org/TVA-Rig-100TON.png?set=set1&size=300x300',
     nameEn: 'Quantum Supercomputer',
     nameAr: 'حاسوب كمومي فائق التطور',
@@ -946,16 +985,16 @@ function renderDedicatedRigs() {
       </div>
       <div class="rig-dedicated-header">
         <span class="rig-dedicated-title">${rig.cost} TON ${isAr ? 'منصة' : 'Rig'}</span>
-        <span class="rig-dedicated-tag">${t.days_contract_tag}</span>
+        <span class="rig-dedicated-tag">${t.lifetime_contract_tag || t.days_contract_tag}</span>
       </div>
       <div class="rig-specs-row">
         <div class="spec-item">
-          <span class="spec-label">${t.daily_yield}</span>
-          <span class="spec-val text-green">+${rig.dailyYield.toFixed(2)} TON/day</span>
+          <span class="spec-label">${t.rig_points_reward || (isAr ? 'مكافأة النقاط' : 'Points Reward')}</span>
+          <span class="spec-val text-neon">+${rig.pointsYield.toLocaleString()} ${isAr ? 'نقطة' : 'PTS'}</span>
         </div>
         <div class="spec-item">
-          <span class="spec-label">${t.total_return}</span>
-          <span class="spec-val">${rig.totalYield.toFixed(2)} TON</span>
+          <span class="spec-label">${t.rig_upgrade_type || (isAr ? 'نوع الترقية' : 'Upgrade Type')}</span>
+          <span class="spec-val text-green">${t.lifetime_type || (isAr ? 'دائمة مدى الحياة' : 'Lifetime')}</span>
         </div>
       </div>
       <button class="btn-cta" onclick="handleBuyRig(${rig.cost})">
@@ -967,7 +1006,7 @@ function renderDedicatedRigs() {
   });
 }
 
-// Buy Rig Action (Optimistic UI Update)
+// Buy Rig Action (Optimistic UI Update - Grants Points Directly)
 window.handleBuyRig = function (cost) {
   const isAr = state.selectedLanguage === 'ar';
 
@@ -981,19 +1020,24 @@ window.handleBuyRig = function (cost) {
   triggerHaptic('notification-success');
 
   const prevBalance = state.walletBalance;
+  const prevPoints = state.totalPoints;
   const prevRate = state.dailyMiningRate;
   const prevRigs = state.activeRigsCount;
 
-  const yieldBonus = Number((cost * 0.11).toFixed(4));
+  const rig = RIG_TIERS.find((r) => r.cost === cost);
+  const yieldPoints = rig?.pointsYield || (cost * 1100);
+  const rateBonus = Number((yieldPoints * 0.0001).toFixed(4));
+
   state.walletBalance -= cost;
-  state.dailyMiningRate += yieldBonus;
+  state.totalPoints += yieldPoints;
+  state.dailyMiningRate += rateBonus;
   state.activeRigsCount += 1;
 
   updateUI();
   saveStateCache();
   startMiningTicker();
 
-  showToast(isAr ? `⚡ تم شراء وتشغيل منصة ${cost} TON بنجاح! (+${yieldBonus} TON/يوم)` : `⚡ Successfully deployed ${cost} TON Rig! (+${yieldBonus} TON/day)`, 'success');
+  showToast(isAr ? `⚡ تم تفعيل المنصة مدى الحياة بنجاح! (+${yieldPoints.toLocaleString()} نقطة)` : `⚡ Successfully deployed lifetime rig! (+${yieldPoints.toLocaleString()} PTS)`, 'success');
 
   // Snappy active button visual response
   const activeBtn = document.activeElement;
@@ -1012,6 +1056,7 @@ window.handleBuyRig = function (cost) {
     .then((json) => {
       if (json.success && json.data) {
         state.walletBalance = json.data.newTonBalance;
+        if (json.data.newPoints !== undefined) state.totalPoints = json.data.newPoints;
         state.dailyMiningRate = json.data.newDailyMiningRate;
         state.activeRigsCount = json.data.activeRigsCount;
         updateUI();
@@ -1020,6 +1065,7 @@ window.handleBuyRig = function (cost) {
       } else if (json.success === false) {
         // Rollback on rejection
         state.walletBalance = prevBalance;
+        state.totalPoints = prevPoints;
         state.dailyMiningRate = prevRate;
         state.activeRigsCount = prevRigs;
         updateUI();
@@ -1068,7 +1114,7 @@ function setupTasksTab() {
     saveStateCache();
     startMiningTicker();
 
-    showToast(isAr ? '🎉 تمت مشاهدة الإعلان! +1 نقطة وزيادة في سرعة التعدين.' : '🎉 Ad watched! +1 Point awarded (+0.0001 TON/day rate increase)', 'success');
+    showToast(isAr ? '🎉 تمت مشاهدة الإعلان! +1 نقطة تضاف إلى رصيدك.' : '🎉 Ad watched! +1 Point awarded to your balance.', 'success');
 
     // Instant native button feedback: brief 300ms confirmation bounce without freezing button
     watchAdBtn.classList.add('btn-instant-bounce');
@@ -1117,7 +1163,14 @@ function setupTasksTab() {
 // 9. FRIENDS TAB (REFERRALS)
 // ==========================================================================
 function setupFriendsTab() {
-  const botUsername = 'tva_bot';
+  const getBotUsername = () => {
+    if (window.Telegram?.WebApp?.initDataUnsafe?.bot?.username) {
+      return window.Telegram.WebApp.initDataUnsafe.bot.username;
+    }
+    return APP_CONFIG.botUsername || 'TVAMining_bot';
+  };
+
+  const botUsername = getBotUsername();
   const refLink = `https://t.me/${botUsername}?start=ref_${state.user.telegramId}`;
   
   const linkInput = document.getElementById('referral-link-input');
@@ -1125,7 +1178,7 @@ function setupFriendsTab() {
 
   const copyBtn = document.getElementById('btn-copy-ref');
   if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
+    copyBtn.onclick = () => {
       triggerHaptic('notification-success');
       const isAr = state.selectedLanguage === 'ar';
       navigator.clipboard.writeText(refLink).then(() => {
@@ -1133,15 +1186,15 @@ function setupFriendsTab() {
       }).catch(() => {
         showToast('Link: ' + refLink, 'info');
       });
-    });
+    };
   }
 
   const shareBtn = document.getElementById('btn-share-friends');
   if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
+    shareBtn.onclick = () => {
       triggerHaptic('impact');
       const isAr = state.selectedLanguage === 'ar';
-      const shareText = encodeURIComponent(isAr ? '🚀 انضم إلى منصة TVA للتعدين السحابي وابدأ في كسب عملة TON معي مجاناً!' : '🚀 Join TVA Crypto Mining and mine TON with me!');
+      const shareText = encodeURIComponent(isAr ? '🚀 انضم إلى منصة TVA للتعدين واكسب نقاط التعدين معي مجاناً!' : '🚀 Join TVA Crypto Mining and mine TON with me!');
       const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${shareText}`;
 
       if (tg?.openTelegramLink) {
@@ -1149,7 +1202,7 @@ function setupFriendsTab() {
       } else {
         window.open(telegramShareUrl, '_blank');
       }
-    });
+    };
   }
 }
 
@@ -1317,19 +1370,34 @@ function setupProfileTab() {
     });
   }
 
-  // 2. Wallet Connection Badge Toggle
+  // 2. Real TON Connect Wallet Connection Button (Opens Tonkeeper / Telegram Wallet prompt)
   const walletPill = document.getElementById('profile-wallet-pill');
   if (walletPill) {
-    walletPill.addEventListener('click', () => {
+    walletPill.addEventListener('click', async () => {
       triggerHaptic('impact');
       const isAr = state.selectedLanguage === 'ar';
-      state.walletConnected = !state.walletConnected;
-      renderWalletPill();
 
-      if (state.walletConnected) {
-        showToast(isAr ? `✅ تم ربط المحفظة: ${state.connectedWalletAddress}` : `✅ Wallet connected: ${state.connectedWalletAddress}`, 'success');
+      if (!tonConnectUI) {
+        initTonConnect();
+      }
+
+      if (tonConnectUI) {
+        if (tonConnectUI.connected) {
+          try {
+            await tonConnectUI.disconnect();
+            showToast(isAr ? 'تم فصل المحفظة بنجاح' : 'Wallet disconnected successfully', 'info');
+          } catch (err) {
+            console.error('Wallet disconnect error:', err);
+          }
+        } else {
+          try {
+            await tonConnectUI.openModal();
+          } catch (err) {
+            console.error('Wallet openModal error:', err);
+          }
+        }
       } else {
-        showToast(isAr ? 'تم فصل المحفظة' : 'Wallet disconnected', 'info');
+        showToast(isAr ? 'جاري تحميل نظام ربط المحفظة...' : 'Loading wallet connect system...', 'info');
       }
     });
   }
@@ -1350,12 +1418,12 @@ function setupProfileTab() {
     });
   }
 
-  // 3b. Prominent Support Menu Item -> Opens Direct Telegram Admin Chat
+  // 3b. Prominent Support Menu Item -> Opens Direct Telegram Support Chat (https://t.me/TVA_Support_Help)
   const menuSupport = document.getElementById('profile-menu-support');
   if (menuSupport) {
     menuSupport.addEventListener('click', () => {
       triggerHaptic('impact');
-      const supportUrl = APP_CONFIG.supportAdminUrl || `https://t.me/${(APP_CONFIG.supportAdminUsername || 'AdminUser').replace(/^@/, '')}`;
+      const supportUrl = 'https://t.me/TVA_Support_Help';
       if (tg?.openTelegramLink) {
         tg.openTelegramLink(supportUrl);
       } else {
@@ -1769,7 +1837,7 @@ function setupDepositModal() {
     });
   }
 
-  // Send Transaction Button via TON Connect UI
+  // Send Transaction Button via TON Connect UI (Direct to Client Deposit Address)
   if (sendTxBtn) {
     sendTxBtn.addEventListener('click', async () => {
       triggerHaptic('impact');
@@ -1781,20 +1849,30 @@ function setupDepositModal() {
         return;
       }
 
+      if (!tonConnectUI) {
+        initTonConnect();
+      }
+
+      const CLIENT_DEPOSIT_ADDRESS = 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M';
+
       if (tonConnectUI) {
         if (!tonConnectUI.connected) {
           showToast(isAr ? 'يرجى ربط محفظة TON أولاً' : 'Please connect your TON wallet first', 'info');
-          tonConnectUI.openModal();
+          try {
+            await tonConnectUI.openModal();
+          } catch (e) {
+            console.warn('openModal error:', e);
+          }
           return;
         }
 
         try {
           const nanoAmount = (BigInt(Math.floor(amount * 1e9))).toString();
           const tx = {
-            validUntil: Math.floor(Date.now() / 1000) + 360,
+            validUntil: Math.floor(Date.now() / 1000) + 600,
             messages: [
               {
-                address: APP_CONFIG.depositWalletAddress,
+                address: CLIENT_DEPOSIT_ADDRESS,
                 amount: nanoAmount,
               },
             ],
@@ -1813,7 +1891,7 @@ function setupDepositModal() {
         }
       } else {
         // Fallback if TON Connect library was blocked or not yet ready
-        showToast(isAr ? `يرجى التحويل المباشر لعنوان المحفظة: ${APP_CONFIG.depositWalletAddress}` : `Please send manually to: ${APP_CONFIG.depositWalletAddress}`, 'info');
+        showToast(isAr ? `يرجى التحويل المباشر لعنوان المحفظة: ${CLIENT_DEPOSIT_ADDRESS}` : `Please send manually to: ${CLIENT_DEPOSIT_ADDRESS}`, 'info');
       }
     });
   }

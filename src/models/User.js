@@ -5,11 +5,13 @@ const RigSchema = new mongoose.Schema(
   {
     tierId: { type: String, required: true },
     costTon: { type: Number, required: true },
-    dailyYieldTon: { type: Number, required: true }, // e.g. 0.11 for a 1 TON rig
+    pointsReward: { type: Number, default: 0 },
+    dailyYieldTon: { type: Number, default: 0 },
+    isLifetime: { type: Boolean, default: true },
     purchasedAt: { type: Date, default: Date.now },
     expiresAt: {
       type: Date,
-      default: () => new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days lifespan
+      default: null, // Lifetime upgrade
     },
     status: {
       type: String,
@@ -115,7 +117,8 @@ UserSchema.methods.updateRigsStatus = function () {
   const now = new Date();
   let updated = false;
   this.rigs.forEach((rig) => {
-    if (rig.status === 'active' && new Date(rig.expiresAt) <= now) {
+    // Only expire rigs that have an explicit expiration date
+    if (rig.expiresAt && rig.status === 'active' && new Date(rig.expiresAt) <= now) {
       rig.status = 'expired';
       updated = true;
     }
@@ -125,7 +128,7 @@ UserSchema.methods.updateRigsStatus = function () {
 
 /**
  * Calculate user's current daily mining rate dynamically:
- * Base + (totalPoints * 0.0001) + Sum of active rigs daily yields (11% of rig cost)
+ * Base + (totalPoints * 0.0001) + Sum of any legacy rigs daily yields
  */
 UserSchema.methods.calculateDailyMiningRate = function () {
   this.updateRigsStatus();
@@ -133,9 +136,10 @@ UserSchema.methods.calculateDailyMiningRate = function () {
   const baseRate = config.mining.baseDailyRateTon;
   const pointsRate = this.totalPoints * config.mining.rateBoostPerPoint;
 
+  // Legacy fallback: only rigs that did not grant direct points
   const activeRigsYield = this.rigs
-    .filter((rig) => rig.status === 'active')
-    .reduce((sum, rig) => sum + rig.dailyYieldTon, 0);
+    .filter((rig) => rig.status === 'active' && (!rig.pointsReward || rig.pointsReward === 0))
+    .reduce((sum, rig) => sum + (rig.dailyYieldTon || 0), 0);
 
   const totalRate = baseRate + pointsRate + activeRigsYield;
   return Number(totalRate.toFixed(6));

@@ -139,7 +139,7 @@ export class MiningService {
   /**
    * Buy a mining rig using TON balance.
    * Prices: [1, 3, 5, 10, 25, 50, 100] TON.
-   * Yields 11% daily for 10 days.
+   * Grants Points directly as a lifetime upgrade.
    */
   static async purchaseRig(telegramId, costTon) {
     const tier = config.rigTiers.find((t) => t.costTon === costTon);
@@ -154,14 +154,19 @@ export class MiningService {
       throw new Error(`Insufficient TON balance. Required: ${costTon} TON, Current: ${user.tonBalance.toFixed(4)} TON.`);
     }
 
-    // Deduct balance and add rig
+    // Deduct balance and grant Points
     user.tonBalance = Number((user.tonBalance - costTon).toFixed(4));
+    const pointsAwarded = tier.pointsReward || (costTon * 1100);
+    user.totalPoints += pointsAwarded;
+
     user.rigs.push({
       tierId: tier.tierId,
       costTon: tier.costTon,
-      dailyYieldTon: tier.dailyYieldTon, // 11% of cost
+      pointsReward: pointsAwarded,
+      dailyYieldTon: 0,
+      isLifetime: true,
       purchasedAt: new Date(),
-      expiresAt: new Date(Date.now() + tier.durationDays * 24 * 60 * 60 * 1000),
+      expiresAt: null, // Lifetime upgrade
       status: 'active',
     });
 
@@ -169,6 +174,8 @@ export class MiningService {
 
     return {
       tier,
+      pointsAwarded,
+      newPoints: user.totalPoints,
       newTonBalance: user.tonBalance,
       newDailyMiningRate: user.calculateDailyMiningRate(),
       activeRigsCount: user.rigs.filter((r) => r.status === 'active').length,

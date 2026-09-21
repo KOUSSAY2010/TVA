@@ -7,6 +7,7 @@ export const config = {
   
   telegram: {
     botToken: process.env.BOT_TOKEN || '',
+    botUsername: process.env.BOT_USERNAME || 'TVAMining_bot',
     adminId: process.env.ADMIN_TELEGRAM_ID || '',
     webAppUrl: process.env.WEBAPP_URL || 'https://tva-mining.local',
   },
@@ -65,24 +66,24 @@ export const config = {
   },
 
   support: {
-    adminUsername: process.env.SUPPORT_ADMIN_USERNAME || 'AdminUser',
-    adminUrl: process.env.SUPPORT_ADMIN_URL || 'https://t.me/AdminUser',
+    adminUsername: process.env.SUPPORT_ADMIN_USERNAME || 'TVA_Support_Help',
+    adminUrl: process.env.SUPPORT_ADMIN_URL || 'https://t.me/TVA_Support_Help',
   },
 
   deposit: {
-    recipientAddress: process.env.DEPOSIT_WALLET_ADDRESS || 'UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H',
+    recipientAddress: process.env.DEPOSIT_WALLET_ADDRESS || 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   },
 
   // Rig presets: [1, 3, 5, 10, 25, 50, 100] TON
-  // Each lasts exactly 10 days and yields 11% daily (0.11 * cost per day)
+  // Lifetime upgrades granting Points (1100 points per 1 TON, where 1 point = 0.0001 TON/day)
   rigTiers: [1, 3, 5, 10, 25, 50, 100].map((cost) => ({
     tierId: `rig_${cost}ton`,
     name: `${cost} TON Rig`,
     costTon: cost,
-    durationDays: 10,
-    dailyYieldPercent: 11, // 11% daily
-    dailyYieldTon: +(cost * 0.11).toFixed(4),
-    totalYieldTon: +(cost * 1.10).toFixed(4),
+    isLifetime: true,
+    pointsReward: cost * 1100, // Grants Points directly
+    dailyYieldTon: 0,
+    dailyRateEquivalentTon: +(cost * 0.11).toFixed(4),
   })),
 };
 

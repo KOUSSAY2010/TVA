@@ -32,20 +32,21 @@ export function setupBotHandlers(botInstance) {
       // Check if user exists or create new user with referrer ID
       const user = await MiningService.getOrCreateUser(ctx.from, referrerId);
       const currentRate = user.calculateDailyMiningRate();
-      const botUsername = ctx.botInfo?.username || 'tva_mining_bot';
+      const botUsername = ctx.botInfo?.username || config.telegram.botUsername || 'TVAMining_bot';
 
       // Welcome message in Arabic introducing the TVA Mining platform
       const welcomeText =
         `⚡ *أهلاً بك في منصة TVA لتعدين TON!* ⚡\n\n` +
         `🚀 ابدأ الآن في تعدين عملة TON بشكل سحابي ومجاني، واربح المزيد يومياً من خلال:\n` +
-        `• 📺 *مشاهدة الإعلانات:* لزيادة سرعة التعدين (+0.0001 TON/يوم لكل إعلان)\n` +
-        `• 🤖 *منصات التعدين الآلية:* بعائد 11% يومياً لمدة 10 أيام\n` +
+        `• 📺 *مشاهدة الإعلانات:* اكسب +1 نقطة لكل إعلان تشاهده لزيادة سرعة التعدين\n` +
+        `• 🤖 *منصات التعدين الآلية:* ترقيات دائمة مدى الحياة تمنحك آلاف النقاط\n` +
         `• 👥 *دعوة الأصدقاء:* اكسب 10 نقاط لكل صديق يصبح نشطاً\n\n` +
         `📊 *إحصائيات حسابك الحالية:*\n` +
         `• 💎 *رصيد المحفظة:* \`${user.tonBalance.toFixed(4)} TON\`\n` +
         `• ⚡ *معدل التعدين:* \`${currentRate} TON/يوم\`\n` +
         `• 🎯 *مجموع النقاط:* \`${user.totalPoints} نقطة\`\n` +
         `• 🤝 *الإحالات النشطة:* \`${user.activeReferralsCount}\`\n\n` +
+        `💡 *ملاحظة:* 1 نقطة = 0.0001 TON / يومياً\n\n` +
         `اضغط على الزر أدناه لفتح التطبيق وبدء التعدين فوراً! 👇`;
 
       const shareText = encodeURIComponent('انضم إلى منصة TVA وابدأ في تعدين عملة TON يومياً مجاناً! 🚀💎');

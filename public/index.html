@@ -38,9 +38,9 @@
           <h2 class="user-name" id="user-display-name">...</h2>
         </div>
       </div>
-      <div class="header-badge">
-        <span class="pulse-dot"></span>
-        <span class="badge-text" data-i18n="ton_mainnet">شبكة TON الرئيسية</span>
+      <div class="header-rate-badge" id="global-rate-badge" title="سعر النقطة">
+        <i class="fa-solid fa-bolt text-neon"></i>
+        <span>1 نقطة = 0.0001 TON / يومياً</span>
       </div>
     </header>
 
@@ -164,7 +164,7 @@
           </div>
           <h2 class="view-title" data-i18n="rigs_store_title">وحدات التعدين الآلية</h2>
           <p class="view-description" data-i18n="rigs_store_desc">
-            شغل منصات التعدين المتقدمة. تعمل كل منصة لمدة 10 أيام وتمنحك عائداً 11% يومياً (10% رأس المال + 1% أرباح صافية).
+            شغل منصات التعدين المتقدمة لترقية حسابك بشكل دائم وكسب آلاف النقاط لمضاعفة سرعة التعدين.
           </p>
           <div class="active-rigs-banner">
             <span data-i18n="active_rigs_label">المنصات النشطة حالياً:</span>
@@ -187,7 +187,7 @@
           </div>
           <h2 class="view-title" data-i18n="watch_ads_title">شاهد الإعلانات وضاعف أرباحك</h2>
           <p class="view-description" data-i18n="watch_ads_desc">
-            كل إعلان فيديو تشاهده يمنحك +1 نقطة، مما يزيد معدل التعدين اليومي لديك بمقدار +0.0001 TON/يوم بشكل دائم!
+            كل إعلان فيديو تشاهده يمنحك +1 نقطة تضاف مباشرة إلى رصيد نقاطك لزيادة قوة وسرعة التعدين!
           </p>
 
           <!-- Ads Counter & Progress Bar -->
@@ -225,7 +225,7 @@
           </div>
           <h2 class="view-title" data-i18n="invite_miners_title">ادعُ أصدقاءك وضاعف دخلك</h2>
           <p class="view-description" data-i18n="referral_desc">
-            شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط (0.001 TON/يوم) لكل صديق نشط!
+            شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط لكل صديق نشط!
           </p>
 
           <!-- Stats Row -->
@@ -430,7 +430,7 @@
         <div class="manual-deposit-box">
           <span class="manual-box-title" data-i18n="manual_deposit_title">أو التحويل المباشر لعنوان المحفظة:</span>
           <div class="address-copy-row">
-            <span class="deposit-address-text" id="deposit-wallet-address-display">UQDU7b2Kq9v2wM3L4_R92MQW7k8X1Y0Z9A8B7C6D5E4F3G2H</span>
+            <span class="deposit-address-text" id="deposit-wallet-address-display">UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M</span>
             <button id="btn-copy-deposit-addr" class="btn-copy-mini" title="Copy Address">
               <i class="fa-solid fa-copy"></i>
             </button>

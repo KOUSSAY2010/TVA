@@ -398,6 +398,7 @@ apiRouter.get('/config/public', (req, res) => {
   return res.json({
     success: true,
     data: {
+      botUsername: config.telegram.botUsername || 'TVAMining_bot',
       supportUsername: config.support.adminUsername,
       supportUrl: config.support.adminUrl,
       requiredChannel: config.channels.requiredChannel,
