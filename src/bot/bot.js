@@ -14,7 +14,15 @@ export function setupBotHandlers(botInstance) {
     console.error(`❌ Bot error encountered for update ${ctx?.updateType}:`, err.message);
   });
 
-  // Register Bot commands in Telegram Menu
+  // Log incoming messages for debugging
+  botInstance.use((ctx, next) => {
+    if (ctx.message?.text) {
+      console.log(`📩 [Telegram Message] From ${ctx.from?.id} (@${ctx.from?.username || 'none'}): ${ctx.message.text}`);
+    }
+    return next();
+  });
+
+  // Register Bot commands and Menu Button in Telegram
   try {
     botInstance.telegram.setMyCommands([
       { command: 'start', description: '🚀 ابدأ تشغيل البوت' },
@@ -23,8 +31,20 @@ export function setupBotHandlers(botInstance) {
     ]).catch((err) => {
       console.warn('⚠️ Could not register bot commands with Telegram:', err.message);
     });
+
+    if (config.telegram.webAppUrl) {
+      botInstance.telegram.setChatMenuButton({
+        menu_button: {
+          type: 'web_app',
+          text: '⚡ TVA Mining',
+          web_app: { url: config.telegram.webAppUrl },
+        },
+      }).catch((err) => {
+        console.warn('⚠️ Could not set chat menu button:', err.message);
+      });
+    }
   } catch (err) {
-    console.warn('⚠️ setMyCommands error:', err.message);
+    console.warn('⚠️ Menu button / commands setup error:', err.message);
   }
 
   // 1. /start command with referral tracking & professional welcome

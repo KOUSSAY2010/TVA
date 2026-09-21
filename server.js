@@ -73,7 +73,23 @@ async function connectDatabase() {
   }
 }
 
-// Telegram Bot launch helper
+// Telegram Bot launch helper with automatic retry
+async function launchPollingWithRetry(retries = 10, delay = 3000) {
+  try {
+    // Delete any hanging webhook to avoid 409 Conflict
+    await bot.telegram.deleteWebhook({ drop_pending_updates: false });
+    await bot.launch({
+      dropPendingUpdates: false,
+    });
+    console.log('✅ Telegraf Bot launched and polling for updates');
+  } catch (err) {
+    console.error(`❌ Telegraf Bot polling error: ${err.message}. Retrying in ${delay / 1000}s... (Retries left: ${retries})`);
+    if (retries > 0) {
+      setTimeout(() => launchPollingWithRetry(retries - 1, Math.min(delay * 1.5, 15000)), delay);
+    }
+  }
+}
+
 async function startTelegramBot() {
   if (!config.telegram.botToken || config.telegram.botToken === 'your_telegram_bot_token_here') {
     console.warn('⚠️ Telegram BOT_TOKEN not configured in .env. Bot polling skipped.');
@@ -82,14 +98,7 @@ async function startTelegramBot() {
 
   try {
     setupBotHandlers(bot);
-    // Launch polling asynchronously so it runs concurrently with Express without blocking
-    bot.launch({
-      dropPendingUpdates: true, // Clean start, ignore old updates during offline period
-    }).then(() => {
-      console.log('✅ Telegraf Bot launched and polling for updates');
-    }).catch((err) => {
-      console.error('❌ Telegraf Bot polling error:', err.message);
-    });
+    launchPollingWithRetry();
   } catch (err) {
     console.error('❌ Failed to setup Telegraf Bot:', err.message);
   }
