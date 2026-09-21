@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import config from './src/config/index.js';
 import { bot, setupBotHandlers } from './src/bot/bot.js';
-import apiRouter from './src/routes/api.js';
+import { apiRouter } from './src/routes/api.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
