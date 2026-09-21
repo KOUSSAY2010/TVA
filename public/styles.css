@@ -300,6 +300,68 @@ html, body {
    VIEW 1: HOME (DASHBOARD)
    ========================================================================== */
 
+/* Official Brand Banner Styles */
+.brand-hero-banner {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.18), inset 0 0 15px rgba(139, 92, 246, 0.1);
+  margin-bottom: 12px;
+  background: #09090b;
+}
+
+.brand-banner-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.brand-hero-banner:hover .brand-banner-img {
+  transform: scale(1.02);
+}
+
+.brand-banner-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  background: rgba(15, 12, 25, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 10px;
+  padding: 3px 8px;
+}
+
+.brand-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  letter-spacing: 0.8px;
+}
+
+/* Compact Banner for Views & Cards */
+.brand-sub-banner {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  margin-bottom: 12px;
+  box-shadow: 0 2px 14px rgba(139, 92, 246, 0.14);
+}
+
+.brand-sub-banner img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
 /* Top Highlight Balance Card */
 .balance-highlight-card {
   display: flex;

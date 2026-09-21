@@ -30,6 +30,15 @@ app.set('botInstance', bot);
 
 // Serve Web App static frontend files from the public/ directory
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
+// Serve custom images directory
+app.use('/img', express.static(path.join(__dirname, 'img')));
+app.use('/img', express.static('img'));
+
+// Explicit root route serving index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Mount API routes
 app.use('/api', apiRouter);
