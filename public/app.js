@@ -1088,79 +1088,119 @@ window.handleBuyRig = function (cost) {
 // ==========================================================================
 function setupTasksTab() {
   const watchAdBtn = document.getElementById('btn-watch-ad');
-  if (!watchAdBtn) return;
+  const adModal = document.getElementById('modal-ad-player');
+  const closeAdBtn = document.getElementById('btn-close-ad-player');
+  const claimAdBtn = document.getElementById('btn-claim-ad-reward');
+  const countdownNumber = document.getElementById('ad-countdown-number');
+  const adProgressFill = document.getElementById('ad-timer-progress-fill');
+  const claimAdText = document.getElementById('btn-claim-ad-text');
+  let adCountdownInterval = null;
+  let adRemaining = 15;
+  let adFinished = false;
 
-  watchAdBtn.addEventListener('click', () => {
-    const isAr = state.selectedLanguage === 'ar';
-
-    if (state.adsWatchedToday >= state.maxDailyAds) {
-      triggerHaptic('impact');
-      showToast(isAr ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`, 'error');
-      return;
+  const resetAdState = () => {
+    if (adCountdownInterval) clearInterval(adCountdownInterval);
+    adRemaining = 15;
+    adFinished = false;
+    if (countdownNumber) countdownNumber.innerText = '15';
+    if (adProgressFill) adProgressFill.style.width = '0%';
+    if (claimAdBtn) {
+      claimAdBtn.disabled = true;
+      if (claimAdText) claimAdText.innerText = state.selectedLanguage === 'ar' ? 'انتظر انتهاء الإعلان (15 ثانية)...' : 'Please wait for ad to finish (15s)...';
     }
+  };
 
-    // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
-    triggerHaptic('notification-success');
+  if (watchAdBtn) {
+    watchAdBtn.addEventListener('click', () => {
+      const isAr = state.selectedLanguage === 'ar';
 
-    const prevPoints = state.totalPoints;
-    const prevToday = state.adsWatchedToday;
-    const prevTotal = state.totalAdsWatched;
-    const prevWithdraw = state.adsWatchedForWithdrawal;
-    const prevRate = state.dailyMiningRate;
+      if (state.adsWatchedToday >= state.maxDailyAds) {
+        triggerHaptic('impact');
+        showToast(isAr ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`, 'error');
+        return;
+      }
 
-    state.totalPoints += 1;
-    state.adsWatchedToday += 1;
-    state.totalAdsWatched += 1;
-    state.adsWatchedForWithdrawal += 1;
-    state.dailyMiningRate += 0.0001;
+      resetAdState();
+      if (adModal) adModal.classList.add('active');
+      triggerHaptic('impact');
 
-    updateUI();
-    saveStateCache();
-    startMiningTicker();
+      // Enforce strict 15-second timer
+      adCountdownInterval = setInterval(() => {
+        adRemaining -= 1;
+        if (countdownNumber) countdownNumber.innerText = String(Math.max(0, adRemaining));
+        const pct = Math.min(100, Math.round(((15 - adRemaining) / 15) * 100));
+        if (adProgressFill) adProgressFill.style.width = `${pct}%`;
 
-    showToast(isAr ? '🎉 تمت مشاهدة الإعلان! +1 نقطة تضاف إلى رصيدك.' : '🎉 Ad watched! +1 Point awarded to your balance.', 'success');
+        if (claimAdText && adRemaining > 0) {
+          claimAdText.innerText = isAr ? `انتظر انتهاء الإعلان (${adRemaining} ثانية)...` : `Please wait (${adRemaining}s)...`;
+        }
 
-    // Instant native button feedback: brief 300ms confirmation bounce without freezing button
-    watchAdBtn.classList.add('btn-instant-bounce');
-    const originalHtml = watchAdBtn.innerHTML;
-    watchAdBtn.innerHTML = `<i class="fa-solid fa-circle-check text-neon"></i> <span>${isAr ? '+1 نقطة مكتسبة!' : '+1 Point Earned!'}</span>`;
-    setTimeout(() => {
-      watchAdBtn.classList.remove('btn-instant-bounce');
-      watchAdBtn.innerHTML = originalHtml;
-    }, 350);
+        if (adRemaining <= 0) {
+          clearInterval(adCountdownInterval);
+          adFinished = true;
+          if (claimAdBtn) {
+            claimAdBtn.disabled = false;
+            claimAdBtn.classList.add('btn-instant-bounce');
+          }
+          if (claimAdText) {
+            claimAdText.innerText = isAr ? '🎉 استلام المكافأة الآن (+1 نقطة)!' : '🎉 Claim Reward Now (+1 PTS)!';
+          }
+          triggerHaptic('notification-success');
+        }
+      }, 1000);
+    });
+  }
 
-    // 2. Asynchronous backend request in the background (non-blocking)
-    fetch('/api/ads/reward', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
+  // Close ad button: strictly enforces 15-second watch duration
+  if (closeAdBtn) {
+    closeAdBtn.addEventListener('click', () => {
+      const isAr = state.selectedLanguage === 'ar';
+      if (!adFinished) {
+        triggerHaptic('impact');
+        showToast(isAr ? 'عذراً، يجب مشاهدة الإعلان لمدة 15 ثانية على الأقل' : 'Sorry, you must watch the ad for at least 15 seconds', 'error');
+        resetAdState();
+        if (adModal) adModal.classList.remove('active');
+        return;
+      }
+      resetAdState();
+      if (adModal) adModal.classList.remove('active');
+    });
+  }
+
+  // Claim Reward button: executed only after 15 seconds have fully elapsed
+  if (claimAdBtn) {
+    claimAdBtn.addEventListener('click', async () => {
+      if (!adFinished) return;
+      const isAr = state.selectedLanguage === 'ar';
+      triggerHaptic('notification-success');
+      if (adModal) adModal.classList.remove('active');
+
+      try {
+        const res = await fetch('/api/ads/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
+        });
+        const json = await res.json();
         if (json.success && json.data) {
           state.totalPoints = json.data.totalPoints;
           state.adsWatchedToday = json.data.adsWatchedToday;
+          state.totalAdsWatched += 1;
+          state.adsWatchedForWithdrawal += 1;
           state.dailyMiningRate = json.data.currentDailyMiningRate;
           updateUI();
           saveStateCache();
           startMiningTicker();
-        } else if (json.success === false) {
-          // Rollback on rejection
-          state.totalPoints = prevPoints;
-          state.adsWatchedToday = prevToday;
-          state.totalAdsWatched = prevTotal;
-          state.adsWatchedForWithdrawal = prevWithdraw;
-          state.dailyMiningRate = prevRate;
-          updateUI();
-          saveStateCache();
-          startMiningTicker();
-          showToast(json.message || 'Ad reward failed', 'error');
+          showToast(isAr ? '🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة أضيفت إلى رصيدك.' : '🎉 Ad completed! +1 Point added to your account.', 'success');
+        } else {
+          showToast(json.message || 'Ad reward error', 'error');
         }
-      })
-      .catch(() => {
-        saveStateCache();
-      });
-  });
+      } catch (err) {
+        showToast(isAr ? 'خطأ في الاتصال بالسيرفر' : 'Connection error', 'error');
+      }
+      resetAdState();
+    });
+  }
 
   // Setup Community Tasks Refresh Button & Initial Load
   const refreshTasksBtn = document.getElementById('btn-refresh-user-tasks');
@@ -1170,6 +1210,134 @@ function setupTasksTab() {
       loadUserTasks();
     });
   }
+
+  // ==========================================================================
+  // P2P TASK CREATION / PROMOTE CHANNEL SETUP (HARDCODED WALLET)
+  // ==========================================================================
+  const P2P_DEPOSIT_ADDRESS = 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M';
+  const openP2pBtn = document.getElementById('btn-open-create-p2p-task');
+  const p2pModal = document.getElementById('modal-p2p-task');
+  const closeP2pBtn = document.getElementById('btn-close-p2p-modal');
+  const p2pMembersSelect = document.getElementById('p2p-target-members');
+  const p2pCostDisplay = document.getElementById('p2p-calculated-ton');
+  const p2pSubmitBtn = document.getElementById('btn-submit-p2p-ton');
+  const p2pSubmitText = document.getElementById('btn-p2p-submit-text');
+
+  const calculateP2pCost = () => {
+    const members = parseInt(p2pMembersSelect?.value || '100', 10);
+    const costTon = Number(((members / 100) * 0.1).toFixed(2));
+    if (p2pCostDisplay) p2pCostDisplay.innerText = `${costTon.toFixed(2)} TON`;
+    if (p2pSubmitText) {
+      const isAr = state.selectedLanguage === 'ar';
+      p2pSubmitText.innerText = isAr ? `دفع ${costTon.toFixed(2)} TON عبر TON Connect` : `Pay ${costTon.toFixed(2)} TON via TON Connect`;
+    }
+    return costTon;
+  };
+
+  if (openP2pBtn && p2pModal) {
+    openP2pBtn.addEventListener('click', () => {
+      triggerHaptic('impact');
+      calculateP2pCost();
+      p2pModal.classList.add('active');
+    });
+  }
+
+  if (closeP2pBtn && p2pModal) {
+    closeP2pBtn.addEventListener('click', () => {
+      p2pModal.classList.remove('active');
+    });
+  }
+
+  if (p2pMembersSelect) {
+    p2pMembersSelect.addEventListener('change', calculateP2pCost);
+  }
+
+  if (p2pSubmitBtn) {
+    p2pSubmitBtn.addEventListener('click', async () => {
+      triggerHaptic('impact');
+      const isAr = state.selectedLanguage === 'ar';
+      const titleInput = document.getElementById('p2p-task-title');
+      const linkInput = document.getElementById('p2p-task-link');
+      const rewardSelect = document.getElementById('p2p-reward-per-user');
+
+      const title = titleInput?.value.trim() || '';
+      const link = linkInput?.value.trim() || '';
+      const members = parseInt(p2pMembersSelect?.value || '100', 10);
+      const rewardPoints = parseInt(rewardSelect?.value || '10', 10);
+      const costTon = calculateP2pCost();
+
+      if (!title || !link) {
+        showToast(isAr ? 'الرجاء إدخال اسم القناة والرابط' : 'Please enter channel title and link', 'error');
+        return;
+      }
+
+      if (!link.startsWith('http') && !link.startsWith('https://t.me/')) {
+        showToast(isAr ? 'الرجاء إدخال رابط صالح يبدأ بـ https://' : 'Please enter a valid link starting with https://', 'error');
+        return;
+      }
+
+      if (!tonConnectUI) {
+        initTonConnect();
+      }
+
+      if (tonConnectUI) {
+        if (!tonConnectUI.connected) {
+          showToast(isAr ? 'يرجى ربط محفظة TON أولاً لإتمام الدفع' : 'Please connect your TON wallet first', 'info');
+          try {
+            await tonConnectUI.openModal();
+          } catch (_) {}
+          return;
+        }
+
+        try {
+          const nanoAmount = (BigInt(Math.floor(costTon * 1e9))).toString();
+          const tx = {
+            validUntil: Math.floor(Date.now() / 1000) + 600,
+            messages: [
+              {
+                address: P2P_DEPOSIT_ADDRESS,
+                amount: nanoAmount,
+              },
+            ],
+          };
+
+          showToast(isAr ? 'جاري فتح المحفظة لتأكيد معاملة النشر...' : 'Opening wallet to confirm promotion...', 'info');
+          const result = await tonConnectUI.sendTransaction(tx);
+          if (result) {
+            triggerHaptic('notification-success');
+
+            // Send task to backend
+            const res = await fetch('/api/tasks/p2p/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title,
+                actionUrl: link,
+                targetMembers: members,
+                rewardPoints,
+              }),
+            });
+            const json = await res.json();
+            if (json.success) {
+              showToast(isAr ? '🎉 تم نشر مهمتك بنجاح في قسم مهام المجتمع!' : '🎉 Task published successfully in community tasks!', 'success');
+              if (p2pModal) p2pModal.classList.remove('active');
+              if (titleInput) titleInput.value = '';
+              if (linkInput) linkInput.value = '';
+              loadUserTasks();
+            } else {
+              showToast(json.message || 'Error saving task', 'error');
+            }
+          }
+        } catch (err) {
+          console.warn('P2P payment canceled or error:', err);
+          showToast(isAr ? 'تم إلغاء عملية الدفع أو حدث خطأ في المحفظة' : 'Payment cancelled or wallet error', 'error');
+        }
+      } else {
+        showToast(isAr ? 'نظام المحفظة قيد التهيئة...' : 'Wallet system initializing...', 'info');
+      }
+    });
+  }
+
   loadUserTasks();
 }
 
@@ -2197,12 +2365,12 @@ function setupAdditionalModals() {
         const targetId = searchInput ? searchInput.value.trim() : '';
 
         if (!targetId) {
-          showToast(isAr ? 'الرجاء إدخال معرف المستخدم' : 'Please enter Telegram User ID', 'error');
+          showToast(isAr ? 'الرجاء إدخال ID أو اسم المستخدم' : 'Please enter Telegram User ID or Username', 'error');
           return;
         }
 
         try {
-          const res = await fetch(`/api/admin/user/${targetId}`, {
+          const res = await fetch(`/api/admin/user/${encodeURIComponent(targetId)}`, {
             headers: {
               'x-telegram-user-id': String(state.user.telegramId),
             },
@@ -2537,6 +2705,12 @@ function updateUI() {
   // User name
   const nameElem = document.getElementById('user-display-name');
   if (nameElem) nameElem.innerText = state.user.firstName || 'Cosmic Miner';
+
+  // Dynamic 3D Robohash Robot Avatar on Home Tab
+  const homeRobotImg = document.getElementById('home-robot-avatar');
+  if (homeRobotImg && state.user?.telegramId) {
+    homeRobotImg.src = `https://robohash.org/${state.user.telegramId}?set=set1&size=200x200`;
+  }
 
   // Balances
   const walletElem = document.getElementById('wallet-balance-display');

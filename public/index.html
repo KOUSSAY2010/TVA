@@ -53,11 +53,13 @@
       
       <!-- ================= 1. VIEW: HOME (DASHBOARD) ================= -->
       <section id="view-home" class="view-panel active">
-        <!-- TVA Official Brand Hero Banner -->
-        <div class="brand-hero-banner">
-          <img src="/img/TVA.jpg" alt="TVA TON Mining Network" class="brand-banner-img" />
-          <div class="brand-banner-overlay">
-            <span class="brand-tag">TVA OFFICIAL MINING</span>
+        <!-- Dynamic 3D Robohash Robot Avatar Section -->
+        <div class="home-robot-container">
+          <div class="robot-glow-backdrop"></div>
+          <img id="home-robot-avatar" src="https://robohash.org/TVA?set=set1&size=200x200" alt="Mining Robot 3D" class="home-robot-img" />
+          <div class="robot-status-pill">
+            <span class="status-pulse-dot"></span>
+            <span>TVA AI MINER V3.0</span>
           </div>
         </div>
 
@@ -237,9 +239,15 @@
               <i class="fa-solid fa-list-check text-neon"></i>
               <h3 class="view-title-sm" data-i18n="community_tasks_title">مهام سريعة ومكافآت فورية</h3>
             </div>
-            <button id="btn-refresh-user-tasks" class="btn-icon-tiny" title="تحديث المهام">
-              <i class="fa-solid fa-rotate-right"></i>
-            </button>
+            <div class="flex-align-center gap-2">
+              <button type="button" id="btn-open-create-p2p-task" class="btn-cta btn-compact glow-btn" title="ترويج قناة أو بوت">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span data-i18n="promote_channel_btn">ترويج قناة</span>
+              </button>
+              <button id="btn-refresh-user-tasks" class="btn-icon-tiny" title="تحديث المهام">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
           </div>
           <p class="card-caption" data-i18n="community_tasks_desc">
             أكمل المهام البسيطة التالية واحصل على نقاط فورية تزيد من سرعتك في تعدين TON!
@@ -939,7 +947,7 @@
                 <h4>بحث عن مستخدم وتعديل الرصيد</h4>
               </div>
               <div class="promo-input-group mb-2">
-                <input type="number" id="admin-search-user-id" placeholder="Telegram User ID (e.g. 782491024)" />
+                <input type="text" id="admin-search-user-id" placeholder="ID أو اسم المستخدم (مثال: @username أو 782491024)" />
                 <button type="button" id="btn-admin-search-user" class="btn-cta btn-compact">
                   <i class="fa-solid fa-magnifying-glass"></i>
                   <span>بحث</span>
@@ -987,6 +995,120 @@
           </div>
 
         </div>
+      </div>
+    <!-- Modal: AdsGram 15-Second Video Ad Player -->
+    <div id="modal-ad-player" class="modal-backdrop">
+      <div class="modal-sheet ad-player-sheet">
+        <div class="ad-player-header">
+          <div class="ad-badge-group">
+            <span class="ad-live-pill"><span class="status-pulse-dot"></span> AdsGram Sponsored</span>
+          </div>
+          <button type="button" id="btn-close-ad-player" class="btn-ad-close" title="إغلاق">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="ad-player-body">
+          <div class="ad-visual-simulation">
+            <div class="ad-scanner-line"></div>
+            <div class="ad-center-icon">
+              <i class="fa-solid fa-film text-neon"></i>
+            </div>
+            <div class="ad-timer-ring">
+              <span id="ad-countdown-number" class="countdown-digits">15</span>
+              <span class="countdown-label">ثانية متبقية</span>
+            </div>
+          </div>
+
+          <div class="ad-meta-info">
+            <h4 class="ad-title" id="ad-player-title">جاري تشغيل الإعلان الترويجي...</h4>
+            <p class="ad-desc">انتظر حتى يكتمل العداد لاحتساب نقطة التعدين وزيادة معدل الهاش ريت.</p>
+          </div>
+
+          <!-- Progress bar inside ad -->
+          <div class="progress-bar-track mt-2">
+            <div class="progress-bar-fill" id="ad-timer-progress-fill" style="width: 0%;"></div>
+          </div>
+
+          <div class="ad-warning-note mt-3">
+            <i class="fa-solid fa-triangle-exclamation text-neon"></i>
+            <span>تنبيه: إغلاق الإعلان قبل انتهاء 15 ثانية يلغي المكافأة بالكامل.</span>
+          </div>
+        </div>
+
+        <button type="button" id="btn-claim-ad-reward" class="btn-cta glow-btn mt-3" disabled>
+          <i class="fa-solid fa-clock"></i>
+          <span id="btn-claim-ad-text">انتظر انتهاء الإعلان (15 ثانية)...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Create P2P Task / Promote Channel -->
+    <div id="modal-p2p-task" class="modal-backdrop">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-bullhorn text-neon"></i>
+            <h3>ترويج قناة أو مجموعة (P2P Task)</h3>
+          </div>
+          <button type="button" id="btn-close-p2p-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption">
+          انشر رابط قناتك أو مجموعتك لمئات المعدنين النشطين مع الدفع المباشر عبر TON Connect.
+        </p>
+
+        <form id="form-p2p-task" class="p2p-task-form">
+          <div class="form-group mb-2">
+            <label class="input-label" for="p2p-task-title">اسم القناة أو المهمة</label>
+            <input type="text" id="p2p-task-title" placeholder="مثال: انضم إلى قناة كريبتو العرب" required />
+          </div>
+
+          <div class="form-group mb-2">
+            <label class="input-label" for="p2p-task-link">رابط القناة أو المجموعة (Telegram Link)</label>
+            <input type="url" id="p2p-task-link" placeholder="https://t.me/your_channel" required />
+          </div>
+
+          <div class="admin-form-grid mb-2">
+            <div class="form-group">
+              <label class="input-label" for="p2p-target-members">العدد المستهدف (أعضاء)</label>
+              <select id="p2p-target-members" class="form-select">
+                <option value="100">100 عضو</option>
+                <option value="250">250 عضو</option>
+                <option value="500">500 عضو</option>
+                <option value="1000">1000 عضو</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="input-label" for="p2p-reward-per-user">مكافأة كل مستخدم (نقاط)</label>
+              <select id="p2p-reward-per-user" class="form-select">
+                <option value="5">5 نقاط</option>
+                <option value="10" selected>10 نقاط</option>
+                <option value="20">20 نقطة</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dynamic Cost Calculation Box -->
+          <div class="p2p-cost-summary-card mb-3">
+            <div class="cost-row">
+              <span>التكلفة الإجمالية للنشر:</span>
+              <span class="cost-value text-neon" id="p2p-calculated-ton">0.10 TON</span>
+            </div>
+            <div class="cost-destination-info">
+              <span class="sub-label">عنوان محفظة الاستلام المعتمد:</span>
+              <code class="wallet-badge" id="p2p-deposit-address-code">UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M</code>
+            </div>
+          </div>
+
+          <button type="button" id="btn-submit-p2p-ton" class="btn-cta glow-btn">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="btn-p2p-submit-text">دفع 0.10 TON عبر TON Connect</span>
+          </button>
+        </form>
       </div>
     </div>
 

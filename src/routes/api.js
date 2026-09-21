@@ -629,6 +629,22 @@ apiRouter.post('/admin/withdrawals/review', isAdmin, async (req, res) => {
         user.tonBalance = Number((user.tonBalance + withdrawal.amountTon).toFixed(6));
         await user.save();
       }
+    } else if (action === 'approved') {
+      // Broadcast automated withdrawal proof to @TVA_Payment channel
+      try {
+        const botInstance = req.app.get('botInstance');
+        if (botInstance) {
+          const user = await User.findOne({ telegramId: withdrawal.telegramId });
+          const userDisplay = (user && user.username) ? `@${user.username}` : (withdrawal.username ? `@${withdrawal.username}` : `ID: ${withdrawal.telegramId}`);
+          const amountDisplay = `${withdrawal.netAmountTon || withdrawal.amountTon} TON`;
+          const proofMessage = `✅ تم سحب ${amountDisplay} بنجاح للمستخدم ${userDisplay}!`;
+          await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage).catch((err) => {
+            console.warn('⚠️ Could not send payment proof to @TVA_Payment:', err.message);
+          });
+        }
+      } catch (postErr) {
+        console.warn('⚠️ Error sending channel withdrawal proof:', postErr.message);
+      }
     }
 
     await withdrawal.save();
@@ -644,19 +660,28 @@ apiRouter.post('/admin/withdrawals/review', isAdmin, async (req, res) => {
 });
 
 /**
- * GET /api/admin/user/:telegramId
- * Searches and retrieves a user's details by Telegram ID
+ * GET /api/admin/user/:query
+ * Searches and retrieves a user's details by Telegram ID OR Username (@username or username)
  */
-apiRouter.get('/admin/user/:telegramId', isAdmin, async (req, res) => {
+apiRouter.get('/admin/user/:query', isAdmin, async (req, res) => {
   try {
-    const targetId = Number(req.params.telegramId);
-    if (!targetId) {
-      return res.status(400).json({ success: false, message: 'Invalid target telegramId' });
+    const rawQuery = String(req.params.query || '').trim();
+    if (!rawQuery) {
+      return res.status(400).json({ success: false, message: 'Missing search query' });
     }
 
-    const user = await User.findOne({ telegramId: targetId });
+    const cleanQuery = rawQuery.replace(/^@/, '').trim();
+    const isNum = !isNaN(Number(cleanQuery)) && cleanQuery !== '';
+
+    const conditions = [];
+    if (isNum) {
+      conditions.push({ telegramId: Number(cleanQuery) });
+    }
+    conditions.push({ username: new RegExp('^' + cleanQuery + '$', 'i') });
+
+    const user = await User.findOne({ $or: conditions });
     if (!user) {
-      return res.status(404).json({ success: false, message: `User ${targetId} not found.` });
+      return res.status(404).json({ success: false, message: `المستخدم "${rawQuery}" غير موجود.` });
     }
 
     const dailyRate = user.calculateDailyMiningRate();
@@ -677,6 +702,42 @@ apiRouter.get('/admin/user/:telegramId', isAdmin, async (req, res) => {
         createdAt: user.createdAt,
       },
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * POST /api/tasks/p2p/create
+ * Creates a user-promoted P2P task after TON Connect payment confirmation
+ */
+apiRouter.post('/tasks/p2p/create', async (req, res) => {
+  try {
+    const { title, actionUrl, targetMembers, rewardPoints } = req.body;
+    if (!title || !actionUrl) {
+      return res.status(400).json({ success: false, message: 'Missing required task fields' });
+    }
+
+    const reward = Number(rewardPoints) || 10;
+    const target = Number(targetMembers) || 100;
+
+    const newTask = await PartnerTask.create({
+      title: title.trim(),
+      titleAr: title.trim(),
+      description: `مهمة مجتمعية: انضم واحصل على ${reward} نقطة`,
+      descriptionAr: `مهمة مجتمعية: انضم واحصل على ${reward} نقطة`,
+      actionUrl: actionUrl.trim(),
+      rewardAmount: reward,
+      rewardType: 'points',
+      category: 'community',
+      targetMembers: target,
+      currentMembers: 0,
+      autoVerify: true,
+      active: true,
+      createdBy: req.telegramId ? String(req.telegramId) : 'p2p_user',
+    });
+
+    return res.json({ success: true, data: newTask });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

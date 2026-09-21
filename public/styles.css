@@ -2805,3 +2805,269 @@ body[dir="rtl"] .rig-badge-overlay {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   DYNAMIC 3D ROBOHASH ROBOT HERO BANNER
+   ========================================================================== */
+.home-robot-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+  overflow: visible;
+}
+
+.robot-glow-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  width: 170px;
+  height: 170px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(59, 130, 246, 0.3) 45%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+  filter: blur(14px);
+  z-index: 1;
+  pointer-events: none;
+  animation: pulseGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% { transform: translate(-50%, -55%) scale(0.9); opacity: 0.6; }
+  100% { transform: translate(-50%, -55%) scale(1.15); opacity: 0.95; }
+}
+
+.home-robot-img {
+  position: relative;
+  z-index: 2;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 15px rgba(168, 85, 247, 0.5));
+  animation: floatRobot 3.5s ease-in-out infinite alternate;
+  user-select: none;
+}
+
+@keyframes floatRobot {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1.5deg); }
+  100% { transform: translateY(-4px) rotate(-1.5deg); }
+}
+
+.robot-status-pill {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--neon-cyan, #00f0ff);
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.status-pulse-dot {
+  width: 7px;
+  height: 7px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ==========================================================================
+   ADSPROP / ADSGRAM 15-SEC VIDEO AD PLAYER MODAL
+   ========================================================================== */
+.ad-player-sheet {
+  max-width: 440px;
+  background: linear-gradient(180deg, #131127 0%, #0d0b1a 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.25) !important;
+}
+
+.ad-player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.ad-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.btn-ad-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ad-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.ad-visual-simulation {
+  position: relative;
+  height: 160px;
+  background: radial-gradient(circle at center, #1e1b4b 0%, #090814 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.ad-scanner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00f0ff, transparent);
+  box-shadow: 0 0 10px #00f0ff;
+  animation: scanLine 2s linear infinite;
+}
+
+@keyframes scanLine {
+  0% { top: 0%; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.ad-center-icon {
+  font-size: 2.2rem;
+  color: var(--neon-cyan);
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.5));
+}
+
+.ad-timer-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdown-digits {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(168, 85, 247, 0.8);
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.ad-meta-info {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.ad-meta-info .ad-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.ad-meta-info .ad-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ad-warning-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   P2P TASK CREATION MODAL STYLES
+   ========================================================================== */
+.p2p-cost-summary-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.cost-value {
+  font-size: 1.15rem;
+  font-family: monospace;
+}
+
+.cost-destination-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 0.5rem;
+}
+
+.cost-destination-info .sub-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.cost-destination-info .wallet-badge {
+  font-size: 0.7rem;
+  font-family: monospace;
+  word-break: break-all;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  color: var(--neon-cyan);
+}
