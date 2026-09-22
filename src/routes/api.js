@@ -1,6 +1,6 @@
 import express from 'express';
 import MiningService from '../services/miningService.js';
-import { User, WithdrawalRequest, PromoCode, Task } from '../models/index.js';
+import { User, WithdrawalRequest, PromoCode, Task, SystemConfig } from '../models/index.js';
 import config from '../config/index.js';
 
 export const apiRouter = express.Router();
@@ -74,19 +74,38 @@ apiRouter.get('/user/me', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing telegramId' });
     }
 
+    const rawRef = req.query.referredBy || req.query.start_param;
     let user = await User.findOne({ telegramId: req.telegramId });
     if (!user) {
       user = await MiningService.getOrCreateUser(
         { id: req.telegramId, username: req.query.username || '' },
-        req.query.referredBy
+        rawRef
       );
     } else {
+      // If user exists but has no referrer, check if one was provided in the query
+      if (!user.referredBy && rawRef) {
+        const cleanRef = String(rawRef).replace(/^ref_?/i, '').trim();
+        const parsedRef = parseInt(cleanRef, 10);
+        if (!isNaN(parsedRef) && parsedRef > 0 && parsedRef !== user.telegramId) {
+          const referrerExists = await User.exists({ telegramId: parsedRef });
+          if (referrerExists) {
+            user.referredBy = parsedRef;
+          }
+        }
+      }
       user.checkAndResetDailyAds();
       user.updateRigsStatus();
       await user.save();
     }
 
     const { accumulatedTon, dailyRate, elapsedSeconds } = MiningService.calculateAccumulatedTon(user);
+
+    // Calculate total friends referred by this user
+    const totalFriends = await User.countDocuments({ referredBy: user.telegramId });
+
+    // Dynamic settings from SystemConfig
+    const sysSettings = await SystemConfig.getOrCreateConfig();
+    const requireRig = sysSettings.requireRigForWithdrawal ?? config.withdrawals.requireRigForWithdrawal;
 
     return res.json({
       success: true,
@@ -98,6 +117,7 @@ apiRouter.get('/user/me', async (req, res) => {
           tonBalance: user.tonBalance,
           totalPoints: user.totalPoints,
           activeReferralsCount: user.activeReferralsCount,
+          totalFriends,
           adsWatchedToday: user.adsWatchedToday,
           maxDailyAds: config.ads.maxDailyAds,
           remainingDailyAds: Math.max(0, config.ads.maxDailyAds - user.adsWatchedToday),
@@ -106,6 +126,7 @@ apiRouter.get('/user/me', async (req, res) => {
           withdrawalAdsRequired: config.withdrawals.adsRequiredForWithdrawal,
           hasWatchedAdForPromo: user.hasWatchedAdForPromo,
           rigs: user.rigs,
+          hasActiveRigs: user.rigs && user.rigs.length > 0,
           isAdmin: isUserAdmin(user.telegramId),
         },
         mining: {
@@ -116,9 +137,9 @@ apiRouter.get('/user/me', async (req, res) => {
           pointsRateBonus: user.totalPoints * config.mining.rateBoostPerPoint,
         },
         rules: {
-          requireRigForWithdrawal: config.withdrawals.requireRigForWithdrawal,
-          minWithdrawalTon: config.withdrawals.minAmountTon,
-          withdrawalFeePercent: config.withdrawals.feePercent,
+          requireRigForWithdrawal: Boolean(requireRig),
+          minWithdrawalTon: sysSettings.minWithdrawalTon || config.withdrawals.minAmountTon,
+          withdrawalFeePercent: sysSettings.withdrawalFeePercent || config.withdrawals.feePercent,
         },
       },
     });
@@ -545,6 +566,103 @@ apiRouter.post('/tasks/:id/complete', async (req, res) => {
 // ==========================================================================
 
 /**
+ * GET /api/admin/stats
+ * Global statistics dashboard:
+ * 1. Total Users
+ * 2. Total Combined Mining Rate (of ALL users)
+ * 3. Total Deposits (TON spent on rigs & deposits)
+ * 4. Total Withdrawals (TON paid out)
+ */
+apiRouter.get('/admin/stats', isAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments({});
+
+    // Calculate combined daily mining rate across all users
+    const users = await User.find({}, 'totalPoints rigs');
+    let combinedMiningRate = 0;
+    users.forEach((u) => {
+      combinedMiningRate += u.calculateDailyMiningRate();
+    });
+    combinedMiningRate = Number(combinedMiningRate.toFixed(6));
+
+    // Sum of all TON spent on rigs / deposits
+    const depositAgg = await User.aggregate([
+      { $unwind: '$rigs' },
+      { $group: { _id: null, total: { $sum: '$rigs.costTon' } } }
+    ]);
+    const totalDeposits = depositAgg.length > 0 ? Number(depositAgg[0].total.toFixed(4)) : 0;
+
+    // Sum of all approved/completed withdrawals
+    const withdrawalAgg = await WithdrawalRequest.aggregate([
+      { $match: { status: { $in: ['approved', 'completed'] } } },
+      { $group: { _id: null, total: { $sum: '$amountTon' } } }
+    ]);
+    const totalWithdrawals = withdrawalAgg.length > 0 ? Number(withdrawalAgg[0].total.toFixed(4)) : 0;
+
+    const sysConfig = await SystemConfig.getOrCreateConfig();
+
+    return res.json({
+      success: true,
+      data: {
+        totalUsers,
+        combinedMiningRate,
+        totalDeposits,
+        totalWithdrawals,
+        requireRigForWithdrawal: Boolean(sysConfig.requireRigForWithdrawal),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * GET /api/admin/settings
+ * Retrieves global admin settings including withdrawal paywall toggle
+ */
+apiRouter.get('/admin/settings', isAdmin, async (req, res) => {
+  try {
+    const sysConfig = await SystemConfig.getOrCreateConfig();
+    return res.json({
+      success: true,
+      data: {
+        requireRigForWithdrawal: Boolean(sysConfig.requireRigForWithdrawal),
+        minWithdrawalTon: sysConfig.minWithdrawalTon,
+        withdrawalFeePercent: sysConfig.withdrawalFeePercent,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * POST /api/admin/settings/toggle-rig-withdrawal
+ * Toggles "Require Plan Purchase for Withdrawal"
+ */
+apiRouter.post('/admin/settings/toggle-rig-withdrawal', isAdmin, async (req, res) => {
+  try {
+    const { enabled } = req.body;
+    const sysConfig = await SystemConfig.getOrCreateConfig();
+    sysConfig.requireRigForWithdrawal = Boolean(enabled);
+    await sysConfig.save();
+
+    // Sync in-memory config
+    config.withdrawals.requireRigForWithdrawal = sysConfig.requireRigForWithdrawal;
+
+    return res.json({
+      success: true,
+      data: { requireRigForWithdrawal: sysConfig.requireRigForWithdrawal },
+      message: sysConfig.requireRigForWithdrawal
+        ? 'تم تفعيل شرط شراء منصة للسحب بنجاح (Require Plan Purchase: ON)'
+        : 'تم إلغاء شرط شراء منصة للسحب بنجاح (Require Plan Purchase: OFF)',
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
  * POST /api/admin/promocode/generate
  * Generates a new promotional code with custom rewards and usage caps
  */
@@ -867,7 +985,7 @@ apiRouter.post('/admin/tasks', isAdmin, async (req, res) => {
  * PUT /api/admin/tasks/:id
  * Updates an existing task
  */
-apiRouter.put('/api/admin/tasks/:id', isAdmin, async (req, res) => {
+apiRouter.put('/admin/tasks/:id', isAdmin, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {
@@ -922,7 +1040,7 @@ apiRouter.put('/api/admin/tasks/:id', isAdmin, async (req, res) => {
  * DELETE /api/admin/tasks/:id
  * Deletes a task
  */
-apiRouter.delete('/api/admin/tasks/:id', isAdmin, async (req, res) => {
+apiRouter.delete('/admin/tasks/:id', isAdmin, async (req, res) => {
   try {
     const deleted = await Task.findByIdAndDelete(req.params.id);
     if (!deleted) {

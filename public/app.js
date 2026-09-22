@@ -37,7 +37,7 @@ const TRANSLATIONS = {
     // Rigs Store
     rigs_store_badge: 'متجر منصات التعدين',
     rigs_store_title: 'وحدات التعدين الآلية',
-    rigs_store_desc: 'شغل منصات التعدين المتقدمة لترقية حسابك بشكل دائم وكسب آلاف النقاط لمضاعفة سرعة التعدين.',
+    rigs_store_desc: 'شغل منصات التعدين المتقدمة لترقية حسابك ومضاعفة أرباح TON اليومية مباشرة.',
     active_rigs_label: 'المنصات النشطة حالياً:',
     days_contract_tag: 'ترقية دائمة مدى الحياة',
     lifetime_contract_tag: 'ترقية دائمة مدى الحياة',
@@ -120,6 +120,19 @@ const TRANSLATIONS = {
     admin_no_withdrawals: 'لا توجد طلبات سحب معلقة حالياً.',
     admin_approve_btn: 'موافقة',
     admin_reject_btn: 'رفض',
+    admin_stats_tab: 'الإحصائيات العامة',
+    admin_tasks_tab: 'إدارة المهام',
+    admin_promo_tab: 'الرموز الترويجية',
+    admin_withdrawals_tab: 'طلبات السحب',
+    admin_users_tab: 'المستخدمين',
+    admin_total_users: 'إجمالي المستخدمين',
+    admin_combined_rate: 'معدل التعدين الكلي (جميع المستخدمين)',
+    admin_total_deposits: 'إجمالي الإيداعات',
+    admin_total_withdrawals: 'إجمالي السحوبات',
+    admin_setting_withdrawal_title: 'إعدادات وقواعد السحب',
+    admin_toggle_paywall_title: 'اشتراط شراء منصة تعدين للسحب',
+    admin_toggle_paywall_desc: 'عند التفعيل، لن يتمكن أي مستخدم من سحب رصيده إلا إذا كان قد اشترى منصة تعدين واحدة على الأقل.',
+    rig_daily_profit: 'الربح اليومي',
 
     // Navigation Tabs
     nav_home: 'الرئيسية',
@@ -133,7 +146,9 @@ const TRANSLATIONS = {
     profile_support_sub: 'تواصل مباشر مع الإدارة عبر تلغرام',
     support_chip_247: '24/7',
 
-    // Deposit
+    // Deposit & Withdraw
+    deposit_short: 'إيداع',
+    withdraw_short: 'سحب',
     go_to_deposit: 'إيداع TON',
     deposit_sub: 'TON Connect',
     modal_deposit_title: 'إيداع رصيد TON',
@@ -141,7 +156,6 @@ const TRANSLATIONS = {
     connect_wallet_label: 'ربط المحفظة (Tonkeeper / Telegram Wallet)',
     select_deposit_amount: 'المبلغ المراد إيداعه (TON)',
     btn_send_deposit: 'إرسال المعاملة عبر المحفظة',
-    manual_deposit_title: 'أو التحويل المباشر لعنوان المحفظة:',
 
     // Force Sub
     force_sub_title: 'اشتراك إجباري في القناة',
@@ -178,7 +192,7 @@ const TRANSLATIONS = {
     // Rigs Store
     rigs_store_badge: 'Mining Rig Store',
     rigs_store_title: 'Automated Mining Units',
-    rigs_store_desc: 'Deploy advanced mining rigs for lifetime upgrades and earn thousands of points to boost your mining speed.',
+    rigs_store_desc: 'Deploy advanced mining rigs to boost your daily TON profits directly.',
     active_rigs_label: 'Currently Active Rigs:',
     days_contract_tag: 'Lifetime Upgrade',
     lifetime_contract_tag: 'Lifetime Upgrade',
@@ -261,6 +275,19 @@ const TRANSLATIONS = {
     admin_no_withdrawals: 'No pending withdrawal requests found.',
     admin_approve_btn: 'Approve',
     admin_reject_btn: 'Reject',
+    admin_stats_tab: 'Global Stats',
+    admin_tasks_tab: 'Task Manager',
+    admin_promo_tab: 'Promo Codes',
+    admin_withdrawals_tab: 'Withdrawals',
+    admin_users_tab: 'Users',
+    admin_total_users: 'Total Users',
+    admin_combined_rate: 'Total Combined Mining Rate',
+    admin_total_deposits: 'Total Deposits',
+    admin_total_withdrawals: 'Total Withdrawals',
+    admin_setting_withdrawal_title: 'Withdrawal Rules & Settings',
+    admin_toggle_paywall_title: 'Require Plan Purchase for Withdrawal',
+    admin_toggle_paywall_desc: 'When enabled, users cannot withdraw unless they have purchased at least one mining rig.',
+    rig_daily_profit: 'Daily Profit',
 
     // Navigation Tabs
     nav_home: 'Home',
@@ -274,7 +301,9 @@ const TRANSLATIONS = {
     profile_support_sub: 'Contact management directly via Telegram',
     support_chip_247: '24/7',
 
-    // Deposit
+    // Deposit & Withdraw
+    deposit_short: 'Deposit',
+    withdraw_short: 'Withdraw',
     go_to_deposit: 'Deposit TON',
     deposit_sub: 'TON Connect',
     modal_deposit_title: 'Deposit TON Balance',
@@ -282,7 +311,6 @@ const TRANSLATIONS = {
     connect_wallet_label: 'Connect Wallet (Tonkeeper / Telegram Wallet)',
     select_deposit_amount: 'Amount to Deposit (TON)',
     btn_send_deposit: 'Send Transaction via Wallet',
-    manual_deposit_title: 'Or direct transfer to wallet address:',
 
     // Force Sub
     force_sub_title: 'Mandatory Channel Subscription',
@@ -524,12 +552,17 @@ function getInitialLanguage() {
   if (saved && (saved === 'ar' || saved === 'en')) {
     return saved;
   }
-  // Auto-detect from Telegram language code
-  const tgLang = tg?.initDataUnsafe?.user?.language_code;
-  if (tgLang && tgLang.toLowerCase().startsWith('en')) {
-    return 'en';
+  // Check window.Telegram.WebApp.initDataUnsafe?.user?.language_code
+  // If NOT 'ar' (e.g., 'en', 'ru', etc.), dynamically default to English ('en')
+  const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
+  if (tgLang) {
+    if (tgLang.toLowerCase().startsWith('ar')) {
+      return 'ar';
+    } else {
+      return 'en';
+    }
   }
-  // Default to Arabic as primary target audience
+  // Default fallback
   return 'ar';
 }
 
@@ -974,6 +1007,11 @@ function renderDedicatedRigs() {
 
     const rigTitle = isAr ? rig.nameAr : rig.nameEn;
     const buyButtonText = `${t.buy_for} ${rig.cost} TON`;
+    const dailyTon = (rig.cost * 0.11).toFixed(2);
+    const dailyProfitDesc = isAr
+      ? `تزود ${dailyTon} TON في اليوم`
+      : `Provides ${dailyTon} TON daily`;
+    const dailyProfitLabel = t.rig_daily_profit || (isAr ? 'الربح اليومي' : 'Daily Profit');
 
     card.innerHTML = `
       <div class="rig-media-container">
@@ -989,16 +1027,15 @@ function renderDedicatedRigs() {
       </div>
       <div class="rig-dedicated-header">
         <span class="rig-dedicated-title">${rig.cost} TON ${isAr ? 'منصة' : 'Rig'}</span>
-        <span class="rig-dedicated-tag">${t.lifetime_contract_tag || t.days_contract_tag}</span>
+      </div>
+      <div class="rig-desc-banner">
+        <i class="fa-solid fa-bolt text-neon"></i>
+        <span>${dailyProfitDesc}</span>
       </div>
       <div class="rig-specs-row">
         <div class="spec-item">
-          <span class="spec-label">${t.rig_points_reward || (isAr ? 'مكافأة النقاط' : 'Points Reward')}</span>
-          <span class="spec-val text-neon">+${rig.pointsYield.toLocaleString()} ${isAr ? 'نقطة' : 'PTS'}</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-label">${t.rig_upgrade_type || (isAr ? 'نوع الترقية' : 'Upgrade Type')}</span>
-          <span class="spec-val text-green">${t.lifetime_type || (isAr ? 'دائمة مدى الحياة' : 'Lifetime')}</span>
+          <span class="spec-label">${dailyProfitLabel}</span>
+          <span class="spec-val text-neon">+${dailyTon} TON / ${isAr ? 'يوم' : 'day'}</span>
         </div>
       </div>
       <button class="btn-cta" onclick="handleBuyRig(${rig.cost})">
@@ -1010,7 +1047,7 @@ function renderDedicatedRigs() {
   });
 }
 
-// Buy Rig Action (Optimistic UI Update - Grants Points Directly)
+// Buy Rig Action (Optimistic UI Update)
 window.handleBuyRig = function (cost) {
   const isAr = state.selectedLanguage === 'ar';
 
@@ -1031,17 +1068,19 @@ window.handleBuyRig = function (cost) {
   const rig = RIG_TIERS.find((r) => r.cost === cost);
   const yieldPoints = rig?.pointsYield || (cost * 1100);
   const rateBonus = Number((yieldPoints * 0.0001).toFixed(4));
+  const dailyTon = (cost * 0.11).toFixed(2);
 
   state.walletBalance -= cost;
   state.totalPoints += yieldPoints;
   state.dailyMiningRate += rateBonus;
   state.activeRigsCount += 1;
+  state.hasActiveRigs = true;
 
   updateUI();
   saveStateCache();
   startMiningTicker();
 
-  showToast(isAr ? `⚡ تم تفعيل المنصة مدى الحياة بنجاح! (+${yieldPoints.toLocaleString()} نقطة)` : `⚡ Successfully deployed lifetime rig! (+${yieldPoints.toLocaleString()} PTS)`, 'success');
+  showToast(isAr ? `⚡ تم تفعيل المنصة بنجاح! (+${dailyTon} TON في اليوم)` : `⚡ Successfully deployed rig! (+${dailyTon} TON daily)`, 'success');
 
   // Snappy active button visual response
   const activeBtn = document.activeElement;
@@ -1426,6 +1465,13 @@ function setupWithdrawalModal() {
         return;
       }
 
+      // Rule: Paywall toggle - user must have purchased at least one rig if required
+      if (state.rules?.requireRigForWithdrawal && !state.hasActiveRigs && state.activeRigsCount === 0) {
+        triggerHaptic('impact');
+        showToast(isAr ? '⚠️ يجب شراء منصة تعدين واحدة على الأقل لتتمكن من سحب الأرباح.' : '⚠️ You must purchase at least one mining rig before you can withdraw.', 'error');
+        return;
+      }
+
       // 1. Instant Optimistic UI Update & Haptic Feedback (0ms delay)
       triggerHaptic('notification-success');
 
@@ -1584,11 +1630,29 @@ function setupProfileTab() {
     });
   }
 
-  // 3. Menu List Click Handlers
-  // 3a. Wallet Menu Item -> Opens Deposit & Wallet Modal
-  const menuWallet = document.getElementById('profile-menu-wallet');
+  // 3. Dual Deposit / Withdraw Action Buttons in Profile
   const depositModal = document.getElementById('deposit-modal');
   const withdrawModal = document.getElementById('withdrawal-modal');
+
+  const profileDepositBtn = document.getElementById('btn-profile-deposit');
+  if (profileDepositBtn) {
+    profileDepositBtn.addEventListener('click', () => {
+      triggerHaptic('selection');
+      if (depositModal) depositModal.classList.add('active');
+    });
+  }
+
+  const profileWithdrawBtn = document.getElementById('btn-profile-withdraw');
+  if (profileWithdrawBtn) {
+    profileWithdrawBtn.addEventListener('click', () => {
+      triggerHaptic('selection');
+      if (withdrawModal) withdrawModal.classList.add('active');
+    });
+  }
+
+  // 4. Menu List Click Handlers
+  // 4a. Wallet Menu Item -> Opens Deposit Modal
+  const menuWallet = document.getElementById('profile-menu-wallet');
   if (menuWallet) {
     menuWallet.addEventListener('click', () => {
       triggerHaptic('selection');
@@ -1600,7 +1664,7 @@ function setupProfileTab() {
     });
   }
 
-  // 3b. Prominent Support Menu Item -> Opens Direct Telegram Support Chat (https://t.me/TVA_Support_Help)
+  // 4b. Prominent Support Menu Item -> Opens Direct Telegram Support Chat (https://t.me/TVA_Support_Help)
   const menuSupport = document.getElementById('profile-menu-support');
   if (menuSupport) {
     menuSupport.addEventListener('click', () => {
@@ -1614,7 +1678,7 @@ function setupProfileTab() {
     });
   }
 
-  // 3c. Settings Menu Item -> Opens Settings & Language Modal
+  // 4c. Settings Menu Item -> Opens Settings & Language Modal
   const menuSettings = document.getElementById('profile-menu-settings');
   const settingsModal = document.getElementById('settings-modal');
   if (menuSettings && settingsModal) {
@@ -1624,7 +1688,7 @@ function setupProfileTab() {
     });
   }
 
-  // 3d. Complaints & Suggestions Menu Item -> Opens Feedback Modal
+  // 4d. Complaints & Suggestions Menu Item -> Opens Feedback Modal
   const menuFeedback = document.getElementById('profile-menu-feedback');
   const feedbackModal = document.getElementById('feedback-modal');
   if (menuFeedback && feedbackModal) {
@@ -1634,13 +1698,14 @@ function setupProfileTab() {
     });
   }
 
-  // 3e. Admin Panel Menu Item -> Opens Admin Modal
+  // 4e. Admin Panel Menu Item -> Opens Admin Modal
   const menuAdmin = document.getElementById('profile-menu-admin');
   const adminModal = document.getElementById('admin-modal');
   if (menuAdmin && adminModal) {
     menuAdmin.addEventListener('click', () => {
       triggerHaptic('impact');
       adminModal.classList.add('active');
+      loadAdminStats();
       loadAdminTasks();
       loadAdminPromoCodes();
       loadPendingWithdrawals();
@@ -2203,6 +2268,7 @@ function setupAdditionalModals() {
         const panel = document.getElementById(targetPanelId);
         if (panel) panel.classList.add('active');
 
+        if (targetPanelId === 'admin-tab-stats') loadAdminStats();
         if (targetPanelId === 'admin-tab-tasks') loadAdminTasks();
         if (targetPanelId === 'admin-tab-promo') loadAdminPromoCodes();
         if (targetPanelId === 'admin-tab-withdrawals') loadPendingWithdrawals();
@@ -2453,6 +2519,96 @@ function setupAdditionalModals() {
         }
       });
     }
+
+    // 7. Global Admin Stats & Paywall Toggle
+    const refreshStatsBtn = document.getElementById('btn-admin-refresh-stats');
+    if (refreshStatsBtn) {
+      refreshStatsBtn.addEventListener('click', () => {
+        triggerHaptic('selection');
+        loadAdminStats();
+      });
+    }
+
+    const paywallToggle = document.getElementById('admin-toggle-require-rig');
+    const paywallDesc = document.getElementById('admin-paywall-status-desc');
+    if (paywallToggle) {
+      paywallToggle.addEventListener('change', async () => {
+        triggerHaptic('impact');
+        const isAr = state.selectedLanguage === 'ar';
+        const isChecked = paywallToggle.checked;
+
+        if (paywallDesc) {
+          paywallDesc.innerText = isChecked
+            ? (isAr ? 'مفعل: يشترط شراء منصة تعدين واحدة على الأقل قبل السماح بطلب السحب' : 'Active: Users must purchase at least one rig before withdrawing')
+            : (isAr ? 'معطل: يمكن لجميع المستخدمين السحب دون شرط شراء منصة' : 'Disabled: Any eligible user can withdraw without owning a rig');
+        }
+
+        try {
+          const res = await fetch('/api/admin/settings/toggle-rig-withdrawal', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-user-id': String(state.user.telegramId),
+            },
+            body: JSON.stringify({ enabled: isChecked }),
+          });
+          const json = await res.json();
+          if (json.success) {
+            if (state.rules) state.rules.requireRigForWithdrawal = isChecked;
+            showToast(json.message || (isAr ? 'تم تحديث الإعداد بنجاح' : 'Setting updated successfully'), 'success');
+          } else {
+            showToast(json.message || 'Error updating setting', 'error');
+            paywallToggle.checked = !isChecked;
+          }
+        } catch (_) {
+          showToast('Failed to update setting', 'error');
+          paywallToggle.checked = !isChecked;
+        }
+      });
+    }
+  }
+}
+
+/**
+ * Loads Global Statistics for the Admin Control Center
+ */
+async function loadAdminStats() {
+  const usersElem = document.getElementById('admin-stat-total-users');
+  const rateElem = document.getElementById('admin-stat-total-mining-rate');
+  const depositsElem = document.getElementById('admin-stat-total-deposits');
+  const withdrawalsElem = document.getElementById('admin-stat-total-withdrawals');
+  const paywallToggle = document.getElementById('admin-toggle-require-rig');
+  const paywallDesc = document.getElementById('admin-paywall-status-desc');
+  const isAr = state.selectedLanguage === 'ar';
+
+  try {
+    const res = await fetch('/api/admin/stats', {
+      headers: {
+        'x-telegram-user-id': String(state.user.telegramId),
+      },
+    });
+    const json = await res.json();
+    if (json.success && json.data) {
+      const { totalUsers, combinedMiningRate, totalDeposits, totalWithdrawals, requireRigForWithdrawal } = json.data;
+      if (usersElem) usersElem.innerText = Number(totalUsers || 0).toLocaleString();
+      if (rateElem) rateElem.innerText = `+${Number(combinedMiningRate || 0).toFixed(4)} TON/day`;
+      if (depositsElem) depositsElem.innerText = `${Number(totalDeposits || 0).toFixed(2)} TON`;
+      if (withdrawalsElem) withdrawalsElem.innerText = `${Number(totalWithdrawals || 0).toFixed(2)} TON`;
+
+      if (paywallToggle) {
+        paywallToggle.checked = Boolean(requireRigForWithdrawal);
+      }
+      if (state.rules) {
+        state.rules.requireRigForWithdrawal = Boolean(requireRigForWithdrawal);
+      }
+      if (paywallDesc) {
+        paywallDesc.innerText = requireRigForWithdrawal
+          ? (isAr ? 'مفعل: يشترط شراء منصة تعدين واحدة على الأقل قبل السماح بطلب السحب' : 'Active: Users must purchase at least one rig before withdrawing')
+          : (isAr ? 'معطل: يمكن لجميع المستخدمين السحب دون شرط شراء منصة' : 'Disabled: Any eligible user can withdraw without owning a rig');
+      }
+    }
+  } catch (err) {
+    console.warn('loadAdminStats error:', err);
   }
 }
 
@@ -2465,7 +2621,6 @@ function setupDepositModal() {
   const presetChips = document.querySelectorAll('#deposit-presets .preset-chip');
   const depositInput = document.getElementById('deposit-amount-ton');
   const sendTxBtn = document.getElementById('btn-send-deposit-tx');
-  const copyAddrBtn = document.getElementById('btn-copy-deposit-addr');
 
   if (depositModal) {
     if (closeDepositBtn) {
@@ -2485,20 +2640,6 @@ function setupDepositModal() {
         chip.classList.add('active');
         const amount = chip.getAttribute('data-amount');
         if (amount) depositInput.value = amount;
-      });
-    });
-  }
-
-  // Copy Address Button
-  if (copyAddrBtn) {
-    copyAddrBtn.addEventListener('click', () => {
-      triggerHaptic('notification-success');
-      const isAr = state.selectedLanguage === 'ar';
-      const addr = APP_CONFIG.depositWalletAddress;
-      navigator.clipboard.writeText(addr).then(() => {
-        showToast(isAr ? '📋 تم نسخ عنوان المحفظة بنجاح!' : '📋 Deposit address copied!', 'success');
-      }).catch(() => {
-        showToast(`Address: ${addr}`, 'info');
       });
     });
   }
@@ -2556,8 +2697,7 @@ function setupDepositModal() {
           showToast(isAr ? 'تم إلغاء المعاملة أو حدث خطأ في المحفظة' : 'Transaction canceled or wallet error', 'error');
         }
       } else {
-        // Fallback if TON Connect library was blocked or not yet ready
-        showToast(isAr ? `يرجى التحويل المباشر لعنوان المحفظة: ${CLIENT_DEPOSIT_ADDRESS}` : `Please send manually to: ${CLIENT_DEPOSIT_ADDRESS}`, 'info');
+        showToast(isAr ? 'نظام المحفظة قيد التهيئة، يرجى المحاولة بعد قليل...' : 'Wallet system initializing, please try again in a moment...', 'info');
       }
     });
   }
@@ -2771,14 +2911,55 @@ function updateUI() {
 }
 
 // ==========================================================================
-// 15. BACKEND SYNC (Background & Periodic Synchronization)
+// 15. REFERRAL EXTRACTION & BACKEND SYNC
 // ==========================================================================
+function getIncomingReferrerId() {
+  let param = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+
+  if (!param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    param = urlParams.get('tgWebAppStartParam') || urlParams.get('startapp') || urlParams.get('start') || urlParams.get('ref');
+  }
+
+  if (!param && window.location.hash) {
+    try {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      param = hashParams.get('tgWebAppStartParam') || hashParams.get('startapp') || hashParams.get('start') || hashParams.get('ref');
+    } catch (_) {}
+  }
+
+  if (param) {
+    const clean = String(param).replace(/^ref_?/i, '').trim();
+    const parsedId = parseInt(clean, 10);
+    if (!isNaN(parsedId) && parsedId > 0 && parsedId !== Number(state.user.telegramId)) {
+      try {
+        localStorage.setItem('tva_incoming_ref', String(parsedId));
+      } catch (_) {}
+      return parsedId;
+    }
+  }
+
+  try {
+    const cachedRef = localStorage.getItem('tva_incoming_ref');
+    if (cachedRef) {
+      const parsedCached = parseInt(cachedRef, 10);
+      if (!isNaN(parsedCached) && parsedCached > 0 && parsedCached !== Number(state.user.telegramId)) {
+        return parsedCached;
+      }
+    }
+  } catch (_) {}
+
+  return null;
+}
+
 async function syncWithBackend() {
   try {
-    const res = await fetch(`/api/user/me?telegramId=${state.user.telegramId}&username=${state.user.username}`);
+    const referrerId = getIncomingReferrerId();
+    const refQuery = referrerId ? `&referredBy=${referrerId}&start_param=${referrerId}` : '';
+    const res = await fetch(`/api/user/me?telegramId=${state.user.telegramId}&username=${encodeURIComponent(state.user.username || '')}${refQuery}`);
     const json = await res.json();
     if (json.success && json.data) {
-      const { user, mining } = json.data;
+      const { user, mining, rules } = json.data;
       state.walletBalance = user.tonBalance;
       
       // Protect continuous client ticker from jumping backwards unless claimed
@@ -2796,10 +2977,15 @@ async function syncWithBackend() {
       state.maxDailyAds = user.maxDailyAds;
       state.totalAdsWatched = user.totalAdsWatched;
       state.adsWatchedForWithdrawal = user.adsWatchedForWithdrawal;
-      state.activeFriends = user.activeReferralsCount;
+      state.totalFriends = user.totalFriends || 0;
+      state.activeFriends = user.activeReferralsCount || 0;
       state.activeRigsCount = user.rigs?.filter((r) => r.status === 'active')?.length || 0;
+      state.hasActiveRigs = Boolean(user.hasActiveRigs || (user.rigs && user.rigs.length > 0));
       if (typeof user.isAdmin === 'boolean') {
         state.isAdmin = user.isAdmin;
+      }
+      if (rules) {
+        state.rules = rules;
       }
 
       updateUI();

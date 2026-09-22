@@ -1,4 +1,4 @@
-import { User, WithdrawalRequest, PromoCode } from '../models/index.js';
+import { User, WithdrawalRequest, PromoCode, SystemConfig } from '../models/index.js';
 import config from '../config/index.js';
 
 /**
@@ -6,18 +6,28 @@ import config from '../config/index.js';
  */
 export class MiningService {
   /**
-   * Get or create a user by Telegram ID
+   * Get or create a user by Telegram ID with robust referral linking
    */
   static async getOrCreateUser(telegramUser, referrerId = null) {
     let user = await User.findOne({ telegramId: telegramUser.id });
 
+    // Clean & sanitize referrer ID (handles 'ref_12345', 12345, '12345')
+    let parsedReferrerId = null;
+    if (referrerId !== null && referrerId !== undefined && referrerId !== '') {
+      const cleanRef = String(referrerId).replace(/^ref_?/i, '').trim();
+      const parsedNum = parseInt(cleanRef, 10);
+      if (!isNaN(parsedNum) && parsedNum > 0 && parsedNum !== Number(telegramUser.id)) {
+        parsedReferrerId = parsedNum;
+      }
+    }
+
     if (!user) {
-      // Validate referrer: must exist and not be self
+      // Validate referrer exists in database
       let validReferrerId = null;
-      if (referrerId && Number(referrerId) !== telegramUser.id) {
-        const referrerExists = await User.exists({ telegramId: Number(referrerId) });
+      if (parsedReferrerId) {
+        const referrerExists = await User.exists({ telegramId: parsedReferrerId });
         if (referrerExists) {
-          validReferrerId = Number(referrerId);
+          validReferrerId = parsedReferrerId;
         }
       }
 
@@ -29,6 +39,13 @@ export class MiningService {
         lastClaimAt: new Date(),
       });
     } else {
+      // If user exists without a referrer, link them now if a valid referrer is provided
+      if (!user.referredBy && parsedReferrerId) {
+        const referrerExists = await User.exists({ telegramId: parsedReferrerId });
+        if (referrerExists) {
+          user.referredBy = parsedReferrerId;
+        }
+      }
       user.checkAndResetDailyAds();
       user.updateRigsStatus();
       await user.save();
@@ -261,12 +278,14 @@ export class MiningService {
       );
     }
 
-    // Check rig requirement toggle (disabled by default, configurable)
+    // Check rig requirement toggle (dynamically retrieved from SystemConfig)
     user.updateRigsStatus();
-    if (config.withdrawals.requireRigForWithdrawal) {
-      const hasActiveRig = user.rigs.some((r) => r.status === 'active');
-      if (!hasActiveRig) {
-        throw new Error('You must own at least one active mining rig to withdraw.');
+    const sysSettings = await SystemConfig.getOrCreateConfig();
+    const isRigRequired = sysSettings.requireRigForWithdrawal ?? config.withdrawals.requireRigForWithdrawal;
+    if (isRigRequired) {
+      const hasPurchasedRig = user.rigs && user.rigs.length > 0;
+      if (!hasPurchasedRig) {
+        throw new Error('يجب شراء منصة تعدين واحدة على الأقل لتتمكن من سحب الأرباح. / You must purchase at least one mining rig before you can withdraw.');
       }
     }
 

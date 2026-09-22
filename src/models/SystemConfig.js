@@ -82,5 +82,15 @@ SystemConfigSchema.statics.getOrCreateConfig = async function () {
   return settings;
 };
 
+/**
+ * Update a specific setting key in global settings
+ */
+SystemConfigSchema.statics.updateSetting = async function (key, value) {
+  let settings = await this.getOrCreateConfig();
+  settings[key] = value;
+  await settings.save();
+  return settings;
+};
+
 export const SystemConfig = mongoose.model('SystemConfig', SystemConfigSchema);
 export default SystemConfig;

@@ -782,10 +782,24 @@ html, body {
   font-weight: 600;
 }
 
-.rig-specs-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.rig-desc-banner {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 6px 0 10px 0;
+}
+
+.rig-specs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
@@ -2383,8 +2397,8 @@ body[dir="rtl"] .rig-badge-overlay {
 /* Tabs Navigation Bar */
 .admin-tabs-nav {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
   background: rgba(255, 255, 255, 0.04);
   padding: 5px;
   border-radius: 14px;
@@ -3071,3 +3085,156 @@ body[dir="rtl"] .rig-badge-overlay {
   border-radius: 6px;
   color: var(--neon-cyan);
 }
+
+/* ==========================================================================
+   PROFILE ACTIONS ROW (DEPOSIT & WITHDRAW BUTTONS)
+   ========================================================================== */
+.profile-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.btn-profile-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  border: 1px solid transparent;
+}
+
+.btn-profile-action.action-deposit {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.3));
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.15);
+}
+
+.btn-profile-action.action-deposit:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.45));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.25);
+}
+
+.btn-profile-action.action-withdraw {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(126, 34, 206, 0.3));
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.15);
+}
+
+.btn-profile-action.action-withdraw:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(126, 34, 206, 0.45));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.25);
+}
+
+.btn-profile-action:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
+   ADMIN GLOBAL STATS 4-METRICS GRID
+   ========================================================================== */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.admin-stat-card {
+  padding: 14px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  transition: all 0.25s ease;
+}
+
+.admin-stat-card:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+  transform: translateY(-2px);
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.icon-users {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.icon-hashrate {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: #eab308;
+}
+
+.icon-deposits {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.icon-withdrawals {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.stat-badge-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.stat-value-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-big-val {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.stat-card-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.3;
+}
+

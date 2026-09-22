@@ -56,12 +56,12 @@ export function setupBotHandlers(botInstance) {
       const parts = text.split(/\s+/);
       const payload = parts.length > 1 ? parts[1].trim() : '';
       let referrerId = null;
-
-      if (payload.startsWith('ref_')) {
-        const parsed = parseInt(payload.replace('ref_', ''), 10);
-        if (!isNaN(parsed)) referrerId = parsed;
-      } else if (!isNaN(parseInt(payload, 10)) && payload !== '') {
-        referrerId = parseInt(payload, 10);
+      if (payload) {
+        const clean = payload.replace(/^ref_?/i, '').trim();
+        const parsed = parseInt(clean, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          referrerId = parsed;
+        }
       }
 
       // Check if user exists or create new user with referrer ID
@@ -80,7 +80,7 @@ export function setupBotHandlers(botInstance) {
           `🚀 ابدأ الآن في تعدين عملة TON مجاناً وبأعلى سرعة ممكنة عبر تطبيقنا المصغر.\n\n` +
           `💎 *طرق كسب النقاط ومضاعفة سرعة التعدين:*\n` +
           `• 📺 *مشاهدة الإعلانات:* اكسب +1 نقطة لكل إعلان تشاهده يومياً.\n` +
-          `• 🤖 *منصات التعدين الآلية:* ترقيات دائمة مدى الحياة تمنحك آلاف النقاط فوراً.\n` +
+          `• 🤖 *منصات التعدين الآلية:* ترقيات متقدمة تمنحك أرباح TON يومية مستمرة مباشرة.\n` +
           `• 👥 *دعوة الأصدقاء:* اكسب 10 نقاط لكل صديق يصبح نشطاً.\n` +
           `• 📋 *المهام السريعة:* اشترك في قنواتنا وتابع شركاءنا واربح نقاطاً إضافية.\n\n` +
           `📊 *إحصائيات حسابك:*\n` +
@@ -99,7 +99,7 @@ export function setupBotHandlers(botInstance) {
           `🚀 Start mining TON cryptocurrency now at maximum speed via our Telegram Mini App.\n\n` +
           `💎 *Ways to Earn Points & Boost Mining Hashrate:*\n` +
           `• 📺 *Watch Ads:* Earn +1 Point for every daily ad you watch.\n` +
-          `• 🤖 *Automated Mining Rigs:* Lifetime upgrades that grant thousands of points instantly.\n` +
+          `• 🤖 *Automated Mining Rigs:* Advanced units that provide daily TON profits directly.\n` +
           `• 👥 *Invite Friends:* Earn 10 points for every friend who becomes active.\n` +
           `• 📋 *Partner Tasks:* Subscribe to our channels and earn instant rewards.\n\n` +
           `📊 *Your Account Stats:*\n` +

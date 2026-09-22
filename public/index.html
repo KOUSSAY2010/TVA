@@ -181,7 +181,7 @@
           </div>
           <h2 class="view-title" data-i18n="rigs_store_title">وحدات التعدين الآلية</h2>
           <p class="view-description" data-i18n="rigs_store_desc">
-            شغل منصات التعدين المتقدمة لترقية حسابك بشكل دائم وكسب آلاف النقاط لمضاعفة سرعة التعدين.
+            شغل منصات التعدين المتقدمة لترقية حسابك ومضاعفة أرباح TON اليومية مباشرة.
           </p>
           <div class="active-rigs-banner">
             <span data-i18n="active_rigs_label">المنصات النشطة حالياً:</span>
@@ -343,6 +343,18 @@
           </button>
         </div>
 
+        <!-- Profile Wallet Action Buttons (Deposit & Withdraw side-by-side) -->
+        <div class="profile-actions-row">
+          <button id="btn-profile-deposit" class="btn-profile-action action-deposit">
+            <i class="fa-solid fa-bolt"></i>
+            <span data-i18n="deposit_short">إيداع</span>
+          </button>
+          <button id="btn-profile-withdraw" class="btn-profile-action action-withdraw">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <span data-i18n="withdraw_short">سحب</span>
+          </button>
+        </div>
+
         <!-- Menu List -->
         <div class="profile-menu-stack">
           <!-- 1. Wallet Card -->
@@ -473,21 +485,10 @@
         </div>
 
         <!-- Submit Button via TON Connect -->
-        <button id="btn-send-deposit-tx" class="btn-cta glow-btn mb-3">
+        <button id="btn-send-deposit-tx" class="btn-cta glow-btn">
           <i class="fa-solid fa-bolt"></i>
           <span data-i18n="btn_send_deposit">إرسال المعاملة عبر المحفظة</span>
         </button>
-
-        <!-- Manual Transfer Fallback -->
-        <div class="manual-deposit-box">
-          <span class="manual-box-title" data-i18n="manual_deposit_title">أو التحويل المباشر لعنوان المحفظة:</span>
-          <div class="address-copy-row">
-            <span class="deposit-address-text" id="deposit-wallet-address-display">UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M</span>
-            <button id="btn-copy-deposit-addr" class="btn-copy-mini" title="Copy Address">
-              <i class="fa-solid fa-copy"></i>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -774,29 +775,117 @@
 
         <!-- Admin Navigation Tabs -->
         <div class="admin-tabs-nav">
-          <button type="button" class="admin-tab-btn active" data-admin-tab="admin-tab-tasks">
+          <button type="button" class="admin-tab-btn active" data-admin-tab="admin-tab-stats">
+            <i class="fa-solid fa-chart-line"></i>
+            <span data-i18n="admin_stats_tab">الإحصائيات العامة</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-tasks">
             <i class="fa-solid fa-list-check"></i>
-            <span>إدارة المهام</span>
+            <span data-i18n="admin_tasks_tab">إدارة المهام</span>
           </button>
           <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-promo">
             <i class="fa-solid fa-ticket"></i>
-            <span>الرموز الترويجية</span>
+            <span data-i18n="admin_promo_tab">الرموز الترويجية</span>
           </button>
           <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-withdrawals">
             <i class="fa-solid fa-money-bill-transfer"></i>
-            <span>طلبات السحب</span>
+            <span data-i18n="admin_withdrawals_tab">طلبات السحب</span>
           </button>
           <button type="button" class="admin-tab-btn" data-admin-tab="admin-tab-users">
             <i class="fa-solid fa-user-gear"></i>
-            <span>المستخدمين</span>
+            <span data-i18n="admin_users_tab">المستخدمين</span>
           </button>
         </div>
 
         <!-- Admin Tab Panels Container -->
         <div class="admin-tab-panels">
 
+          <!-- ================= TAB 0: GLOBAL STATS & PAYWALL TOGGLE ================= -->
+          <div id="admin-tab-stats" class="admin-tab-panel active">
+            <!-- 4 Metrics Grid -->
+            <div class="admin-stats-grid mb-3">
+              <div class="glass-card admin-stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-icon-wrap icon-users">
+                    <i class="fa-solid fa-users text-neon"></i>
+                  </div>
+                  <span class="stat-badge-tag">USERS</span>
+                </div>
+                <div class="stat-value-wrap">
+                  <h3 class="stat-big-val" id="admin-stat-total-users">0</h3>
+                  <p class="stat-card-label" data-i18n="admin_total_users">إجمالي المستخدمين</p>
+                </div>
+              </div>
+
+              <div class="glass-card admin-stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-icon-wrap icon-hashrate">
+                    <i class="fa-solid fa-bolt text-neon"></i>
+                  </div>
+                  <span class="stat-badge-tag">HASHRATE</span>
+                </div>
+                <div class="stat-value-wrap">
+                  <h3 class="stat-big-val text-neon" id="admin-stat-total-mining-rate">0.000 TON/day</h3>
+                  <p class="stat-card-label" data-i18n="admin_combined_rate">معدل التعدين الكلي (جميع المستخدمين)</p>
+                </div>
+              </div>
+
+              <div class="glass-card admin-stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-icon-wrap icon-deposits">
+                    <i class="fa-solid fa-arrow-down text-neon"></i>
+                  </div>
+                  <span class="stat-badge-tag">DEPOSITS</span>
+                </div>
+                <div class="stat-value-wrap">
+                  <h3 class="stat-big-val" id="admin-stat-total-deposits">0.00 TON</h3>
+                  <p class="stat-card-label" data-i18n="admin_total_deposits">إجمالي الإيداعات</p>
+                </div>
+              </div>
+
+              <div class="glass-card admin-stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-icon-wrap icon-withdrawals">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-neon"></i>
+                  </div>
+                  <span class="stat-badge-tag">WITHDRAWALS</span>
+                </div>
+                <div class="stat-value-wrap">
+                  <h3 class="stat-big-val" id="admin-stat-total-withdrawals">0.00 TON</h3>
+                  <p class="stat-card-label" data-i18n="admin_total_withdrawals">إجمالي السحوبات</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Global Setting: Withdrawal Rig Paywall Toggle -->
+            <div class="glass-card mb-3 admin-card">
+              <div class="card-header-simple justify-between">
+                <div class="flex-align-center gap-2">
+                  <i class="fa-solid fa-sliders text-neon"></i>
+                  <h4 data-i18n="admin_setting_withdrawal_title">إعدادات وقواعد السحب</h4>
+                </div>
+                <button type="button" id="btn-admin-refresh-stats" class="btn-icon-tiny" title="تحديث الإحصائيات">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+
+              <div class="switch-field-group mt-3">
+                <div class="switch-field-info">
+                  <span class="switch-label-title" data-i18n="admin_toggle_paywall_title">اشتراط شراء منصة تعدين للسحب (Require Plan Purchase)</span>
+                  <span class="switch-label-sub" id="admin-paywall-status-desc" data-i18n="admin_toggle_paywall_desc">
+                    عند التفعيل، لن يتمكن أي مستخدم من سحب رصيده إلا إذا كان قد اشترى منصة تعدين واحدة على الأقل.
+                  </span>
+                </div>
+                <label class="cyber-switch">
+                  <input type="checkbox" id="admin-toggle-require-rig" />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <!-- ================= TAB 1: TASK MANAGER ================= -->
-          <div id="admin-tab-tasks" class="admin-tab-panel active">
+          <div id="admin-tab-tasks" class="admin-tab-panel">
             <!-- Add / Edit Task Form Card -->
             <div class="glass-card mb-3 admin-card">
               <div class="card-header-simple justify-between">
