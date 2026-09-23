@@ -719,55 +719,55 @@ async function loadPublicConfig() {
   } catch (_) {}
 }
 
-// Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON featuring RoboHash Robot Visuals
+// Mining Rig Tiers: [1, 3, 5, 10, 25, 50, 100] TON featuring Realistic 3D Robot Visuals
 // Lifetime upgrades granting Points (1100 points per 1 TON)
 const RIG_TIERS = [
   {
     cost: 1,
     pointsYield: 1100,
-    image: 'https://robohash.org/TVA-Rig-1TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier1.jpg',
     nameEn: 'Quantum Microchip',
     nameAr: 'شريحة معالجة كمومية',
   },
   {
     cost: 3,
     pointsYield: 3300,
-    image: 'https://robohash.org/TVA-Rig-3TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier2.jpg',
     nameEn: 'RTX Titan GPU',
     nameAr: 'كارت شاشة Titan RTX',
   },
   {
     cost: 5,
     pointsYield: 5500,
-    image: 'https://robohash.org/TVA-Rig-5TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier3.jpg',
     nameEn: 'Multi-GPU Mining Rig',
     nameAr: 'منصة تعدين متعددة الكروت',
   },
   {
     cost: 10,
     pointsYield: 11000,
-    image: 'https://robohash.org/TVA-Rig-10TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier4.jpg',
     nameEn: 'Hydro ASIC Miner',
     nameAr: 'معدن هيدرو ASIC فائق',
   },
   {
     cost: 25,
     pointsYield: 27500,
-    image: 'https://robohash.org/TVA-Rig-25TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier5.jpg',
     nameEn: 'High-Density Server Rack',
     nameAr: 'خزانة خوادم فائقة الكثافة',
   },
   {
     cost: 50,
     pointsYield: 55000,
-    image: 'https://robohash.org/TVA-Rig-50TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier6.jpg',
     nameEn: 'Cyber Data Center Room',
     nameAr: 'غرفة مركز بيانات سايبر',
   },
   {
     cost: 100,
     pointsYield: 110000,
-    image: 'https://robohash.org/TVA-Rig-100TON.png?set=set1&size=300x300',
+    image: '/img/robots/tier7.jpg',
     nameEn: 'Quantum Supercomputer',
     nameAr: 'حاسوب كمومي فائق التطور',
   },
@@ -3122,10 +3122,10 @@ function updateUI() {
   const nameElem = document.getElementById('user-display-name');
   if (nameElem) nameElem.innerText = state.user.firstName || 'Cosmic Miner';
 
-  // Dynamic 3D Robohash Robot Avatar on Home Tab
+  // Realistic 3D Robot Mascot Avatar on Home Tab
   const homeRobotImg = document.getElementById('home-robot-avatar');
-  if (homeRobotImg && state.user?.telegramId) {
-    homeRobotImg.src = `https://robohash.org/${state.user.telegramId}?set=set1&size=200x200`;
+  if (homeRobotImg) {
+    homeRobotImg.src = '/img/robots/mascot.jpg';
   }
 
   // Balances

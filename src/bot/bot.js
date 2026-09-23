@@ -97,10 +97,22 @@ export function setupBotHandlers(botInstance) {
         [Markup.button.url('👥 Invite Friends', shareUrl)],
       ]);
 
-      await ctx.reply(welcomeText, {
-        parse_mode: 'Markdown',
-        ...keyboard,
-      });
+      const mascotPath = path.resolve(process.cwd(), 'public', 'img', 'robots', 'mascot.jpg');
+      if (fs.existsSync(mascotPath)) {
+        await ctx.replyWithPhoto({ source: mascotPath }, {
+          caption: welcomeText,
+          parse_mode: 'Markdown',
+          ...keyboard,
+        }).catch(async (photoErr) => {
+          console.warn('⚠️ replyWithPhoto failed, fallback to reply text:', photoErr.message);
+          await ctx.reply(welcomeText, { parse_mode: 'Markdown', ...keyboard });
+        });
+      } else {
+        await ctx.reply(welcomeText, {
+          parse_mode: 'Markdown',
+          ...keyboard,
+        });
+      }
     } catch (err) {
       console.error('Error handling /start command:', err);
       try {
