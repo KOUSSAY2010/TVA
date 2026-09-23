@@ -587,16 +587,18 @@
     </div>
 
     <!-- Strict Force Subscription Fullscreen Overlay (Polished Dark Rounded Cards) -->
+    <!-- ================= 12. STRICT FORCE SUBSCRIPTION OVERLAY ================= -->
     <div id="force-sub-overlay" class="force-sub-overlay">
-      <div class="force-sub-card glass-card">
+      <div class="force-sub-card">
+        <!-- Top Golden Lock (Matching Reference Image 1) -->
+        <div class="force-sub-lock-wrap">
+          <div class="force-sub-lock-icon">🔒</div>
+        </div>
+
         <div class="force-sub-header">
-          <div class="force-sub-brand-avatar">
-            <img src="/img/TVA.jpg" alt="TVA Mining" class="force-sub-logo" />
-            <div class="pulse-ring"></div>
-          </div>
-          <h2 class="force-sub-title" data-i18n="force_sub_title">Mandatory Channels Verification</h2>
+          <h2 class="force-sub-title" data-i18n="force_sub_title">Join to Continue</h2>
           <p class="force-sub-desc" data-i18n="force_sub_desc">
-            To secure your account and activate your mining operations, please join all our official channels below:
+            You must join the channels below to use the bot and unlock your referral reward.
           </p>
         </div>
 
@@ -605,74 +607,35 @@
           <!-- Channel 1: Official News -->
           <div class="force-sub-channel-card" data-channel-id="@TVA_Mining_News">
             <div class="channel-card-left">
-              <div class="channel-avatar-circle">
-                <i class="fa-brands fa-telegram"></i>
-              </div>
-              <div class="channel-card-meta">
-                <span class="channel-name-text">TVA Official News 🌐</span>
-                <span class="channel-handle-text">@TVA_Mining_News</span>
-              </div>
+              <span class="channel-icon-emoji">📢</span>
+              <span class="channel-name-text">TVA Official News</span>
             </div>
-            <div class="channel-card-right">
-              <a href="https://t.me/TVA_Mining_News" target="_blank" class="btn-channel-join">
-                <i class="fa-brands fa-telegram"></i>
-                <span data-i18n="btn_join">Join</span>
-              </a>
-              <span class="channel-status-pill pending" id="sub-status-TVA_Mining_News" title="Pending verification">
-                <i class="fa-solid fa-clock"></i>
-              </span>
-            </div>
+            <a href="https://t.me/TVA_Mining_News" target="_blank" class="btn-channel-join" data-i18n="btn_join">Join</a>
           </div>
 
           <!-- Channel 2: Arabic News & Community -->
           <div class="force-sub-channel-card" data-channel-id="@TVA_Mining_News_Arabic">
             <div class="channel-card-left">
-              <div class="channel-avatar-circle">
-                <i class="fa-brands fa-telegram"></i>
-              </div>
-              <div class="channel-card-meta">
-                <span class="channel-name-text">TVA Arabic News 📢</span>
-                <span class="channel-handle-text">@TVA_Mining_News_Arabic</span>
-              </div>
+              <span class="channel-icon-emoji">📢</span>
+              <span class="channel-name-text">TVA Arabic News</span>
             </div>
-            <div class="channel-card-right">
-              <a href="https://t.me/TVA_Mining_News_Arabic" target="_blank" class="btn-channel-join">
-                <i class="fa-brands fa-telegram"></i>
-                <span data-i18n="btn_join">Join</span>
-              </a>
-              <span class="channel-status-pill pending" id="sub-status-TVA_Mining_News_Arabic" title="Pending verification">
-                <i class="fa-solid fa-clock"></i>
-              </span>
-            </div>
+            <a href="https://t.me/TVA_Mining_News_Arabic" target="_blank" class="btn-channel-join" data-i18n="btn_join">Join</a>
           </div>
 
           <!-- Channel 3: Payment Proofs -->
           <div class="force-sub-channel-card" data-channel-id="@TVA_Payment">
             <div class="channel-card-left">
-              <div class="channel-avatar-circle">
-                <i class="fa-brands fa-telegram"></i>
-              </div>
-              <div class="channel-card-meta">
-                <span class="channel-name-text">TVA Payment Proofs 💎</span>
-                <span class="channel-handle-text">@TVA_Payment</span>
-              </div>
+              <span class="channel-icon-emoji">📢</span>
+              <span class="channel-name-text">TVA Payment Proofs</span>
             </div>
-            <div class="channel-card-right">
-              <a href="https://t.me/TVA_Payment" target="_blank" class="btn-channel-join">
-                <i class="fa-brands fa-telegram"></i>
-                <span data-i18n="btn_join">Join</span>
-              </a>
-              <span class="channel-status-pill pending" id="sub-status-TVA_Payment" title="Pending verification">
-                <i class="fa-solid fa-clock"></i>
-              </span>
-            </div>
+            <a href="https://t.me/TVA_Payment" target="_blank" class="btn-channel-join" data-i18n="btn_join">Join</a>
           </div>
         </div>
 
         <div class="force-sub-actions">
-          <button id="btn-verify-channel-sub" class="btn-cta glow-btn">
-            <i class="fa-solid fa-circle-check"></i>
-            <span data-i18n="btn_verify_sub">Verify Membership & Unlock</span>
+          <button type="button" id="btn-verify-channel-sub" class="btn-verify-membership">
+            <span class="verify-check-icon">✅</span>
+            <span data-i18n="btn_verify_sub">Verify Membership</span>
           </button>
         </div>
       </div>

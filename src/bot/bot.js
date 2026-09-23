@@ -199,26 +199,54 @@ export function setupBotHandlers(botInstance) {
         const amountDisplay = `${Number((req.netAmountTon || req.amountTon).toFixed(4))} TON`;
 
         const proofMessage =
-          `💎 *PAYMENT SENT*\n` +
-          `🚀 Withdrawal Completed Successfully\n` +
-          `👤 User: ${maskedId}\n` +
-          `💰 Amount: ${amountDisplay}\n` +
-          `🟣 Network: TON\n` +
-          `✅ Status: SUCCESSFUL\n` +
-          `---\n` +
-          `💎 Your reward has been processed and sent directly to your TON Wallet.`;
+          `💎 *PAYMENT SENT*\n\n` +
+          `🚀 *Withdrawal Completed Successfully*\n\n` +
+          `👤 *User:* \`${maskedId}\`\n` +
+          `💰 *Amount:* \`${amountDisplay}\`\n` +
+          `🟣 *Network:* TON\n` +
+          `✅ *Status:* SUCCESSFUL\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n\n` +
+          `💎 *Your reward has been processed and sent directly to your TON Wallet.*\n\n` +
+          `🔗 *Transaction:* Verified On-Chain\n` +
+          `⚡ *Processing:* Fast & Secure\n\n` +
+          `🏆 *TVA Mining*\n` +
+          `_Earn • Complete • Get Paid_`;
 
+        const txUrl = req.walletAddress
+          ? `https://tonviewer.com/${req.walletAddress}`
+          : 'https://tonviewer.com';
+        const webAppUrl = config.telegram.webAppUrl || `https://t.me/${config.telegram.botUsername || 'TVAMining_bot'}`;
+
+        const inlineKeyboard = {
+          inline_keyboard: [
+            [
+              { text: '🔍 View Transaction', url: txUrl },
+              { text: '🚀 Open TVA Mining', url: webAppUrl },
+            ],
+          ],
+        };
+
+        const bannerPath = path.resolve(process.cwd(), 'img', 'payout_banner.jpg');
         const logoPath = path.resolve(process.cwd(), 'img', 'TVA.jpg');
-        if (fs.existsSync(logoPath)) {
-          await ctx.telegram.sendPhoto('@TVA_Payment', { source: logoPath }, {
+        const photoPath = fs.existsSync(bannerPath) ? bannerPath : (fs.existsSync(logoPath) ? logoPath : null);
+
+        if (photoPath) {
+          await ctx.telegram.sendPhoto('@TVA_Payment', { source: photoPath }, {
             caption: proofMessage,
             parse_mode: 'Markdown',
+            reply_markup: inlineKeyboard,
           }).catch(async (err) => {
             console.warn('⚠️ sendPhoto failed, fallback to sendMessage:', err.message);
-            await ctx.telegram.sendMessage('@TVA_Payment', proofMessage, { parse_mode: 'Markdown' });
+            await ctx.telegram.sendMessage('@TVA_Payment', proofMessage, {
+              parse_mode: 'Markdown',
+              reply_markup: inlineKeyboard,
+            });
           });
         } else {
-          await ctx.telegram.sendMessage('@TVA_Payment', proofMessage, { parse_mode: 'Markdown' });
+          await ctx.telegram.sendMessage('@TVA_Payment', proofMessage, {
+            parse_mode: 'Markdown',
+            reply_markup: inlineKeyboard,
+          });
         }
       } catch (postErr) {
         console.warn('⚠️ Could not post proof to @TVA_Payment:', postErr.message);

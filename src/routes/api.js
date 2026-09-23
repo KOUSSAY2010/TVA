@@ -204,6 +204,27 @@ apiRouter.post('/ads/reward', async (req, res) => {
 });
 
 /**
+ * GET & POST /api/ads/reward-callback & /api/adsgram/reward
+ * Official AdsGram Server-to-Server Webhook Reward URL
+ * Compatible with Adsgram query parameters: ?userid={userid}&reward=1
+ */
+apiRouter.all(['/ads/reward-callback', '/adsgram/reward'], async (req, res) => {
+  try {
+    const rawUserId = req.query.userid || req.query.user_id || req.query.userId || req.body?.userid || req.body?.user_id;
+    const userId = Number(rawUserId);
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ success: false, message: 'Invalid or missing userid' });
+    }
+
+    await MiningService.processAdReward(userId, 15);
+    return res.status(200).send('OK');
+  } catch (error) {
+    console.warn('Adsgram webhook error:', error.message);
+    return res.status(200).send('OK');
+  }
+});
+
+/**
  * GET /api/rigs/tiers
  * Returns predefined rig tiers: [1, 3, 5, 10, 25, 50, 100] TON
  */
@@ -777,26 +798,54 @@ apiRouter.post('/admin/withdrawals/review', isAdmin, async (req, res) => {
           const amountDisplay = `${Number((withdrawal.netAmountTon || withdrawal.amountTon).toFixed(4))} TON`;
 
           const proofMessage =
-            `💎 *PAYMENT SENT*\n` +
-            `🚀 Withdrawal Completed Successfully\n` +
-            `👤 User: ${maskedId}\n` +
-            `💰 Amount: ${amountDisplay}\n` +
-            `🟣 Network: TON\n` +
-            `✅ Status: SUCCESSFUL\n` +
-            `---\n` +
-            `💎 Your reward has been processed and sent directly to your TON Wallet.`;
+            `💎 *PAYMENT SENT*\n\n` +
+            `🚀 *Withdrawal Completed Successfully*\n\n` +
+            `👤 *User:* \`${maskedId}\`\n` +
+            `💰 *Amount:* \`${amountDisplay}\`\n` +
+            `🟣 *Network:* TON\n` +
+            `✅ *Status:* SUCCESSFUL\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n\n` +
+            `💎 *Your reward has been processed and sent directly to your TON Wallet.*\n\n` +
+            `🔗 *Transaction:* Verified On-Chain\n` +
+            `⚡ *Processing:* Fast & Secure\n\n` +
+            `🏆 *TVA Mining*\n` +
+            `_Earn • Complete • Get Paid_`;
 
+          const txUrl = withdrawal.walletAddress
+            ? `https://tonviewer.com/${withdrawal.walletAddress}`
+            : 'https://tonviewer.com';
+          const webAppUrl = config.telegram.webAppUrl || `https://t.me/${config.telegram.botUsername || 'TVAMining_bot'}`;
+
+          const inlineKeyboard = {
+            inline_keyboard: [
+              [
+                { text: '🔍 View Transaction', url: txUrl },
+                { text: '🚀 Open TVA Mining', url: webAppUrl },
+              ],
+            ],
+          };
+
+          const bannerPath = path.resolve(process.cwd(), 'img', 'payout_banner.jpg');
           const logoPath = path.resolve(process.cwd(), 'img', 'TVA.jpg');
-          if (fs.existsSync(logoPath)) {
-            await botInstance.telegram.sendPhoto('@TVA_Payment', { source: logoPath }, {
+          const photoPath = fs.existsSync(bannerPath) ? bannerPath : (fs.existsSync(logoPath) ? logoPath : null);
+
+          if (photoPath) {
+            await botInstance.telegram.sendPhoto('@TVA_Payment', { source: photoPath }, {
               caption: proofMessage,
               parse_mode: 'Markdown',
+              reply_markup: inlineKeyboard,
             }).catch(async (err) => {
               console.warn('⚠️ sendPhoto failed, fallback to sendMessage:', err.message);
-              await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage, { parse_mode: 'Markdown' });
+              await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage, {
+                parse_mode: 'Markdown',
+                reply_markup: inlineKeyboard,
+              });
             });
           } else {
-            await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage, { parse_mode: 'Markdown' });
+            await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage, {
+              parse_mode: 'Markdown',
+              reply_markup: inlineKeyboard,
+            });
           }
         }
       } catch (postErr) {

@@ -1977,117 +1977,197 @@ body[dir="rtl"] .rig-badge-overlay {
 }
 
 /* ==========================================================================
-   STRICT FORCE SUBSCRIPTION OVERLAY
+/* ==========================================================================
+   STRICT FORCE SUBSCRIPTION OVERLAY (EXACT REPLICA OF REFERENCE PMT)
    ========================================================================== */
 .force-sub-overlay {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: rgba(5, 3, 10, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #090d16;
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px 18px;
+  overflow-y: auto;
 }
 
 .force-sub-overlay.active {
   display: flex;
-  animation: fadeInOverlay 0.3s ease-out forwards;
+  animation: fadeInOverlay 0.25s ease-out forwards;
 }
 
 @keyframes fadeInOverlay {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
 .force-sub-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 380px;
   text-align: center;
-  padding: 28px 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  border: 1px solid rgba(167, 139, 250, 0.35);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(88, 28, 135, 0.3);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 10px 0;
+  direction: ltr !important;
 }
 
-.force-sub-icon-wrap {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: rgba(88, 28, 135, 0.35);
+.force-sub-lock-wrap {
+  margin-bottom: 2px;
+}
+
+.force-sub-lock-icon {
+  font-size: 3.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 16px rgba(245, 158, 11, 0.45));
+}
+
+.force-sub-header {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 6px;
-}
-
-.force-sub-icon {
-  font-size: 2rem;
-}
-
-.pulse-ring {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px solid rgba(167, 139, 250, 0.4);
-  animation: ringPulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-}
-
-@keyframes ringPulse {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 0.2; }
-  100% { transform: scale(0.95); opacity: 0.8; }
+  padding: 0 8px;
 }
 
 .force-sub-title {
-  font-size: 1.25rem;
+  font-size: 1.55rem;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin: 0;
 }
 
 .force-sub-desc {
-  font-size: 0.84rem;
-  color: var(--text-muted);
-  line-height: 1.6;
+  font-size: 0.86rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 320px;
 }
 
-.force-sub-channel-box {
+.force-sub-channels-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 8px 0 16px 0;
+}
+
+.force-sub-channel-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 10px 18px;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.force-sub-channel-card:hover {
+  background: #172136;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.force-sub-channel-card.is-subscribed {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: #0f2324;
+}
+
+.channel-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.channel-icon-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.channel-name-text {
+  font-size: 0.96rem;
   font-weight: 700;
-  color: #38bdf8;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+.btn-channel-join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 8px 22px;
+  background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+  border: none;
+  color: #ffffff !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+}
+
+.btn-channel-join:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.5);
+}
+
+.btn-channel-join.joined {
+  background: rgba(34, 197, 94, 0.25) !important;
+  color: #22c55e !important;
+  box-shadow: none !important;
 }
 
 .force-sub-actions {
   width: 100%;
+}
+
+.btn-verify-membership {
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin-top: 6px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  border: none;
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.45);
+  transition: all 0.2s ease;
 }
 
-.channel-join-btn {
-  background: #0284c7 !important;
-  border-color: rgba(56, 189, 248, 0.4) !important;
-  text-decoration: none;
-  color: #fff !important;
+.btn-verify-membership:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.55);
 }
 
-.channel-join-btn:hover {
-  background: #0369a1 !important;
+.btn-verify-membership:active {
+  transform: scale(0.98);
+}
+
+.btn-verify-membership:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.verify-check-icon {
+  font-size: 1.15rem;
 }
 
 /* ==========================================================================
@@ -2195,194 +2275,8 @@ body[dir="rtl"] .rig-badge-overlay {
 }
 
 /* ==========================================================================
-   3-CHANNEL STRICT FORCE SUBSCRIPTION STYLES
+   LANGUAGE SELECTION & REFERRAL TIERS STYLES
    ========================================================================== */
-.force-sub-channels-list {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 16px 0 20px 0;
-}
-
-/* Polished Dark Rounded Channel Cards */
-.force-sub-channel-card,
-.force-sub-channel-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 16px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-.force-sub-channel-card:hover,
-.force-sub-channel-item:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(168, 85, 247, 0.35);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-}
-
-.force-sub-channel-card.is-subscribed,
-.force-sub-channel-item.is-subscribed {
-  border-color: rgba(34, 197, 94, 0.45);
-  background: rgba(34, 197, 94, 0.06);
-}
-
-.channel-card-left,
-.channel-item-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
-}
-
-[dir="rtl"] .channel-card-left,
-[dir="rtl"] .channel-item-left {
-  text-align: right;
-}
-
-.channel-avatar-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.1) 100%);
-  border: 1.5px solid rgba(56, 189, 248, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  color: #38bdf8;
-  flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
-}
-
-.force-sub-channel-card.is-subscribed .channel-avatar-circle {
-  border-color: rgba(34, 197, 94, 0.5);
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.15);
-}
-
-.channel-card-meta,
-.channel-item-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.channel-name-text,
-.channel-item-name {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.2px;
-}
-
-.channel-handle-text,
-.channel-item-handle {
-  font-size: 0.76rem;
-  color: #38bdf8;
-  font-family: monospace;
-  font-weight: 600;
-}
-
-.channel-card-right,
-.channel-item-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Distinct Join Button */
-.btn-channel-join,
-.btn-channel-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  border: 1px solid rgba(56, 189, 248, 0.5);
-  color: #fff !important;
-  font-size: 0.82rem;
-  font-weight: 700;
-  border-radius: 9999px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-  white-space: nowrap;
-}
-
-.btn-channel-join:hover,
-.btn-channel-link:hover {
-  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
-  transform: translateY(-1px) scale(1.03);
-  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.45);
-}
-
-.btn-channel-join:active,
-.btn-channel-link:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.channel-status-pill,
-.channel-status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 0.82rem;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.channel-status-pill.pending,
-.channel-status-badge.pending {
-  background: rgba(234, 179, 8, 0.15);
-  border: 1px solid rgba(234, 179, 8, 0.4);
-  color: #eab308;
-}
-
-.channel-status-pill.subscribed,
-.channel-status-badge.subscribed {
-  background: rgba(34, 197, 94, 0.2);
-  border: 1px solid rgba(34, 197, 94, 0.5);
-  color: #22c55e;
-}
-
-.channel-status-pill.unsubscribed,
-.channel-status-badge.unsubscribed {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #ef4444;
-}
-
-/* Force Sub Logo Avatar */
-.force-sub-brand-avatar {
-  position: relative;
-  width: 76px;
-  height: 76px;
-  margin: 0 auto 10px auto;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.force-sub-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(168, 85, 247, 0.6);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-}
 
 /* Language Selection Modal Sheet */
 .language-select-sheet {

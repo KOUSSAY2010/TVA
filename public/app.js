@@ -157,11 +157,11 @@ const TRANSLATIONS = {
     select_deposit_amount: 'المبلغ المراد إيداعه (TON)',
     btn_send_deposit: 'إرسال المعاملة عبر المحفظة',
 
-    // Force Sub
-    force_sub_title: 'اشتراك إجباري في القنوات',
-    force_sub_desc: 'لضمان أمان حسابك وتفعيل منصات التعدين وسحب الأرباح، يجب الانضمام إلى جميع القنوات الرسمية التالية:',
-    btn_join_channel: 'الانضمام إلى القناة الرسمية',
-    btn_verify_sub: 'التحقق من الاشتراك وتفعيل الحساب',
+    // Force Sub (Matching Reference Image 1)
+    force_sub_title: 'انضم للمتابعة',
+    force_sub_desc: 'يجب الانضمام إلى القنوات أدناه لتتمكن من استخدام البوت والحصول على مكافآتك.',
+    btn_join_channel: 'الانضمام إلى القناة',
+    btn_verify_sub: 'التحقق من الاشتراك',
     btn_join: 'انضمام',
 
     // Language Selection Modal
@@ -353,11 +353,11 @@ const TRANSLATIONS = {
     select_deposit_amount: 'Amount to Deposit (TON)',
     btn_send_deposit: 'Send Transaction via Wallet',
 
-    // Force Sub
-    force_sub_title: 'Mandatory Channels Verification',
-    force_sub_desc: 'To secure your account and activate your mining operations, please join all our official channels below:',
+    // Force Sub (Matching Reference Image 1)
+    force_sub_title: 'Join to Continue',
+    force_sub_desc: 'You must join the channels below to use the bot and unlock your referral reward.',
     btn_join_channel: 'Join Official Channel',
-    btn_verify_sub: 'Verify Membership & Unlock',
+    btn_verify_sub: 'Verify Membership',
     btn_join: 'Join',
 
     // Claim Ad
@@ -529,11 +529,12 @@ const TRANSLATIONS = {
     select_deposit_amount: 'Сумма депозита (TON)',
     btn_send_deposit: 'Отправить транзакцию через кошелек',
 
-    // Force Sub
-    force_sub_title: 'Обязательная проверка подписки',
-    force_sub_desc: 'Для безопасности аккаунта и активации майнинга и выводов подпишитесь на наши официальные каналы:',
+    // Force Sub (Matching Reference Image 1)
+    force_sub_title: 'Подпишитесь для продолжения',
+    force_sub_desc: 'Вы должны подписаться на каналы ниже, чтобы использовать бота и разблокировать награды.',
     btn_join_channel: 'Подписаться на канал',
-    btn_verify_sub: 'Проверить подписку и разблокировать',
+    btn_verify_sub: 'Проверить подписку',
+    btn_join: 'Вступить',
 
     // Claim Ad
     modal_claim_ad_title: 'Просмотр рекламы для сбора дохода',
@@ -2993,26 +2994,21 @@ async function checkChannelSubscription(manualClick = false) {
     if (json.success) {
       if (Array.isArray(json.channels)) {
         json.channels.forEach((ch) => {
-          const statusBadge = document.getElementById(`sub-status-${ch.username}`);
-          const channelItem = document.querySelector(`.force-sub-channel-card[data-channel-id="${ch.id}"], .force-sub-channel-item[data-channel-id="${ch.id}"]`);
+          const card = document.querySelector(`.force-sub-channel-card[data-channel-id="${ch.id}"]`);
+          const joinBtn = card?.querySelector('.btn-channel-join');
 
           if (ch.isSubscribed) {
-            if (statusBadge) {
-              statusBadge.className = 'channel-status-pill subscribed';
-              statusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-              statusBadge.title = isAr ? 'مشترك ✅' : 'Subscribed ✅';
-            }
-            if (channelItem) {
-              channelItem.classList.add('is-subscribed');
+            if (card) card.classList.add('is-subscribed');
+            if (joinBtn) {
+              joinBtn.classList.add('joined');
+              joinBtn.innerText = isAr ? 'تم الانضمام ✓' : (state.selectedLanguage === 'ru' ? 'Вступили ✓' : 'Joined ✓');
             }
           } else {
-            if (statusBadge) {
-              statusBadge.className = 'channel-status-pill unsubscribed';
-              statusBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-              statusBadge.title = isAr ? 'غير مشترك ❌' : 'Not Subscribed ❌';
-            }
-            if (channelItem) {
-              channelItem.classList.remove('is-subscribed');
+            if (card) card.classList.remove('is-subscribed');
+            if (joinBtn) {
+              joinBtn.classList.remove('joined');
+              const t = TRANSLATIONS[state.selectedLanguage] || TRANSLATIONS.en;
+              joinBtn.innerText = t.btn_join || 'Join';
             }
           }
         });
