@@ -44,7 +44,7 @@
       </div>
       <div class="header-rate-badge" id="global-rate-badge" title="سعر النقطة">
         <i class="fa-solid fa-bolt text-neon"></i>
-        <span>1 نقطة = 0.0001 TON / يومياً</span>
+        <span data-i18n="rate_badge_sub">1 نقطة = 0.0001 TON / يومياً</span>
       </div>
     </header>
 
@@ -845,10 +845,10 @@
         <div class="form-group">
           <label class="input-label" for="feedback-category" data-i18n="modal_feedback_cat_label">نوع الرسالة</label>
           <select id="feedback-category" class="form-select">
-            <option value="suggestion">💡 اقتراح / فكرة</option>
-            <option value="complaint">⚠️ شكوى / بلاغ</option>
-            <option value="bug">🐛 خطأ تقني (Bug)</option>
-            <option value="other">💬 استفسار آخر</option>
+            <option value="suggestion" data-i18n="fb_cat_suggestion">💡 اقتراح / فكرة</option>
+            <option value="complaint" data-i18n="fb_cat_complaint">⚠️ شكوى / بلاغ</option>
+            <option value="bug" data-i18n="fb_cat_bug">🐛 خطأ تقني (Bug)</option>
+            <option value="other" data-i18n="fb_cat_other">💬 استفسار آخر</option>
           </select>
         </div>
 
@@ -1220,13 +1220,13 @@
             </div>
             <div class="ad-timer-ring">
               <span id="ad-countdown-number" class="countdown-digits">15</span>
-              <span class="countdown-label">ثانية متبقية</span>
+              <span class="countdown-label" data-i18n="countdown_seconds_label">ثانية متبقية</span>
             </div>
           </div>
 
           <div class="ad-meta-info">
-            <h4 class="ad-title" id="ad-player-title">جاري تشغيل الإعلان الترويجي...</h4>
-            <p class="ad-desc">انتظر حتى يكتمل العداد لاحتساب نقطة التعدين وزيادة معدل الهاش ريت.</p>
+            <h4 class="ad-title" id="ad-player-title" data-i18n="ad_playing_title">جاري تشغيل الإعلان الترويجي...</h4>
+            <p class="ad-desc" data-i18n="ad_playing_desc">انتظر حتى يكتمل العداد لاحتساب نقطة التعدين وزيادة معدل الهاش ريت.</p>
           </div>
 
           <!-- Progress bar inside ad -->
@@ -1236,13 +1236,13 @@
 
           <div class="ad-warning-note mt-3">
             <i class="fa-solid fa-triangle-exclamation text-neon"></i>
-            <span>تنبيه: إغلاق الإعلان قبل انتهاء 15 ثانية يلغي المكافأة بالكامل.</span>
+            <span data-i18n="ad_early_close_warn">تنبيه: إغلاق الإعلان قبل انتهاء 15 ثانية يلغي المكافأة بالكامل.</span>
           </div>
         </div>
 
         <button type="button" id="btn-claim-ad-reward" class="btn-cta glow-btn mt-3" disabled>
           <i class="fa-solid fa-clock"></i>
-          <span id="btn-claim-ad-text">انتظر انتهاء الإعلان (15 ثانية)...</span>
+          <span id="btn-claim-ad-text" data-i18n="ad_wait_button">انتظر انتهاء الإعلان (15 ثانية)...</span>
         </button>
       </div>
     </div>
@@ -1253,7 +1253,7 @@
         <div class="modal-header">
           <div class="modal-title-group">
             <i class="fa-solid fa-bullhorn text-neon"></i>
-            <h3>ترويج قناة أو مجموعة (P2P Task)</h3>
+            <h3 data-i18n="p2p_modal_title">ترويج قناة أو مجموعة (P2P Task)</h3>
           </div>
           <button type="button" id="btn-close-p2p-modal" class="btn-modal-close" aria-label="Close">
             <i class="fa-solid fa-xmark"></i>
@@ -1305,11 +1305,11 @@
           <!-- Dynamic Cost Calculation Box -->
           <div class="p2p-cost-summary-card mb-3">
             <div class="cost-row">
-              <span>التكلفة الإجمالية للنشر:</span>
+              <span data-i18n="p2p_total_cost_label">التكلفة الإجمالية للنشر:</span>
               <span class="cost-value text-neon" id="p2p-calculated-ton">0.10 TON</span>
             </div>
             <div class="cost-destination-info">
-              <span class="sub-label">عنوان محفظة الاستلام المعتمد:</span>
+              <span class="sub-label" data-i18n="p2p_deposit_dest_label">عنوان محفظة الاستلام المعتمد:</span>
               <code class="wallet-badge" id="p2p-deposit-address-code">UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M</code>
             </div>
           </div>

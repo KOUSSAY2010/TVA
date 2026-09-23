@@ -58,6 +58,10 @@ const TRANSLATIONS = {
     resets_daily: 'يتجدد يومياً في 00:00 UTC',
     watch_ad_btn: 'مشاهدة إعلان وكسب النقاط',
     anti_cheat_note: 'محمي بنظام AdsGram للتحقق ومنع الاحتيال (15 ثانية)',
+    community_tasks_title: 'مهام سريعة ومكافآت فورية',
+    promote_channel_btn: 'ترويج قناة',
+    community_tasks_desc: 'أكمل المهام البسيطة التالية واحصل على نقاط فورية تزيد من سرعتك في تعدين TON!',
+    rate_badge_sub: '1 نقطة = 0.0001 TON / يومياً',
 
     // Friends
     referral_program: 'برنامج الإحالة',
@@ -185,6 +189,19 @@ const TRANSLATIONS = {
     p2p_target_label: 'العدد المستهدف (أعضاء)',
     p2p_reward_label: 'مكافأة كل مستخدم (نقاط)',
 
+    p2p_modal_title: 'ترويج قناة أو مجموعة (P2P Task)',
+    p2p_total_cost_label: 'التكلفة الإجمالية للنشر:',
+    p2p_deposit_dest_label: 'عنوان محفظة الاستلام المعتمد:',
+    countdown_seconds_label: 'ثانية متبقية',
+    ad_playing_title: 'جاري تشغيل الإعلان الترويجي...',
+    ad_playing_desc: 'انتظر حتى يكتمل العداد لاحتساب نقطة التعدين وزيادة معدل الهاش ريت.',
+    ad_early_close_warn: 'تنبيه: إغلاق الإعلان قبل انتهاء 15 ثانية يلغي المكافأة بالكامل.',
+    ad_wait_button: 'انتظر انتهاء الإعلان (15 ثانية)...',
+    fb_cat_suggestion: '💡 اقتراح / فكرة',
+    fb_cat_complaint: '⚠️ شكوى / بلاغ',
+    fb_cat_bug: '🐛 خطأ تقني (Bug)',
+    fb_cat_other: '💬 استفسار آخر',
+
     // Claim Ad
     modal_claim_ad_title: 'إعلان استلام الأرباح',
     claim_ad_stream_text: 'جاري بث الإعلان الترويجي عبر نظام Adsgram... يرجى الانتظار للمطالبة بأرباح TON.',
@@ -235,6 +252,10 @@ const TRANSLATIONS = {
     resets_daily: 'Resets daily at 00:00 UTC',
     watch_ad_btn: 'Watch Ad & Earn Points',
     anti_cheat_note: 'Protected by AdsGram 15s Anti-Cheat verification',
+    community_tasks_title: 'Quick Tasks & Instant Rewards',
+    promote_channel_btn: 'Promote Channel',
+    community_tasks_desc: 'Complete the simple tasks below to earn instant points that boost your TON mining speed!',
+    rate_badge_sub: '1 Point = 0.0001 TON / daily',
 
     // Friends
     referral_program: 'Referral Program',
@@ -259,6 +280,18 @@ const TRANSLATIONS = {
     p2p_link_label: 'Channel or Group Link (Telegram)',
     p2p_target_label: 'Target Members',
     p2p_reward_label: 'User Reward (Points)',
+    p2p_modal_title: 'Promote Channel or Group (P2P Task)',
+    p2p_total_cost_label: 'Total Publication Cost:',
+    p2p_deposit_dest_label: 'Official Receiving Wallet Address:',
+    countdown_seconds_label: 'seconds remaining',
+    ad_playing_title: 'Playing sponsored ad...',
+    ad_playing_desc: 'Wait for the timer to finish to earn points and boost your mining speed.',
+    ad_early_close_warn: 'Warning: Closing early forfeits the mining reward.',
+    ad_wait_button: 'Please wait for ad (15s)...',
+    fb_cat_suggestion: '💡 Suggestion / Idea',
+    fb_cat_complaint: '⚠️ Complaint / Report',
+    fb_cat_bug: '🐛 Bug Report',
+    fb_cat_other: '💬 Other Question',
 
     // Profile
     id_label: 'ID:',
@@ -410,6 +443,10 @@ const TRANSLATIONS = {
     resets_daily: 'Сброс ежедневно в 00:00 UTC',
     watch_ad_btn: 'Смотреть рекламу (+1 балл)',
     anti_cheat_note: 'Защищено системой AdsGram (15 сек)',
+    community_tasks_title: 'Быستрые задания и награды',
+    promote_channel_btn: 'Продвигать канал',
+    community_tasks_desc: 'Выполняйте простые задания ниже и получайте очки, ускоряющие ваш майнинг TON!',
+    rate_badge_sub: '1 балл = 0.0001 TON / день',
 
     // Friends & Referrals
     referral_program: 'Реферальная программа',
@@ -469,6 +506,18 @@ const TRANSLATIONS = {
     p2p_link_label: 'Ссылка на Telegram-канал или группу',
     p2p_target_label: 'Целевое число участников',
     p2p_reward_label: 'Награда каждому участнику',
+    p2p_modal_title: 'Продвижение канала или группы (P2P)',
+    p2p_total_cost_label: 'Общая стоимость публикации:',
+    p2p_deposit_dest_label: 'Официальный адрес кошелька для оплаты:',
+    countdown_seconds_label: 'сек осталось',
+    ad_playing_title: 'Трансляция рекламы...',
+    ad_playing_desc: 'Пожалуйста, дождитесь завершения таймера для начисления баллов.',
+    ad_early_close_warn: 'Внимание: Досрочное закрытие аннулирует награду.',
+    ad_wait_button: 'Ожидайте окончания (15 сек)...',
+    fb_cat_suggestion: '💡 Предложение / Идея',
+    fb_cat_complaint: '⚠️ Жалоба / Обращение',
+    fb_cat_bug: '🐛 Техническая ошибка',
+    fb_cat_other: '💬 Другой вопрос',
 
     // Feedback & Admin
     modal_feedback_title: 'Обратная связь и предложения',
@@ -832,6 +881,7 @@ function setLanguage(lang) {
   renderDedicatedRigs();
   renderWalletPill();
   updateUI();
+  loadUserTasks();
 }
 
 // ==========================================================================
@@ -1487,7 +1537,10 @@ function setupTasksTab() {
     if (p2pCostDisplay) p2pCostDisplay.innerText = `${costTon.toFixed(2)} TON`;
     if (p2pSubmitText) {
       const isAr = state.selectedLanguage === 'ar';
-      p2pSubmitText.innerText = isAr ? `دفع ${costTon.toFixed(2)} TON عبر TON Connect` : `Pay ${costTon.toFixed(2)} TON via TON Connect`;
+      const isRu = state.selectedLanguage === 'ru';
+      p2pSubmitText.innerText = isAr
+        ? `دفع ${costTon.toFixed(2)} TON عبر TON Connect`
+        : (isRu ? `Оплатить ${costTon.toFixed(2)} TON через TON Connect` : `Pay ${costTon.toFixed(2)} TON via TON Connect`);
     }
     return costTon;
   };
@@ -1948,6 +2001,7 @@ async function loadUserTasks() {
   if (!container) return;
 
   const isAr = state.selectedLanguage === 'ar';
+  const isRu = state.selectedLanguage === 'ru';
 
   try {
     const res = await fetch('/api/tasks', {
@@ -1958,7 +2012,7 @@ async function loadUserTasks() {
     const json = await res.json();
     if (json.success && Array.isArray(json.data)) {
       if (json.data.length === 0) {
-        container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام مجتمعية إضافية حالياً. تحقق لاحقاً!' : 'No community tasks available right now.'}</span></div>`;
+        container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام مجتمعية إضافية حالياً. تحقق لاحقاً!' : (isRu ? 'Нет доступных заданий. Зайдите позже!' : 'No community tasks available right now.')}</span></div>`;
         return;
       }
 
@@ -1969,16 +2023,18 @@ async function loadUserTasks() {
 
         let actionBtnHtml = '';
         if (task.isCompleted) {
-          actionBtnHtml = `<span class="user-task-btn action-completed"><i class="fa-solid fa-check"></i> ${isAr ? 'مكتملة' : 'Done'}</span>`;
+          actionBtnHtml = `<span class="user-task-btn action-completed"><i class="fa-solid fa-check"></i> ${isAr ? 'مكتملة' : (isRu ? 'Выполнено' : 'Done')}</span>`;
         } else if (task.isFull) {
-          actionBtnHtml = `<span class="user-task-btn action-full">${isAr ? 'مكتمل العدد' : 'Full'}</span>`;
+          actionBtnHtml = `<span class="user-task-btn action-full">${isAr ? 'مكتمل العدد' : (isRu ? 'Заполнено' : 'Full')}</span>`;
         } else {
-          actionBtnHtml = `<button type="button" class="user-task-btn action-go" onclick="handleCompleteUserTask('${task.id}', '${task.actionUrl}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${isAr ? 'تنفيذ' : 'Start'}</button>`;
+          actionBtnHtml = `<button type="button" class="user-task-btn action-go" onclick="handleCompleteUserTask('${task.id}', '${task.actionUrl}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${isAr ? 'تنفيذ' : (isRu ? 'Начать' : 'Start')}</button>`;
         }
 
         const memberLimitText = task.memberLimit > 0
-          ? `${task.completedCount} / ${task.memberLimit} ${isAr ? 'عضو' : 'users'}`
-          : (isAr ? 'مفتوح للجميع' : 'Unlimited');
+          ? `${task.completedCount} / ${task.memberLimit} ${isAr ? 'عضو' : (isRu ? 'участников' : 'users')}`
+          : (isAr ? 'مفتوح للجميع' : (isRu ? 'Безлимитно' : 'Unlimited'));
+
+        const taskTitle = isAr ? (task.titleAr || task.title) : (task.title || task.titleAr);
 
         item.innerHTML = `
           <div class="user-task-info">
@@ -1986,7 +2042,7 @@ async function loadUserTasks() {
               <i class="fa-solid fa-bolt text-neon"></i>
             </div>
             <div class="user-task-texts">
-              <div class="user-task-name">${task.titleAr || task.title}</div>
+              <div class="user-task-name">${taskTitle}</div>
               <div class="user-task-sub">
                 <span class="user-task-reward">+${task.rewardAmount} PTS</span>
                 <span>•</span>
@@ -2006,7 +2062,7 @@ async function loadUserTasks() {
     console.error('Failed to load user tasks:', err);
   }
 
-  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام متاحة حالياً.' : 'No tasks available.'}</span></div>`;
+  container.innerHTML = `<div class="admin-placeholder-text"><span>${isAr ? 'لا توجد مهام متاحة حالياً.' : (isRu ? 'Нет доступных заданий.' : 'No tasks available.')}</span></div>`;
 }
 
 /**
