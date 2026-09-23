@@ -189,6 +189,12 @@ export function setupBotHandlers(botInstance) {
 
       // Broadcast premium formatted proof to @TVA_Payment channel with bot logo image
       try {
+        const user = await User.findOne({ telegramId: req.telegramId }).lean();
+        const rawName = (user?.firstName || user?.username || 'Miner').replace(/[*_`\[\]]/g, '');
+        const maskedName = rawName.length > 3
+          ? `${rawName.slice(0, 2)}***${rawName.slice(-1)}`
+          : `${rawName.slice(0, 1)}***`;
+
         const rawId = String(req.telegramId || '');
         const maskedId = rawId.length > 4 ? `${rawId.slice(0, 4)}***${rawId.slice(-2)}` : rawId;
         const amountDisplay = `${Number((req.netAmountTon || req.amountTon).toFixed(4))} TON`;
@@ -196,7 +202,7 @@ export function setupBotHandlers(botInstance) {
         const proofMessage =
           `💎 *PAYMENT SENT*\n\n` +
           `🚀 *Withdrawal Completed Successfully*\n\n` +
-          `👤 *User:* \`${maskedId}\`\n` +
+          `👤 *User:* \`${maskedName}\` (\`${maskedId}\`)\n` +
           `💰 *Amount:* \`${amountDisplay}\`\n` +
           `🟣 *Network:* TON\n` +
           `✅ *Status:* SUCCESSFUL\n` +
