@@ -213,13 +213,16 @@ export function setupBotHandlers(botInstance) {
             ? `https://tonviewer.com/${req.walletAddress}`
             : 'https://tonviewer.com';
         }
-        const webAppUrl = config.telegram.webAppUrl || `https://t.me/${config.telegram.botUsername || 'TVAMining_bot'}`;
+        const botUsername = (config.telegram.botUsername || 'TVAMining_bot').replace(/^@/, '');
+        const botUrl = `https://t.me/${botUsername}`;
 
         const inlineKeyboard = {
           inline_keyboard: [
             [
               { text: '🔍 View Transaction', url: txUrl },
-              { text: '🚀 Open TVA Mining', url: webAppUrl },
+            ],
+            [
+              { text: '🚀 Open TVA Mining', url: botUrl },
             ],
           ],
         };
