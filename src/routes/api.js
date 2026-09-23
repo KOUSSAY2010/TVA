@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import express from 'express';
 import MiningService from '../services/miningService.js';
 import { User, WithdrawalRequest, PromoCode, Task, SystemConfig } from '../models/index.js';
@@ -90,6 +92,9 @@ apiRouter.get('/user/me', async (req, res) => {
           const referrerExists = await User.exists({ telegramId: parsedRef });
           if (referrerExists) {
             user.referredBy = parsedRef;
+            const uplines = await MiningService.resolveReferralUplines(parsedRef);
+            user.referralUplines = uplines;
+            await MiningService.incrementUplineCounts(uplines);
           }
         }
       }
@@ -115,9 +120,23 @@ apiRouter.get('/user/me', async (req, res) => {
           username: user.username,
           firstName: user.firstName,
           tonBalance: user.tonBalance,
+          balance: user.tonBalance,
           totalPoints: user.totalPoints,
+          points: user.totalPoints,
           activeReferralsCount: user.activeReferralsCount,
           totalFriends,
+          referralStats: user.referralStats || {
+            level1Count: 0,
+            level2Count: 0,
+            level3Count: 0,
+            level4Count: 0,
+            level1Earnings: 0,
+            level2Earnings: 0,
+            level3Earnings: 0,
+            level4Earnings: 0,
+            totalEarnings: 0,
+          },
+          referralUplines: user.referralUplines || [],
           adsWatchedToday: user.adsWatchedToday,
           maxDailyAds: config.ads.maxDailyAds,
           remainingDailyAds: Math.max(0, config.ads.maxDailyAds - user.adsWatchedToday),
@@ -126,6 +145,7 @@ apiRouter.get('/user/me', async (req, res) => {
           withdrawalAdsRequired: config.withdrawals.adsRequiredForWithdrawal,
           hasWatchedAdForPromo: user.hasWatchedAdForPromo,
           rigs: user.rigs,
+          miners: user.rigs,
           hasActiveRigs: user.rigs && user.rigs.length > 0,
           isAdmin: isUserAdmin(user.telegramId),
         },
@@ -752,13 +772,32 @@ apiRouter.post('/admin/withdrawals/review', isAdmin, async (req, res) => {
       try {
         const botInstance = req.app.get('botInstance');
         if (botInstance) {
-          const user = await User.findOne({ telegramId: withdrawal.telegramId });
-          const userDisplay = (user && user.username) ? `@${user.username}` : (withdrawal.username ? `@${withdrawal.username}` : `ID: ${withdrawal.telegramId}`);
-          const amountDisplay = `${withdrawal.netAmountTon || withdrawal.amountTon} TON`;
-          const proofMessage = `✅ تم سحب ${amountDisplay} بنجاح للمستخدم ${userDisplay}!`;
-          await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage).catch((err) => {
-            console.warn('⚠️ Could not send payment proof to @TVA_Payment:', err.message);
-          });
+          const rawId = String(withdrawal.telegramId || '');
+          const maskedId = rawId.length > 4 ? `${rawId.slice(0, 4)}***${rawId.slice(-2)}` : rawId;
+          const amountDisplay = `${Number((withdrawal.netAmountTon || withdrawal.amountTon).toFixed(4))} TON`;
+
+          const proofMessage =
+            `💎 *PAYMENT SENT*\n` +
+            `🚀 Withdrawal Completed Successfully\n` +
+            `👤 User: ${maskedId}\n` +
+            `💰 Amount: ${amountDisplay}\n` +
+            `🟣 Network: TON\n` +
+            `✅ Status: SUCCESSFUL\n` +
+            `---\n` +
+            `💎 Your reward has been processed and sent directly to your TON Wallet.`;
+
+          const logoPath = path.resolve(process.cwd(), 'img', 'TVA.jpg');
+          if (fs.existsSync(logoPath)) {
+            await botInstance.telegram.sendPhoto('@TVA_Payment', { source: logoPath }, {
+              caption: proofMessage,
+              parse_mode: 'Markdown',
+            }).catch(async (err) => {
+              console.warn('⚠️ sendPhoto failed, fallback to sendMessage:', err.message);
+              await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage, { parse_mode: 'Markdown' });
+            });
+          } else {
+            await botInstance.telegram.sendMessage('@TVA_Payment', proofMessage, { parse_mode: 'Markdown' });
+          }
         }
       } catch (postErr) {
         console.warn('⚠️ Error sending channel withdrawal proof:', postErr.message);
@@ -831,23 +870,28 @@ apiRouter.get('/admin/user/:query', isAdmin, async (req, res) => {
  */
 apiRouter.post('/tasks/p2p/create', async (req, res) => {
   try {
-    const { title, actionUrl, targetMembers, rewardPoints } = req.body;
+    const { title, actionUrl, targetMembers } = req.body;
     if (!title || !actionUrl) {
       return res.status(400).json({ success: false, message: 'Missing required task fields' });
     }
 
-    const reward = Number(rewardPoints) || 10;
+    // Client Requirement: User creating the task CANNOT change points. Hardcode to exactly 2 Points.
+    const reward = 2;
     const target = Number(targetMembers) || 100;
 
-    const newTask = await PartnerTask.create({
+    const newTask = await Task.create({
       title: title.trim(),
       titleAr: title.trim(),
-      description: `مهمة مجتمعية: انضم واحصل على ${reward} نقطة`,
-      descriptionAr: `مهمة مجتمعية: انضم واحصل على ${reward} نقطة`,
+      description: `Community Task: Join & Earn 2 Points`,
+      descriptionAr: `مهمة مجتمعية: انضم واحصل على 2 نقطة`,
       actionUrl: actionUrl.trim(),
+      rewardPoints: reward,
       rewardAmount: reward,
+      rewardTon: 0,
       rewardType: 'points',
+      type: 'partner',
       category: 'community',
+      memberLimit: target,
       targetMembers: target,
       currentMembers: 0,
       autoVerify: true,

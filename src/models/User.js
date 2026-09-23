@@ -74,11 +74,28 @@ const UserSchema = new mongoose.Schema(
       default: false, // User must watch at least 1 ad before claiming promo code
     },
 
-    // Referral System
+    // Referral System (4 Levels)
     referredBy: {
       type: Number,
       default: null,
       index: true,
+    },
+    referralUplines: [
+      {
+        level: { type: Number, required: true }, // 1, 2, 3, 4
+        telegramId: { type: Number, required: true },
+      },
+    ],
+    referralStats: {
+      level1Count: { type: Number, default: 0 },
+      level2Count: { type: Number, default: 0 },
+      level3Count: { type: Number, default: 0 },
+      level4Count: { type: Number, default: 0 },
+      level1Earnings: { type: Number, default: 0 },
+      level2Earnings: { type: Number, default: 0 },
+      level3Earnings: { type: Number, default: 0 },
+      level4Earnings: { type: Number, default: 0 },
+      totalEarnings: { type: Number, default: 0 },
     },
     activeReferralsCount: {
       type: Number,
@@ -89,7 +106,22 @@ const UserSchema = new mongoose.Schema(
       default: false, // True once this user watched 10 ads and granted 10 points to their referrer
     },
 
-    // Mining Rigs
+    // Financial Aliases & Mining Stats for complete compatibility
+    balance: {
+      type: Number,
+      default: 0,
+    },
+    points: {
+      type: Number,
+      default: 0,
+    },
+    totalMined: {
+      type: Number,
+      default: 0,
+    },
+
+    // Mining Rigs / Miners
+    miners: [RigSchema],
     rigs: [RigSchema],
   },
   {

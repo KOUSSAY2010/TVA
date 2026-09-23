@@ -22,12 +22,14 @@ export class MiningService {
     }
 
     if (!user) {
-      // Validate referrer exists in database
+      // Validate referrer exists in database and build 4-level upline chain
       let validReferrerId = null;
+      let uplines = [];
       if (parsedReferrerId) {
         const referrerExists = await User.exists({ telegramId: parsedReferrerId });
         if (referrerExists) {
           validReferrerId = parsedReferrerId;
+          uplines = await MiningService.resolveReferralUplines(parsedReferrerId);
         }
       }
 
@@ -36,14 +38,23 @@ export class MiningService {
         username: telegramUser.username || '',
         firstName: telegramUser.first_name || '',
         referredBy: validReferrerId,
+        referralUplines: uplines,
         lastClaimAt: new Date(),
       });
+
+      // Update upline stats
+      if (uplines.length > 0) {
+        await MiningService.incrementUplineCounts(uplines);
+      }
     } else {
       // If user exists without a referrer, link them now if a valid referrer is provided
       if (!user.referredBy && parsedReferrerId) {
         const referrerExists = await User.exists({ telegramId: parsedReferrerId });
         if (referrerExists) {
           user.referredBy = parsedReferrerId;
+          const uplines = await MiningService.resolveReferralUplines(parsedReferrerId);
+          user.referralUplines = uplines;
+          await MiningService.incrementUplineCounts(uplines);
         }
       }
       user.checkAndResetDailyAds();
@@ -52,6 +63,114 @@ export class MiningService {
     }
 
     return user;
+  }
+
+  /**
+   * Resolve 4-level upline hierarchy
+   * Level 1: direct inviter
+   * Level 2: inviter of Level 1
+   * Level 3: inviter of Level 2
+   * Level 4: inviter of Level 3
+   */
+  static async resolveReferralUplines(directReferrerId) {
+    const uplines = [];
+    let currentRefId = directReferrerId;
+    const visited = new Set();
+
+    for (let level = 1; level <= 4; level++) {
+      if (!currentRefId || visited.has(currentRefId)) break;
+      visited.add(currentRefId);
+
+      const uplineUser = await User.findOne({ telegramId: currentRefId }, 'telegramId referredBy');
+      if (!uplineUser) break;
+
+      uplines.push({ level, telegramId: uplineUser.telegramId });
+      currentRefId = uplineUser.referredBy;
+    }
+
+    return uplines;
+  }
+
+  /**
+   * Increment referral counters for each upline tier
+   */
+  static async incrementUplineCounts(uplines) {
+    for (const item of uplines) {
+      try {
+        const uplineUser = await User.findOne({ telegramId: item.telegramId });
+        if (uplineUser) {
+          if (!uplineUser.referralStats) {
+            uplineUser.referralStats = {
+              level1Count: 0, level2Count: 0, level3Count: 0, level4Count: 0,
+              level1Earnings: 0, level2Earnings: 0, level3Earnings: 0, level4Earnings: 0,
+              totalEarnings: 0,
+            };
+          }
+          if (item.level === 1) {
+            uplineUser.referralStats.level1Count = (uplineUser.referralStats.level1Count || 0) + 1;
+            uplineUser.activeReferralsCount = (uplineUser.activeReferralsCount || 0) + 1;
+          } else if (item.level === 2) {
+            uplineUser.referralStats.level2Count = (uplineUser.referralStats.level2Count || 0) + 1;
+          } else if (item.level === 3) {
+            uplineUser.referralStats.level3Count = (uplineUser.referralStats.level3Count || 0) + 1;
+          } else if (item.level === 4) {
+            uplineUser.referralStats.level4Count = (uplineUser.referralStats.level4Count || 0) + 1;
+          }
+          await uplineUser.save();
+        }
+      } catch (err) {
+        console.warn(`Failed to increment count for upline ${item.telegramId}:`, err.message);
+      }
+    }
+  }
+
+  /**
+   * Distribute 4-tier referral points when a user earns:
+   * Level 1: 1 Point
+   * Level 2: 0.5 Points
+   * Level 3: 0.25 Points
+   * Level 4: 0.1 Points
+   */
+  static async distributeMultiLevelRewards(user) {
+    let uplines = user.referralUplines || [];
+    if ((!uplines || uplines.length === 0) && user.referredBy) {
+      uplines = await MiningService.resolveReferralUplines(user.referredBy);
+      user.referralUplines = uplines;
+      await user.save();
+    }
+
+    if (!uplines || uplines.length === 0) return;
+
+    const tierRates = { 1: 1.0, 2: 0.5, 3: 0.25, 4: 0.1 };
+
+    for (const item of uplines) {
+      const rewardPoints = tierRates[item.level];
+      if (!rewardPoints) continue;
+
+      try {
+        const uplineUser = await User.findOne({ telegramId: item.telegramId });
+        if (uplineUser) {
+          uplineUser.totalPoints = Number((uplineUser.totalPoints + rewardPoints).toFixed(4));
+          uplineUser.points = uplineUser.totalPoints;
+          if (!uplineUser.referralStats) {
+            uplineUser.referralStats = {
+              level1Count: 0, level2Count: 0, level3Count: 0, level4Count: 0,
+              level1Earnings: 0, level2Earnings: 0, level3Earnings: 0, level4Earnings: 0,
+              totalEarnings: 0,
+            };
+          }
+          if (item.level === 1) uplineUser.referralStats.level1Earnings = Number(((uplineUser.referralStats.level1Earnings || 0) + rewardPoints).toFixed(4));
+          if (item.level === 2) uplineUser.referralStats.level2Earnings = Number(((uplineUser.referralStats.level2Earnings || 0) + rewardPoints).toFixed(4));
+          if (item.level === 3) uplineUser.referralStats.level3Earnings = Number(((uplineUser.referralStats.level3Earnings || 0) + rewardPoints).toFixed(4));
+          if (item.level === 4) uplineUser.referralStats.level4Earnings = Number(((uplineUser.referralStats.level4Earnings || 0) + rewardPoints).toFixed(4));
+          uplineUser.referralStats.totalEarnings = Number(((uplineUser.referralStats.totalEarnings || 0) + rewardPoints).toFixed(4));
+
+          await uplineUser.save();
+        }
+      } catch (err) {
+        console.warn(`Failed to reward upline ${item.telegramId} level ${item.level}:`, err.message);
+      }
+    }
   }
 
   /**
@@ -125,7 +244,15 @@ export class MiningService {
     user.adsWatchedForWithdrawal += 1;
     user.hasWatchedAdForPromo = true;
 
-    // Check Referral Activation:
+    // 4-Tier Multi-Level Referral Distribution:
+    // Level 1: 1 Point | Level 2: 0.5 Point | Level 3: 0.25 Point | Level 4: 0.1 Point
+    try {
+      await MiningService.distributeMultiLevelRewards(user);
+    } catch (refErr) {
+      console.warn('⚠️ Multi-level referral reward error:', refErr.message);
+    }
+
+    // Check Legacy Referral Activation:
     // A referral is considered "active" (and rewards referrer with 10 points)
     // AFTER the referred user watches exactly 10 ads.
     let referralRewarded = false;

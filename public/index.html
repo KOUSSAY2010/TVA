@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -282,12 +282,73 @@
             <div class="mini-stat-card">
               <span class="stat-icon"><i class="fa-solid fa-users"></i></span>
               <span class="stat-number" id="total-friends-count">0</span>
-              <span class="stat-label" data-i18n="total_friends">إجمالي الأصدقاء</span>
+              <span class="stat-label" data-i18n="total_friends">Total Friends</span>
             </div>
             <div class="mini-stat-card highlight-stat">
               <span class="stat-icon text-neon"><i class="fa-solid fa-circle-check"></i></span>
               <span class="stat-number" id="active-friends-count">0</span>
-              <span class="stat-label" data-i18n="active_friends">الأصدقاء النشطون (10 إعلانات)</span>
+              <span class="stat-label" data-i18n="active_friends">Active Friends</span>
+            </div>
+          </div>
+
+          <!-- 4-Level Referral Hierarchy Breakdown Cards -->
+          <div class="referral-tiers-section mt-3">
+            <div class="tiers-header">
+              <i class="fa-solid fa-sitemap text-neon"></i>
+              <h4 class="tiers-title" data-i18n="ref_tiers_title">4-Tier Referral Earnings</h4>
+            </div>
+            <div class="referral-tiers-grid">
+              <!-- Tier 1 -->
+              <div class="tier-card tier-1">
+                <div class="tier-header-row">
+                  <span class="tier-level-badge">Level 1</span>
+                  <span class="tier-rate-badge text-neon">+1.0 Pt</span>
+                </div>
+                <div class="tier-desc-text" data-i18n="tier_1_label">Direct Referrals</div>
+                <div class="tier-stats-row">
+                  <span class="tier-count-num" id="tier1-count">0</span>
+                  <span class="tier-count-label" data-i18n="friends_unit">friends</span>
+                </div>
+              </div>
+
+              <!-- Tier 2 -->
+              <div class="tier-card tier-2">
+                <div class="tier-header-row">
+                  <span class="tier-level-badge">Level 2</span>
+                  <span class="tier-rate-badge text-neon">+0.5 Pt</span>
+                </div>
+                <div class="tier-desc-text" data-i18n="tier_2_label">2nd Tier Network</div>
+                <div class="tier-stats-row">
+                  <span class="tier-count-num" id="tier2-count">0</span>
+                  <span class="tier-count-label" data-i18n="friends_unit">friends</span>
+                </div>
+              </div>
+
+              <!-- Tier 3 -->
+              <div class="tier-card tier-3">
+                <div class="tier-header-row">
+                  <span class="tier-level-badge">Level 3</span>
+                  <span class="tier-rate-badge text-neon">+0.25 Pt</span>
+                </div>
+                <div class="tier-desc-text" data-i18n="tier_3_label">3rd Tier Network</div>
+                <div class="tier-stats-row">
+                  <span class="tier-count-num" id="tier3-count">0</span>
+                  <span class="tier-count-label" data-i18n="friends_unit">friends</span>
+                </div>
+              </div>
+
+              <!-- Tier 4 -->
+              <div class="tier-card tier-4">
+                <div class="tier-header-row">
+                  <span class="tier-level-badge">Level 4</span>
+                  <span class="tier-rate-badge text-neon">+0.1 Pt</span>
+                </div>
+                <div class="tier-desc-text" data-i18n="tier_4_label">4th Tier Network</div>
+                <div class="tier-stats-row">
+                  <span class="tier-count-num" id="tier4-count">0</span>
+                  <span class="tier-count-label" data-i18n="friends_unit">friends</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -525,77 +586,84 @@
       </div>
     </div>
 
-    <!-- Strict Force Subscription Fullscreen Overlay (Non-Dismissible) -->
+    <!-- Strict Force Subscription Fullscreen Overlay (Polished Dark Rounded Cards) -->
     <div id="force-sub-overlay" class="force-sub-overlay">
       <div class="force-sub-card glass-card">
-        <div class="brand-sub-banner">
-          <img src="/img/TVA.jpg" alt="TVA Network Verification" />
-        </div>
-        <div class="force-sub-icon-wrap">
-          <div class="pulse-ring"></div>
-          <i class="fa-solid fa-shield-halved force-sub-icon text-neon"></i>
+        <div class="force-sub-header">
+          <div class="force-sub-brand-avatar">
+            <img src="/img/TVA.jpg" alt="TVA Mining" class="force-sub-logo" />
+            <div class="pulse-ring"></div>
+          </div>
+          <h2 class="force-sub-title" data-i18n="force_sub_title">Mandatory Channels Verification</h2>
+          <p class="force-sub-desc" data-i18n="force_sub_desc">
+            To secure your account and activate your mining operations, please join all our official channels below:
+          </p>
         </div>
 
-        <h2 class="force-sub-title" data-i18n="force_sub_title">يجب الاشتراك في قنواتنا لتتمكن من استخدام البوت</h2>
-        <p class="force-sub-desc" data-i18n="force_sub_desc">
-          لضمان أمان حسابك واستمرار عمل منصات التعدين وسحب الأرباح، يجب الانضمام إلى جميع القنوات الرسمية التالية:
-        </p>
-
-        <!-- 3 Mandatory Channels List -->
+        <!-- 3 Mandatory Channels List (Strictly Aligned Rounded Dark Cards) -->
         <div class="force-sub-channels-list" id="force-sub-channels-list">
-          <div class="force-sub-channel-item" data-channel-id="@TVA_Mining_News_Arabic">
-            <div class="channel-item-left">
-              <i class="fa-brands fa-telegram channel-item-icon text-neon"></i>
-              <div class="channel-item-meta">
-                <span class="channel-item-name">TVA الأخبار العربية 📢</span>
-                <span class="channel-item-handle">@TVA_Mining_News_Arabic</span>
+          <!-- Channel 1: Official News -->
+          <div class="force-sub-channel-card" data-channel-id="@TVA_Mining_News">
+            <div class="channel-card-left">
+              <div class="channel-avatar-circle">
+                <i class="fa-brands fa-telegram"></i>
+              </div>
+              <div class="channel-card-meta">
+                <span class="channel-name-text">TVA Official News 🌐</span>
+                <span class="channel-handle-text">@TVA_Mining_News</span>
               </div>
             </div>
-            <div class="channel-item-right">
-              <a href="https://t.me/TVA_Mining_News_Arabic" target="_blank" class="btn-channel-link">
-                <span>انضمام</span>
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <div class="channel-card-right">
+              <a href="https://t.me/TVA_Mining_News" target="_blank" class="btn-channel-join">
+                <i class="fa-brands fa-telegram"></i>
+                <span data-i18n="btn_join">Join</span>
               </a>
-              <span class="channel-status-badge pending" id="sub-status-TVA_Mining_News_Arabic">
-                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <span class="channel-status-pill pending" id="sub-status-TVA_Mining_News" title="Pending verification">
+                <i class="fa-solid fa-clock"></i>
               </span>
             </div>
           </div>
 
-          <div class="force-sub-channel-item" data-channel-id="@TVA_Mining_News">
-            <div class="channel-item-left">
-              <i class="fa-brands fa-telegram channel-item-icon text-neon"></i>
-              <div class="channel-item-meta">
-                <span class="channel-item-name">TVA News Official 🌐</span>
-                <span class="channel-item-handle">@TVA_Mining_News</span>
+          <!-- Channel 2: Arabic News & Community -->
+          <div class="force-sub-channel-card" data-channel-id="@TVA_Mining_News_Arabic">
+            <div class="channel-card-left">
+              <div class="channel-avatar-circle">
+                <i class="fa-brands fa-telegram"></i>
+              </div>
+              <div class="channel-card-meta">
+                <span class="channel-name-text">TVA Arabic News 📢</span>
+                <span class="channel-handle-text">@TVA_Mining_News_Arabic</span>
               </div>
             </div>
-            <div class="channel-item-right">
-              <a href="https://t.me/TVA_Mining_News" target="_blank" class="btn-channel-link">
-                <span>انضمام</span>
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <div class="channel-card-right">
+              <a href="https://t.me/TVA_Mining_News_Arabic" target="_blank" class="btn-channel-join">
+                <i class="fa-brands fa-telegram"></i>
+                <span data-i18n="btn_join">Join</span>
               </a>
-              <span class="channel-status-badge pending" id="sub-status-TVA_Mining_News">
-                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <span class="channel-status-pill pending" id="sub-status-TVA_Mining_News_Arabic" title="Pending verification">
+                <i class="fa-solid fa-clock"></i>
               </span>
             </div>
           </div>
 
-          <div class="force-sub-channel-item" data-channel-id="@TVA_Payment">
-            <div class="channel-item-left">
-              <i class="fa-brands fa-telegram channel-item-icon text-neon"></i>
-              <div class="channel-item-meta">
-                <span class="channel-item-name">TVA إثباتات الدفع 💎</span>
-                <span class="channel-item-handle">@TVA_Payment</span>
+          <!-- Channel 3: Payment Proofs -->
+          <div class="force-sub-channel-card" data-channel-id="@TVA_Payment">
+            <div class="channel-card-left">
+              <div class="channel-avatar-circle">
+                <i class="fa-brands fa-telegram"></i>
+              </div>
+              <div class="channel-card-meta">
+                <span class="channel-name-text">TVA Payment Proofs 💎</span>
+                <span class="channel-handle-text">@TVA_Payment</span>
               </div>
             </div>
-            <div class="channel-item-right">
-              <a href="https://t.me/TVA_Payment" target="_blank" class="btn-channel-link">
-                <span>انضمام</span>
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <div class="channel-card-right">
+              <a href="https://t.me/TVA_Payment" target="_blank" class="btn-channel-join">
+                <i class="fa-brands fa-telegram"></i>
+                <span data-i18n="btn_join">Join</span>
               </a>
-              <span class="channel-status-badge pending" id="sub-status-TVA_Payment">
-                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <span class="channel-status-pill pending" id="sub-status-TVA_Payment" title="Pending verification">
+                <i class="fa-solid fa-clock"></i>
               </span>
             </div>
           </div>
@@ -603,10 +671,78 @@
 
         <div class="force-sub-actions">
           <button id="btn-verify-channel-sub" class="btn-cta glow-btn">
-            <i class="fa-solid fa-rotate"></i>
-            <span data-i18n="btn_verify_sub">التحقق من الاشتراك وتفعيل الحساب</span>
+            <i class="fa-solid fa-circle-check"></i>
+            <span data-i18n="btn_verify_sub">Verify Membership & Unlock</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal: Language Selection UI (Presented ONLY AFTER Force Join Verification) -->
+    <div id="modal-language-select" class="modal-backdrop">
+      <div class="modal-sheet language-select-sheet">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-globe text-neon"></i>
+            <h3 data-i18n="modal_language_title">Select App Language</h3>
+          </div>
+          <button type="button" id="btn-close-lang-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" data-i18n="modal_language_desc">
+          Choose your preferred language for the TVA Mining App. You can always change this in Settings.
+        </p>
+
+        <div class="language-options-list my-3">
+          <!-- English (Default) -->
+          <div class="language-option-card active" data-lang="en">
+            <div class="lang-info">
+              <span class="lang-flag">🇬🇧</span>
+              <div class="lang-texts">
+                <span class="lang-name">English</span>
+                <span class="lang-native">Default (International)</span>
+              </div>
+            </div>
+            <div class="lang-check">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+
+          <!-- Arabic -->
+          <div class="language-option-card" data-lang="ar">
+            <div class="lang-info">
+              <span class="lang-flag">🇸🇦</span>
+              <div class="lang-texts">
+                <span class="lang-name">العربية</span>
+                <span class="lang-native">Arabic</span>
+              </div>
+            </div>
+            <div class="lang-check">
+              <i class="fa-regular fa-circle"></i>
+            </div>
+          </div>
+
+          <!-- Russian -->
+          <div class="language-option-card" data-lang="ru">
+            <div class="lang-info">
+              <span class="lang-flag">🇷🇺</span>
+              <div class="lang-texts">
+                <span class="lang-name">Русский</span>
+                <span class="lang-native">Russian</span>
+              </div>
+            </div>
+            <div class="lang-check">
+              <i class="fa-regular fa-circle"></i>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="btn-confirm-language-choice" class="btn-cta glow-btn">
+          <i class="fa-solid fa-check"></i>
+          <span data-i18n="btn_confirm_language">Save & Continue</span>
+        </button>
       </div>
     </div>
 
@@ -673,15 +809,15 @@
         </p>
 
         <div class="settings-section mb-4">
-          <label class="input-label" data-i18n="modal_settings_lang_label">اختر اللغة</label>
+          <label class="input-label" data-i18n="modal_settings_lang_label">Select Language</label>
           <div class="language-options-list">
-            <!-- Arabic Option -->
-            <div class="language-option-card active" data-lang="ar">
+            <!-- English Option (Default) -->
+            <div class="language-option-card active" data-lang="en">
               <div class="lang-info">
-                <span class="lang-flag">🇸🇦</span>
+                <span class="lang-flag">🇬🇧</span>
                 <div class="lang-texts">
-                  <span class="lang-name">العربية</span>
-                  <span class="lang-native">Arabic (الافتراضية)</span>
+                  <span class="lang-name">English</span>
+                  <span class="lang-native">Default (International)</span>
                 </div>
               </div>
               <div class="lang-check">
@@ -689,13 +825,27 @@
               </div>
             </div>
 
-            <!-- English Option -->
-            <div class="language-option-card" data-lang="en">
+            <!-- Arabic Option -->
+            <div class="language-option-card" data-lang="ar">
               <div class="lang-info">
-                <span class="lang-flag">🇬🇧</span>
+                <span class="lang-flag">🇸🇦</span>
                 <div class="lang-texts">
-                  <span class="lang-name">English</span>
-                  <span class="lang-native">English</span>
+                  <span class="lang-name">العربية</span>
+                  <span class="lang-native">Arabic</span>
+                </div>
+              </div>
+              <div class="lang-check">
+                <i class="fa-regular fa-circle"></i>
+              </div>
+            </div>
+
+            <!-- Russian Option -->
+            <div class="language-option-card" data-lang="ru">
+              <div class="lang-info">
+                <span class="lang-flag">🇷🇺</span>
+                <div class="lang-texts">
+                  <span class="lang-name">Русский</span>
+                  <span class="lang-native">Russian</span>
                 </div>
               </div>
               <div class="lang-check">
@@ -1147,39 +1297,45 @@
           </button>
         </div>
 
-        <p class="card-caption">
-          انشر رابط قناتك أو مجموعتك لمئات المعدنين النشطين مع الدفع المباشر عبر TON Connect.
+        <p class="card-caption" data-i18n="p2p_modal_caption">
+          Promote your Telegram channel or group to active miners with direct TON Connect payments.
         </p>
+
+        <!-- Mandatory Client Instruction Notice -->
+        <div class="p2p-instruction-card mb-3">
+          <i class="fa-solid fa-shield-halved text-warning"></i>
+          <span data-i18n="p2p_channel_admin_note">إذا كنت تروج لقناة، يرجى إضافة البوت كمسؤول (Admin) في القناة للتأكد من الانضمام</span>
+        </div>
 
         <form id="form-p2p-task" class="p2p-task-form">
           <div class="form-group mb-2">
-            <label class="input-label" for="p2p-task-title">اسم القناة أو المهمة</label>
-            <input type="text" id="p2p-task-title" placeholder="مثال: انضم إلى قناة كريبتو العرب" required />
+            <label class="input-label" for="p2p-task-title" data-i18n="p2p_title_label">اسم القناة أو المهمة</label>
+            <input type="text" id="p2p-task-title" placeholder="e.g. Join TVA Crypto Community" required />
           </div>
 
           <div class="form-group mb-2">
-            <label class="input-label" for="p2p-task-link">رابط القناة أو المجموعة (Telegram Link)</label>
+            <label class="input-label" for="p2p-task-link" data-i18n="p2p_link_label">رابط القناة أو المجموعة (Telegram Link)</label>
             <input type="url" id="p2p-task-link" placeholder="https://t.me/your_channel" required />
           </div>
 
           <div class="admin-form-grid mb-2">
             <div class="form-group">
-              <label class="input-label" for="p2p-target-members">العدد المستهدف (أعضاء)</label>
+              <label class="input-label" for="p2p-target-members" data-i18n="p2p_target_label">العدد المستهدف (أعضاء)</label>
               <select id="p2p-target-members" class="form-select">
-                <option value="100">100 عضو</option>
-                <option value="250">250 عضو</option>
-                <option value="500">500 عضو</option>
-                <option value="1000">1000 عضو</option>
+                <option value="100">100 members</option>
+                <option value="250">250 members</option>
+                <option value="500">500 members</option>
+                <option value="1000">1000 members</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label class="input-label" for="p2p-reward-per-user">مكافأة كل مستخدم (نقاط)</label>
-              <select id="p2p-reward-per-user" class="form-select">
-                <option value="5">5 نقاط</option>
-                <option value="10" selected>10 نقاط</option>
-                <option value="20">20 نقطة</option>
-              </select>
+              <label class="input-label" data-i18n="p2p_reward_label">User Reward (Points)</label>
+              <div class="p2p-locked-reward-badge" title="Reward is fixed to 2 Points">
+                <i class="fa-solid fa-gem text-neon"></i>
+                <span>2 Points (Fixed)</span>
+                <input type="hidden" id="p2p-reward-per-user" value="2" />
+              </div>
             </div>
           </div>
 

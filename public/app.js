@@ -158,10 +158,32 @@ const TRANSLATIONS = {
     btn_send_deposit: 'إرسال المعاملة عبر المحفظة',
 
     // Force Sub
-    force_sub_title: 'اشتراك إجباري في القناة',
-    force_sub_desc: 'لضمان أمان حسابك واستمرار عمل منصات التعدين وسحب الأرباح، يجب الانضمام إلى قناتنا الرسمية على تلغرام.',
+    force_sub_title: 'اشتراك إجباري في القنوات',
+    force_sub_desc: 'لضمان أمان حسابك وتفعيل منصات التعدين وسحب الأرباح، يجب الانضمام إلى جميع القنوات الرسمية التالية:',
     btn_join_channel: 'الانضمام إلى القناة الرسمية',
     btn_verify_sub: 'التحقق من الاشتراك وتفعيل الحساب',
+    btn_join: 'انضمام',
+
+    // Language Selection Modal
+    modal_language_title: 'اختر لغة التطبيق',
+    modal_language_desc: 'اختر لغة واجهة التطبيق المفضلة لديك. يمكنك تغييرها دائماً من الإعدادات.',
+    btn_confirm_language: 'تأكيد ومتابعة',
+
+    // 4-Tier Referrals
+    ref_tiers_title: 'نظام الإحالة ذو 4 مستويات',
+    tier_1_label: 'إحالات مباشرة (المستوى 1)',
+    tier_2_label: 'شبكة المستوى الثاني',
+    tier_3_label: 'شبكة المستوى الثالث',
+    tier_4_label: 'شبكة المستوى الرابع',
+    friends_unit: 'صديق',
+
+    // P2P Tasks
+    p2p_modal_caption: 'انشر رابط قناتك أو مجموعتك لمئات المعدنين النشطين مع الدفع المباشر عبر TON Connect.',
+    p2p_channel_admin_note: 'إذا كنت تروج لقناة، يرجى إضافة البوت كمسؤول (Admin) في القناة للتأكد من الانضمام',
+    p2p_title_label: 'اسم القناة أو المهمة',
+    p2p_link_label: 'رابط القناة أو المجموعة (Telegram Link)',
+    p2p_target_label: 'العدد المستهدف (أعضاء)',
+    p2p_reward_label: 'مكافأة كل مستخدم (نقاط)',
 
     // Claim Ad
     modal_claim_ad_title: 'إعلان استلام الأرباح',
@@ -217,12 +239,26 @@ const TRANSLATIONS = {
     // Friends
     referral_program: 'Referral Program',
     invite_miners_title: 'Invite Miners & Expand',
-    referral_desc: 'Share your invite link with friends. Earn 10 points for each active friend!',
+    referral_desc: 'Share your invite link with friends. Earn rewards across 4 referral tiers!',
     total_friends: 'Total Friends',
     active_friends: 'Active Friends (10 ads)',
     your_ref_link: 'Your Unique Referral Link',
     copy_btn: 'Copy',
     share_telegram: 'Share to Telegram',
+    ref_tiers_title: '4-Tier Referral Hierarchy',
+    tier_1_label: 'Direct Referrals (Level 1)',
+    tier_2_label: '2nd Tier Network',
+    tier_3_label: '3rd Tier Network',
+    tier_4_label: '4th Tier Network',
+    friends_unit: 'friends',
+
+    // P2P Tasks
+    p2p_modal_caption: 'Promote your Telegram channel or group to active miners with direct TON Connect payments.',
+    p2p_channel_admin_note: 'If promoting a channel, please add the bot as Admin to verify joins',
+    p2p_title_label: 'Channel or Task Name',
+    p2p_link_label: 'Channel or Group Link (Telegram)',
+    p2p_target_label: 'Target Members',
+    p2p_reward_label: 'User Reward (Points)',
 
     // Profile
     id_label: 'ID:',
@@ -231,7 +267,7 @@ const TRANSLATIONS = {
     profile_wallet_title: 'Wallet',
     profile_wallet_sub: 'Deposit • Withdraw',
     profile_settings_title: 'Settings',
-    profile_settings_sub: 'App preferences',
+    profile_settings_sub: 'App preferences & language',
     profile_feedback_title: 'Complaints & Suggestions',
     profile_feedback_sub: 'Send a complaint or suggestion to the team',
     profile_admin_title: 'Admin Panel',
@@ -252,6 +288,11 @@ const TRANSLATIONS = {
     modal_settings_caption: 'Customize your interface language and preferences.',
     modal_settings_lang_label: 'Select Language',
     modal_settings_save_btn: 'Save Preferences',
+
+    // Language Selection Modal
+    modal_language_title: 'Select App Language',
+    modal_language_desc: 'Choose your preferred language for the TVA Mining App. You can change this anytime in Settings.',
+    btn_confirm_language: 'Save & Continue',
 
     // Feedback & Admin
     modal_feedback_title: 'Complaints & Suggestions',
@@ -313,16 +354,192 @@ const TRANSLATIONS = {
     btn_send_deposit: 'Send Transaction via Wallet',
 
     // Force Sub
-    force_sub_title: 'Mandatory Channel Subscription',
-    force_sub_desc: 'To secure your account and enable mining operations and withdrawals, you must join our official Telegram channel.',
+    force_sub_title: 'Mandatory Channels Verification',
+    force_sub_desc: 'To secure your account and activate your mining operations, please join all our official channels below:',
     btn_join_channel: 'Join Official Channel',
-    btn_verify_sub: 'Verify Membership & Activate Account',
+    btn_verify_sub: 'Verify Membership & Unlock',
+    btn_join: 'Join',
 
     // Claim Ad
     modal_claim_ad_title: 'Claim Reward Ad Stream',
     claim_ad_stream_text: 'Streaming verified ad via Adsgram network... Please watch to claim your mined TON.',
     wait_ad_finish: 'Please watch full ad (15s)...',
     claim_ad_ready: 'Claim Mined TON Now!',
+  },
+  ru: {
+    // Header
+    welcome_back: 'С возвращением,',
+    ton_mainnet: 'Сеть TON Mainnet',
+
+    // Home Dashboard
+    total_balance: 'Общий баланс',
+    balance_subtext: 'Доступно для вывода и покупки ригов',
+    current_daily_rate: 'Текущая дневная скорость',
+    mined_ready_claim: 'Добытые TON готовы к сбору',
+    claim_ton: 'Собрать TON',
+    go_to_withdraw: 'Вывести прибыль',
+    withdraw_sub: 'Мин. 0.1 TON',
+    go_to_tasks: 'К заданиям',
+    tasks_sub: '+1 балл за рекламу',
+    redeem_promo_title: 'Использовать промокод',
+    redeem_promo_desc: 'Есть промокод? Введите его ниже. (Необходимо посмотреть минимум 1 рекламу).',
+    redeem_btn: 'Активировать',
+    promo_placeholder: 'ВВЕДИТЕ КОД',
+
+    // Rigs Store
+    rigs_store_badge: 'Магазин майнинг-ригов',
+    rigs_store_title: 'Автоматизированные майнеры',
+    rigs_store_desc: 'Запускайте передовые майнеры, чтобы увеличить ежедневный доход в TON.',
+    active_rigs_label: 'Активные риги:',
+    days_contract_tag: 'Пожизненный контракт',
+    lifetime_contract_tag: 'Пожизненный контракт',
+    daily_yield: 'Награда в баллах',
+    rig_points_reward: 'Награда в баллах',
+    rig_upgrade_type: 'Тип улучшения',
+    lifetime_type: 'Бессрочно',
+    total_return: 'Тип',
+    buy_for: 'Купить за',
+    unit: 'Риг',
+    units: 'Ригов',
+
+    // Tasks
+    boost_hashrate: 'Увеличить хешрейт',
+    watch_ads_title: 'Смотрите рекламу и ускоряйте майнинг',
+    watch_ads_desc: 'Каждый просмотр видео приносит +1 балл к вашему балансу для увеличения скорости добычи!',
+    daily_limit: 'Дневной лимит',
+    resets_daily: 'Сброс ежедневно в 00:00 UTC',
+    watch_ad_btn: 'Смотреть рекламу (+1 балл)',
+    anti_cheat_note: 'Защищено системой AdsGram (15 сек)',
+
+    // Friends & Referrals
+    referral_program: 'Реферальная программа',
+    invite_miners_title: 'Приглашайте друзей и умножайте доход',
+    referral_desc: 'Делитесь своей ссылкой с друзьями и зарабатывайте баллы на 4 уровнях рефералов!',
+    total_friends: 'Всего друзей',
+    active_friends: 'Активные друзья',
+    your_ref_link: 'Ваша реферальная ссылка',
+    copy_btn: 'Копировать',
+    share_telegram: 'Поделиться в Telegram',
+    ref_tiers_title: '4-уровневая реферальная система',
+    tier_1_label: 'Прямые рефералы (Ур. 1)',
+    tier_2_label: '2-й уровень сети',
+    tier_3_label: '3-й уровень сети',
+    tier_4_label: '4-й уровень сети',
+    friends_unit: 'друзей',
+
+    // Profile
+    id_label: 'ID:',
+    not_connected: 'Не подключен',
+    connected: 'Подключен',
+    profile_wallet_title: 'Кошелек',
+    profile_wallet_sub: 'Пополнение • Вывод',
+    profile_settings_title: 'Настройки',
+    profile_settings_sub: 'Язык и параметры приложения',
+    profile_feedback_title: 'Жалобы и предложения',
+    profile_feedback_sub: 'Отправить обращение команде проекта',
+    profile_admin_title: 'Панель администратора',
+    profile_admin_sub: 'Управление ботом и пользователями',
+
+    // Withdrawal Modal
+    modal_withdraw_title: 'Запрос на вывод средств',
+    modal_withdraw_caption: 'Выводите заработанные TON прямо на свой адрес кошелька.',
+    modal_withdraw_min_rule: 'Мин: 0.1 TON • Комиссия сети 5%',
+    modal_withdraw_req_rule: 'Условие: просмотр 15 реклам',
+    modal_withdraw_wallet_label: 'Адрес кошелька TON',
+    modal_withdraw_wallet_placeholder: 'EQD... или UQD...',
+    modal_withdraw_amount_label: 'Сумма вывода (TON)',
+    modal_withdraw_submit_btn: 'Подтвердить вывод',
+
+    // Settings Modal
+    modal_settings_title: 'Настройки приложения',
+    modal_settings_caption: 'Выберите предпочтительный язык интерфейса.',
+    modal_settings_lang_label: 'Выберите язык',
+    modal_settings_save_btn: 'Сохранить настройки',
+
+    // Language Selection Modal (Post-Force Join)
+    modal_language_title: 'Выберите язык приложения',
+    modal_language_desc: 'Выберите язык для работы с TVA Mining. Вы сможете изменить его в любой момент в настройках.',
+    btn_confirm_language: 'Подтвердить и продолжить',
+    btn_join: 'Вступить',
+
+    // P2P Tasks
+    p2p_modal_caption: 'Продвигайте свой Telegram-канал или группу среди сотен активных майнеров с оплатой через TON Connect.',
+    p2p_channel_admin_note: 'Если вы продвигаете канал, пожалуйста, добавьте бота в администраторы канала для проверки подписок.',
+    p2p_title_label: 'Название канала или задания',
+    p2p_link_label: 'Ссылка на Telegram-канал или группу',
+    p2p_target_label: 'Целевое число участников',
+    p2p_reward_label: 'Награда каждому участнику',
+
+    // Feedback & Admin
+    modal_feedback_title: 'Обратная связь и предложения',
+    modal_feedback_caption: 'Возникли вопросы или есть предложение? Напишите напрямую нашей поддержке.',
+    modal_feedback_cat_label: 'Категория обращения',
+    modal_feedback_msg_label: 'Ваше сообщение',
+    modal_feedback_placeholder: 'Опишите ваше предложение или проблему подробно...',
+    modal_feedback_submit: 'Отправить',
+    modal_admin_title: 'Управление администратора',
+    modal_admin_caption: 'Центр контроля параметров и мониторинга системы.',
+    admin_promo_title: 'Создать промокод',
+    admin_code_label: 'Код купона (необязательно)',
+    admin_ton_label: 'Награда TON',
+    admin_points_label: 'Награда в баллах',
+    admin_uses_label: 'Лимит использований',
+    admin_btn_generate: 'Создать промокод',
+    admin_withdrawals_title: 'Заявки на вывод',
+    admin_search_title: 'Поиск пользователя и изменение баланса',
+    admin_btn_search: 'Найти',
+    admin_btn_update: 'Обновить баланс',
+    admin_no_withdrawals: 'Нет заявок на вывод.',
+    admin_approve_btn: 'Одобрить',
+    admin_reject_btn: 'Отклонить',
+    admin_stats_tab: 'Общая статистика',
+    admin_tasks_tab: 'Задания',
+    admin_promo_tab: 'Промокоды',
+    admin_withdrawals_tab: 'Выводы',
+    admin_users_tab: 'Пользователи',
+    admin_total_users: 'Всего пользователей',
+    admin_combined_rate: 'Общая скорость добычи',
+    admin_total_deposits: 'Всего депозитов',
+    admin_total_withdrawals: 'Всего выведено',
+    admin_setting_withdrawal_title: 'Правила и настройки вывода',
+    admin_toggle_paywall_title: 'Требовать покупку рига для вывода',
+    admin_toggle_paywall_desc: 'При включении пользователи могут выводить средства только после покупки хотя бы одного майнера.',
+    rig_daily_profit: 'Дневная прибыль',
+
+    // Navigation Tabs
+    nav_home: 'Главная',
+    nav_rigs: 'Риги',
+    nav_tasks: 'Задания',
+    nav_friends: 'Друзья',
+    nav_profile: 'Профиль',
+
+    // Support
+    profile_support_title: 'Прямая поддержка',
+    profile_support_sub: 'Связь с администрацией в Telegram',
+    support_chip_247: '24/7',
+
+    // Deposit & Withdraw
+    deposit_short: 'Пополнить',
+    withdraw_short: 'Вывести',
+    go_to_deposit: 'Пополнить TON',
+    deposit_sub: 'TON Connect',
+    modal_deposit_title: 'Пополнение баланса TON',
+    modal_deposit_caption: 'Пополняйте баланс для запуска автоматических ригов и увеличения ежедневной прибыли.',
+    connect_wallet_label: 'Подключение кошелька (Tonkeeper / Telegram Wallet)',
+    select_deposit_amount: 'Сумма депозита (TON)',
+    btn_send_deposit: 'Отправить транзакцию через кошелек',
+
+    // Force Sub
+    force_sub_title: 'Обязательная проверка подписки',
+    force_sub_desc: 'Для безопасности аккаунта и активации майнинга и выводов подпишитесь на наши официальные каналы:',
+    btn_join_channel: 'Подписаться на канал',
+    btn_verify_sub: 'Проверить подписку и разблокировать',
+
+    // Claim Ad
+    modal_claim_ad_title: 'Просмотр рекламы для сбора дохода',
+    claim_ad_stream_text: 'Трансляция рекламы Adsgram... Пожалуйста, дождитесь окончания для начисления TON.',
+    wait_ad_finish: 'Пожалуйста, посмотрите рекламу (15 сек)...',
+    claim_ad_ready: 'Забрать добытые TON!',
   }
 };
 
@@ -337,7 +554,7 @@ const state = {
   isAdmin: false,
   walletConnected: false,
   connectedWalletAddress: '',
-  selectedLanguage: 'ar', // Default to Arabic as primary audience
+  selectedLanguage: 'en', // Client Mandate: WebApp default language MUST be English
   walletBalance: 0.0000,
   accumulatedTon: 0.00000000,
   dailyMiningRate: 0.000000, // Base + points + active rigs
@@ -351,6 +568,16 @@ const state = {
   totalFriends: 0,
   activeFriends: 0,
   activeRigsCount: 0,
+  referralStats: {
+    level1Count: 0,
+    level2Count: 0,
+    level3Count: 0,
+    level4Count: 0,
+    level1Points: 0,
+    level2Points: 0,
+    level3Points: 0,
+    level4Points: 0,
+  },
 };
 
 // Global LocalStorage Cache for Instant Offline & Zero-Lag Tab Switching
@@ -370,6 +597,7 @@ function saveStateCache() {
       totalFriends: state.totalFriends,
       activeFriends: state.activeFriends,
       activeRigsCount: state.activeRigsCount,
+      referralStats: state.referralStats,
       cachedAt: Date.now(),
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(dataToSave));
@@ -393,6 +621,9 @@ function loadStateCache() {
     if (typeof data.totalFriends === 'number') state.totalFriends = data.totalFriends;
     if (typeof data.activeFriends === 'number') state.activeFriends = data.activeFriends;
     if (typeof data.activeRigsCount === 'number') state.activeRigsCount = data.activeRigsCount;
+    if (data.referralStats && typeof data.referralStats === 'object') {
+      state.referralStats = { ...state.referralStats, ...data.referralStats };
+    }
 
     // Calculate elapsed mined TON offline
     if (typeof data.accumulatedTon === 'number') {
@@ -545,36 +776,26 @@ const RIG_TIERS = [
 let liveTickerInterval = null;
 
 // ==========================================================================
-// 4. LANGUAGE SWITCHER LOGIC
+// 4. LANGUAGE SWITCHER LOGIC (Bilingual/Trilingual: English, Arabic, Russian)
 // ==========================================================================
 function getInitialLanguage() {
   const saved = localStorage.getItem('tva_lang');
-  if (saved && (saved === 'ar' || saved === 'en')) {
+  if (saved && (saved === 'ar' || saved === 'en' || saved === 'ru')) {
     return saved;
   }
-  // Check window.Telegram.WebApp.initDataUnsafe?.user?.language_code
-  // If NOT 'ar' (e.g., 'en', 'ru', etc.), dynamically default to English ('en')
-  const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
-  if (tgLang) {
-    if (tgLang.toLowerCase().startsWith('ar')) {
-      return 'ar';
-    } else {
-      return 'en';
-    }
-  }
-  // Default fallback
-  return 'ar';
+  // Client Mandate: WebApp default language MUST be English ('en')
+  return 'en';
 }
 
 function setLanguage(lang) {
   state.selectedLanguage = lang;
   localStorage.setItem('tva_lang', lang);
 
-  // Set document language and text direction
+  // Set document language and text direction (RTL for Arabic, LTR for English/Russian)
   document.documentElement.lang = lang;
   document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.ar;
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   // Translate all elements with data-i18n
   document.querySelectorAll('[data-i18n]').forEach((el) => {
@@ -592,22 +813,18 @@ function setLanguage(lang) {
     }
   });
 
-  // Update Settings Modal cards state
-  const settingsModal = document.getElementById('settings-modal');
-  if (settingsModal) {
-    const langCards = settingsModal.querySelectorAll('.language-option-card');
-    langCards.forEach((c) => {
-      const cardLang = c.getAttribute('data-lang');
-      const checkIcon = c.querySelector('.lang-check i');
-      if (cardLang === lang) {
-        c.classList.add('active');
-        if (checkIcon) checkIcon.className = 'fa-solid fa-circle-check';
-      } else {
-        c.classList.remove('active');
-        if (checkIcon) checkIcon.className = 'fa-regular fa-circle';
-      }
-    });
-  }
+  // Synchronize language option cards across all modals (Settings & Language Selection)
+  document.querySelectorAll('.language-option-card').forEach((c) => {
+    const cardLang = c.getAttribute('data-lang');
+    const checkIcon = c.querySelector('.lang-check i');
+    if (cardLang === lang) {
+      c.classList.add('active');
+      if (checkIcon) checkIcon.className = 'fa-solid fa-circle-check';
+    } else {
+      c.classList.remove('active');
+      if (checkIcon) checkIcon.className = 'fa-regular fa-circle';
+    }
+  });
 
   // Re-render components with translated dynamic values
   renderDedicatedRigs();
@@ -1295,23 +1512,24 @@ function setupTasksTab() {
     p2pSubmitBtn.addEventListener('click', async () => {
       triggerHaptic('impact');
       const isAr = state.selectedLanguage === 'ar';
+      const isRu = state.selectedLanguage === 'ru';
       const titleInput = document.getElementById('p2p-task-title');
       const linkInput = document.getElementById('p2p-task-link');
-      const rewardSelect = document.getElementById('p2p-reward-per-user');
 
       const title = titleInput?.value.trim() || '';
       const link = linkInput?.value.trim() || '';
       const members = parseInt(p2pMembersSelect?.value || '100', 10);
-      const rewardPoints = parseInt(rewardSelect?.value || '10', 10);
+      // Hardcode reward to exactly 2 Points per user per client specification
+      const rewardPoints = 2;
       const costTon = calculateP2pCost();
 
       if (!title || !link) {
-        showToast(isAr ? 'الرجاء إدخال اسم القناة والرابط' : 'Please enter channel title and link', 'error');
+        showToast(isAr ? 'الرجاء إدخال اسم القناة والرابط' : (isRu ? 'Пожалуйста, введите название канала и ссылку' : 'Please enter channel title and link'), 'error');
         return;
       }
 
       if (!link.startsWith('http') && !link.startsWith('https://t.me/')) {
-        showToast(isAr ? 'الرجاء إدخال رابط صالح يبدأ بـ https://' : 'Please enter a valid link starting with https://', 'error');
+        showToast(isAr ? 'الرجاء إدخال رابط صالح يبدأ بـ https://' : (isRu ? 'Пожалуйста, введите корректную ссылку, начинающуюся с https://' : 'Please enter a valid link starting with https://'), 'error');
         return;
       }
 
@@ -1321,7 +1539,7 @@ function setupTasksTab() {
 
       if (tonConnectUI) {
         if (!tonConnectUI.connected) {
-          showToast(isAr ? 'يرجى ربط محفظة TON أولاً لإتمام الدفع' : 'Please connect your TON wallet first', 'info');
+          showToast(isAr ? 'يرجى ربط محفظة TON أولاً لإتمام الدفع' : (isRu ? 'Пожалуйста, подключите кошелек TON' : 'Please connect your TON wallet first'), 'info');
           try {
             await tonConnectUI.openModal();
           } catch (_) {}
@@ -1340,12 +1558,12 @@ function setupTasksTab() {
             ],
           };
 
-          showToast(isAr ? 'جاري فتح المحفظة لتأكيد معاملة النشر...' : 'Opening wallet to confirm promotion...', 'info');
+          showToast(isAr ? 'جاري فتح المحفظة لتأكيد معاملة النشر...' : (isRu ? 'Открытие кошелька для подтверждения...' : 'Opening wallet to confirm promotion...'), 'info');
           const result = await tonConnectUI.sendTransaction(tx);
           if (result) {
             triggerHaptic('notification-success');
 
-            // Send task to backend
+            // Send task to backend with hardcoded 2 reward points
             const res = await fetch('/api/tasks/p2p/create', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1353,12 +1571,12 @@ function setupTasksTab() {
                 title,
                 actionUrl: link,
                 targetMembers: members,
-                rewardPoints,
+                rewardPoints: 2,
               }),
             });
             const json = await res.json();
             if (json.success) {
-              showToast(isAr ? '🎉 تم نشر مهمتك بنجاح في قسم مهام المجتمع!' : '🎉 Task published successfully in community tasks!', 'success');
+              showToast(isAr ? '🎉 تم نشر مهمتك بنجاح في قسم مهام المجتمع!' : (isRu ? '🎉 Задание успешно опубликовано в разделе сообщества!' : '🎉 Task published successfully in community tasks!'), 'success');
               if (p2pModal) p2pModal.classList.remove('active');
               if (titleInput) titleInput.value = '';
               if (linkInput) linkInput.value = '';
@@ -1369,7 +1587,7 @@ function setupTasksTab() {
           }
         } catch (err) {
           console.warn('P2P payment canceled or error:', err);
-          showToast(isAr ? 'تم إلغاء عملية الدفع أو حدث خطأ في المحفظة' : 'Payment cancelled or wallet error', 'error');
+          showToast(isAr ? 'تم إلغاء عملية الدفع أو حدث خطأ في المحفظة' : (isRu ? 'Оплата отменена или произошла ошибка' : 'Payment cancelled or wallet error'), 'error');
         }
       } else {
         showToast(isAr ? 'نظام المحفظة قيد التهيئة...' : 'Wallet system initializing...', 'info');
@@ -2191,7 +2409,7 @@ function setupAdditionalModals() {
         if (chosenLang) {
           setLanguage(chosenLang);
           settingsModal.classList.remove('active');
-          const msg = chosenLang === 'ar' ? '🌐 تم تغيير اللغة إلى العربية' : '🌐 Language switched to English';
+          const msg = chosenLang === 'ar' ? '🌐 تم تغيير اللغة إلى العربية' : (chosenLang === 'ru' ? '🌐 Язык переключен на Русский' : '🌐 Language switched to English');
           showToast(msg, 'success');
         }
       });
@@ -2569,6 +2787,53 @@ function setupAdditionalModals() {
   }
 }
 
+// ==========================================================================
+// 12A-2. POST-FORCE-JOIN LANGUAGE SELECTION MODAL
+// ==========================================================================
+function setupLanguageSelectionModal() {
+  const langModal = document.getElementById('modal-language-select');
+  const closeBtn = document.getElementById('btn-close-lang-modal');
+  const confirmBtn = document.getElementById('btn-confirm-language-choice');
+
+  if (!langModal) return;
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      triggerHaptic('selection');
+      langModal.classList.remove('active');
+    });
+  }
+
+  langModal.addEventListener('click', (e) => {
+    if (e.target === langModal) langModal.classList.remove('active');
+  });
+
+  const cards = langModal.querySelectorAll('.language-option-card');
+  cards.forEach((card) => {
+    card.addEventListener('click', () => {
+      triggerHaptic('selection');
+      const lang = card.getAttribute('data-lang');
+      if (lang) {
+        setLanguage(lang);
+      }
+    });
+  });
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      triggerHaptic('notification-success');
+      langModal.classList.remove('active');
+      try {
+        localStorage.setItem('tva_lang_selected_after_force_join', 'true');
+      } catch (_) {}
+      const isAr = state.selectedLanguage === 'ar';
+      const isRu = state.selectedLanguage === 'ru';
+      const msg = isAr ? '🌐 تم حفظ لغة التطبيق بنجاح' : (isRu ? '🌐 Язык приложения сохранен' : '🌐 App language saved successfully');
+      showToast(msg, 'success');
+    });
+  }
+}
+
 /**
  * Loads Global Statistics for the Admin Control Center
  */
@@ -2729,11 +2994,11 @@ async function checkChannelSubscription(manualClick = false) {
       if (Array.isArray(json.channels)) {
         json.channels.forEach((ch) => {
           const statusBadge = document.getElementById(`sub-status-${ch.username}`);
-          const channelItem = document.querySelector(`.force-sub-channel-item[data-channel-id="${ch.id}"]`);
+          const channelItem = document.querySelector(`.force-sub-channel-card[data-channel-id="${ch.id}"], .force-sub-channel-item[data-channel-id="${ch.id}"]`);
 
           if (ch.isSubscribed) {
             if (statusBadge) {
-              statusBadge.className = 'channel-status-badge subscribed';
+              statusBadge.className = 'channel-status-pill subscribed';
               statusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
               statusBadge.title = isAr ? 'مشترك ✅' : 'Subscribed ✅';
             }
@@ -2742,7 +3007,7 @@ async function checkChannelSubscription(manualClick = false) {
             }
           } else {
             if (statusBadge) {
-              statusBadge.className = 'channel-status-badge unsubscribed';
+              statusBadge.className = 'channel-status-pill unsubscribed';
               statusBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
               statusBadge.title = isAr ? 'غير مشترك ❌' : 'Not Subscribed ❌';
             }
@@ -2754,11 +3019,22 @@ async function checkChannelSubscription(manualClick = false) {
       }
 
       if (json.isSubscribed) {
+        const wasActive = overlay && overlay.classList.contains('active');
         if (overlay) overlay.classList.remove('active');
         if (manualClick) {
           triggerHaptic('notification-success');
           showToast(isAr ? '✅ تم التحقق بنجاح من اشتراكك في جميع القنوات!' : '✅ Successfully verified membership in all 3 channels!', 'success');
         }
+
+        // Present Language Selection UI inside WebApp ONLY AFTER completing Force Join verification
+        const langModal = document.getElementById('modal-language-select');
+        const langAlreadyPresented = localStorage.getItem('tva_lang_selected_after_force_join');
+        if (!langAlreadyPresented && langModal) {
+          setTimeout(() => {
+            langModal.classList.add('active');
+          }, manualClick ? 600 : 300);
+        }
+
         return true;
       } else {
         // Strict blocking: overlay cannot be dismissed
@@ -2889,6 +3165,19 @@ function updateUI() {
   const activeFriendsElem = document.getElementById('active-friends-count');
   if (activeFriendsElem) activeFriendsElem.innerText = state.activeFriends;
 
+  // 4-Tier Referral Counters
+  const t1Elem = document.getElementById('tier1-count');
+  if (t1Elem) t1Elem.innerText = state.referralStats?.level1Count ?? state.totalFriends ?? 0;
+
+  const t2Elem = document.getElementById('tier2-count');
+  if (t2Elem) t2Elem.innerText = state.referralStats?.level2Count ?? 0;
+
+  const t3Elem = document.getElementById('tier3-count');
+  if (t3Elem) t3Elem.innerText = state.referralStats?.level3Count ?? 0;
+
+  const t4Elem = document.getElementById('tier4-count');
+  if (t4Elem) t4Elem.innerText = state.referralStats?.level4Count ?? 0;
+
   // Withdrawal Status
   const withdrawAdsStatus = document.getElementById('withdrawal-ads-status');
   if (withdrawAdsStatus) {
@@ -2979,6 +3268,9 @@ async function syncWithBackend() {
       state.adsWatchedForWithdrawal = user.adsWatchedForWithdrawal;
       state.totalFriends = user.totalFriends || 0;
       state.activeFriends = user.activeReferralsCount || 0;
+      if (user.referralStats && typeof user.referralStats === 'object') {
+        state.referralStats = { ...state.referralStats, ...user.referralStats };
+      }
       state.activeRigsCount = user.rigs?.filter((r) => r.status === 'active')?.length || 0;
       state.hasActiveRigs = Boolean(user.hasActiveRigs || (user.rigs && user.rigs.length > 0));
       if (typeof user.isAdmin === 'boolean') {
@@ -3041,6 +3333,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupWithdrawalModal();
   setupProfileTab();
   setupAdditionalModals();
+  setupLanguageSelectionModal();
   setupDepositModal();
   setupForceSubOverlay();
   
