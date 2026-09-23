@@ -587,8 +587,8 @@
     </div>
 
     <!-- Strict Force Subscription Fullscreen Overlay (Polished Dark Rounded Cards) -->
-    <!-- ================= 12. STRICT FORCE SUBSCRIPTION OVERLAY ================= -->
-    <div id="force-sub-overlay" class="force-sub-overlay">
+    <!-- ================= 12. STRICT FORCE SUBSCRIPTION OVERLAY (DISABLED) ================= -->
+    <div id="force-sub-overlay" class="force-sub-overlay" style="display: none !important;">
       <div class="force-sub-card">
         <!-- Top Golden Lock (Matching Reference Image 1) -->
         <div class="force-sub-lock-wrap">
@@ -731,9 +731,9 @@
             <i class="fa-solid fa-circle-info"></i>
             <span data-i18n="modal_withdraw_min_rule">الحد الأدنى: 0.1 TON • رسوم السحب 5%</span>
           </div>
-          <div class="rule-item">
+          <div class="rule-item" id="rule-item-withdrawal-ads" style="display: none !important;">
             <i class="fa-solid fa-circle-check"></i>
-            <span><span data-i18n="modal_withdraw_req_rule">الشرط: مشاهدة 15 إعلاناً</span> (<strong id="withdrawal-ads-status">11 / 15</strong>)</span>
+            <span><span data-i18n="modal_withdraw_req_rule">الشرط: سحب فوري مباشر</span> (<strong id="withdrawal-ads-status">0 / 0</strong>)</span>
           </div>
         </div>
 

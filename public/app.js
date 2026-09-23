@@ -90,7 +90,7 @@ const TRANSLATIONS = {
     modal_withdraw_title: 'طلب سحب الأرباح',
     modal_withdraw_caption: 'اسحب رصيدك من TON مباشرة إلى عنوان محفظتك.',
     modal_withdraw_min_rule: 'الحد الأدنى: 0.1 TON • رسوم السحب 5%',
-    modal_withdraw_req_rule: 'الشرط: مشاهدة 15 إعلاناً',
+    modal_withdraw_req_rule: 'الشرط: سحب فوري ومباشر',
     modal_withdraw_wallet_label: 'عنوان محفظة TON',
     modal_withdraw_wallet_placeholder: 'أدخل عنوان محفظة TON',
     modal_withdraw_amount_label: 'المبلغ المراد سحبه (TON)',
@@ -310,7 +310,7 @@ const TRANSLATIONS = {
     modal_withdraw_title: 'Request Withdrawal',
     modal_withdraw_caption: 'Withdraw mined TON directly to your TON wallet address.',
     modal_withdraw_min_rule: 'Min: 0.1 TON • 5% withdrawal fee',
-    modal_withdraw_req_rule: 'Requirement: 15 ads watched',
+    modal_withdraw_req_rule: 'Requirement: Instant Direct Payout',
     modal_withdraw_wallet_label: 'TON Wallet Address',
     modal_withdraw_wallet_placeholder: 'EQD... or UQD...',
     modal_withdraw_amount_label: 'Amount to Withdraw (TON)',
@@ -481,7 +481,7 @@ const TRANSLATIONS = {
     modal_withdraw_title: 'Запрос на вывод средств',
     modal_withdraw_caption: 'Выводите заработанные TON прямо на свой адрес кошелька.',
     modal_withdraw_min_rule: 'Мин: 0.1 TON • Комиссия сети 5%',
-    modal_withdraw_req_rule: 'Условие: просмотр 15 реклам',
+    modal_withdraw_req_rule: 'Условие: Мгновенный вывод',
     modal_withdraw_wallet_label: 'Адрес кошелька TON',
     modal_withdraw_wallet_placeholder: 'EQD... или UQD...',
     modal_withdraw_amount_label: 'Сумма вывода (TON)',
@@ -614,7 +614,7 @@ const state = {
   maxDailyAds: 40,
   totalAdsWatched: 0,
   adsWatchedForWithdrawal: 0,
-  requiredWithdrawalAds: 15,
+  requiredWithdrawalAds: 0,
   totalFriends: 0,
   activeFriends: 0,
   activeRigsCount: 0,
@@ -1798,10 +1798,10 @@ function setupWithdrawalModal() {
         return;
       }
 
-      // Rule: Must have watched 15 ads
-      if (state.adsWatchedForWithdrawal < state.requiredWithdrawalAds) {
+      // Rule: Ads required for withdrawal (Bypassed when requiredWithdrawalAds <= 0)
+      if (state.requiredWithdrawalAds > 0 && state.adsWatchedForWithdrawal < state.requiredWithdrawalAds) {
         triggerHaptic('impact');
-        showToast(isAr ? `يجب مشاهدة 15 إعلاناً لطلب السحب. المكتمل: ${state.adsWatchedForWithdrawal}/15.` : `Must watch 15 ads to withdraw. Progress: ${state.adsWatchedForWithdrawal}/15.`, 'error');
+        showToast(isAr ? `يجب مشاهدة ${state.requiredWithdrawalAds} إعلاناً لطلب السحب.` : `Must watch ${state.requiredWithdrawalAds} ads to withdraw.`, 'error');
         return;
       }
 
@@ -3094,114 +3094,23 @@ function setupDepositModal() {
 }
 
 // ==========================================================================
-// 12C. STRICT 3-CHANNEL FORCE SUBSCRIPTION CHECKER & OVERLAY
+// 12C. 3-CHANNEL FORCE SUBSCRIPTION CHECKER (DISABLED)
 // ==========================================================================
 async function checkChannelSubscription(manualClick = false) {
   const overlay = document.getElementById('force-sub-overlay');
-  const verifyBtn = document.getElementById('btn-verify-channel-sub');
-  const isAr = state.selectedLanguage === 'ar';
-
-  if (manualClick && verifyBtn) {
-    triggerHaptic('selection');
-    verifyBtn.disabled = true;
-    const origHtml = verifyBtn.innerHTML;
-    verifyBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isAr ? 'جاري التحقق من القنوات...' : 'Verifying channels...'}</span>`;
-    setTimeout(() => {
-      verifyBtn.disabled = false;
-      verifyBtn.innerHTML = origHtml;
-    }, 1800);
-  }
-
-  try {
-    const res = await fetch(`/api/check-subscription?telegramId=${state.user.telegramId}`);
-    const json = await res.json();
-    if (json.success) {
-      if (Array.isArray(json.channels)) {
-        json.channels.forEach((ch) => {
-          const card = document.querySelector(`.force-sub-channel-card[data-channel-id="${ch.id}"]`);
-          const joinBtn = card?.querySelector('.btn-channel-join');
-
-          if (ch.isSubscribed) {
-            if (card) card.classList.add('is-subscribed');
-            if (joinBtn) {
-              joinBtn.classList.add('joined');
-              joinBtn.innerText = isAr ? 'تم الانضمام ✓' : (state.selectedLanguage === 'ru' ? 'Вступили ✓' : 'Joined ✓');
-            }
-          } else {
-            if (card) card.classList.remove('is-subscribed');
-            if (joinBtn) {
-              joinBtn.classList.remove('joined');
-              const t = TRANSLATIONS[state.selectedLanguage] || TRANSLATIONS.en;
-              joinBtn.innerText = t.btn_join || 'Join';
-            }
-          }
-        });
-      }
-
-      if (json.isSubscribed) {
-        const wasActive = overlay && overlay.classList.contains('active');
-        if (overlay) overlay.classList.remove('active');
-        if (manualClick) {
-          triggerHaptic('notification-success');
-          showToast(isAr ? '✅ تم التحقق بنجاح من اشتراكك في جميع القنوات!' : '✅ Successfully verified membership in all 3 channels!', 'success');
-        }
-
-        // Present Language Selection UI inside WebApp ONLY AFTER completing Force Join verification
-        const langModal = document.getElementById('modal-language-select');
-        const langAlreadyPresented = localStorage.getItem('tva_lang_selected_after_force_join');
-        if (!langAlreadyPresented && langModal) {
-          setTimeout(() => {
-            langModal.classList.add('active');
-          }, manualClick ? 600 : 300);
-        }
-
-        return true;
-      } else {
-        // Strict blocking: overlay cannot be dismissed
-        if (overlay) overlay.classList.add('active');
-        if (manualClick) {
-          triggerHaptic('impact');
-          showToast(isAr ? '⚠️ يجب الاشتراك في جميع القنوات الـ 3 لتتمكن من استخدام البوت.' : '⚠️ You must join all 3 channels to continue using the bot.', 'error');
-        }
-        return false;
-      }
-    }
-  } catch (err) {
-    console.warn('Channel sub check error:', err);
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
   }
   return true;
 }
 
 function setupForceSubOverlay() {
-  const verifyBtn = document.getElementById('btn-verify-channel-sub');
-  if (verifyBtn) {
-    verifyBtn.addEventListener('click', () => {
-      checkChannelSubscription(true);
-    });
+  const overlay = document.getElementById('force-sub-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
   }
-
-  // Telegram deep-link click handler for channel join buttons
-  const channelLinks = document.querySelectorAll('.btn-channel-link');
-  channelLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      triggerHaptic('impact');
-      const href = link.getAttribute('href');
-      if (tg?.openTelegramLink && href) {
-        e.preventDefault();
-        tg.openTelegramLink(href);
-      }
-    });
-  });
-
-  // Automatically check subscription whenever user switches back to the mini app
-  window.addEventListener('focus', () => {
-    checkChannelSubscription(false);
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      checkChannelSubscription(false);
-    }
-  });
 }
 
 // Developer testing helpers
@@ -3299,6 +3208,10 @@ function updateUI() {
   if (t4Elem) t4Elem.innerText = state.referralStats?.level4Count ?? 0;
 
   // Withdrawal Status
+  const withdrawAdsRuleItem = document.getElementById('rule-item-withdrawal-ads');
+  if (withdrawAdsRuleItem) {
+    withdrawAdsRuleItem.style.display = (state.requiredWithdrawalAds > 0) ? 'flex' : 'none';
+  }
   const withdrawAdsStatus = document.getElementById('withdrawal-ads-status');
   if (withdrawAdsStatus) {
     withdrawAdsStatus.innerText = `${state.adsWatchedForWithdrawal} / ${state.requiredWithdrawalAds}`;

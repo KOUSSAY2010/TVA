@@ -1981,20 +1981,11 @@ body[dir="rtl"] .rig-badge-overlay {
    STRICT FORCE SUBSCRIPTION OVERLAY (EXACT REPLICA OF REFERENCE PMT)
    ========================================================================== */
 .force-sub-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: #090d16;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 18px;
-  overflow-y: auto;
+  display: none !important;
 }
 
 .force-sub-overlay.active {
-  display: flex;
-  animation: fadeInOverlay 0.25s ease-out forwards;
+  display: none !important;
 }
 
 @keyframes fadeInOverlay {

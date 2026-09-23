@@ -388,44 +388,26 @@ async function verifyTelegramChannelMember(botInstance, botToken, channelId, tel
  * - @TVA_Payment
  */
 apiRouter.get('/check-subscription', async (req, res) => {
-  try {
-    const telegramId = req.telegramId || req.query.telegramId;
-    if (!telegramId) {
-      return res.status(400).json({ success: false, message: 'telegramId is required' });
-    }
+  const channelList = config.channels.list || [
+    { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
+    { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
+    { id: '@TVA_Payment', username: 'TVA_Payment', title: 'TVA إثباتات السحب والدفع 💎', url: 'https://t.me/TVA_Payment' },
+  ];
 
-    const botInstance = req.app.get('botInstance');
-    const botToken = config.telegram.botToken;
-    const channelList = config.channels.list || [
-      { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
-      { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
-      { id: '@TVA_Payment', username: 'TVA_Payment', title: 'TVA إثباتات السحب والدفع 💎', url: 'https://t.me/TVA_Payment' },
-    ];
-
-    const results = await Promise.all(
-      channelList.map(async (ch) => {
-        const check = await verifyTelegramChannelMember(botInstance, botToken, ch.id, telegramId);
-        return {
-          id: ch.id,
-          username: ch.username,
-          title: ch.title,
-          url: ch.url,
-          isSubscribed: check.isSubscribed,
-          status: check.status,
-        };
-      })
-    );
-
-    const isAllSubscribed = results.every((r) => r.isSubscribed);
-
-    return res.json({
-      success: true,
-      isSubscribed: isAllSubscribed,
-      channels: results,
-    });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
+  // Mandatory subscription check disabled as requested by client
+  return res.json({
+    success: true,
+    isSubscribed: true,
+    channels: channelList.map((ch) => ({
+      id: ch.id,
+      username: ch.username,
+      title: ch.title,
+      url: ch.url,
+      isSubscribed: true,
+      status: 'member',
+    })),
+    allSubscribed: true,
+  });
 });
 
 /**
@@ -433,43 +415,27 @@ apiRouter.get('/check-subscription', async (req, res) => {
  * Backwards compatibility alias for /api/check-subscription
  */
 apiRouter.get('/channels/check', async (req, res) => {
-  try {
-    const telegramId = req.telegramId || req.query.telegramId;
-    if (!telegramId) {
-      return res.status(400).json({ success: false, message: 'telegramId is required' });
-    }
+  const channelList = config.channels.list || [
+    { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
+    { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
+    { id: '@TVA_Payment', username: 'TVA_Payment', title: 'TVA إثباتات السحب والدفع 💎', url: 'https://t.me/TVA_Payment' },
+  ];
 
-    const botInstance = req.app.get('botInstance');
-    const botToken = config.telegram.botToken;
-    const channelList = config.channels.list || [];
-
-    const results = await Promise.all(
-      channelList.map(async (ch) => {
-        const check = await verifyTelegramChannelMember(botInstance, botToken, ch.id, telegramId);
-        return {
-          id: ch.id,
-          username: ch.username,
-          title: ch.title,
-          url: ch.url,
-          isSubscribed: check.isSubscribed,
-          status: check.status,
-        };
-      })
-    );
-
-    const isAllSubscribed = results.every((r) => r.isSubscribed);
-
-    return res.json({
-      success: true,
-      isMember: isAllSubscribed,
-      isSubscribed: isAllSubscribed,
-      channels: results,
-      channelId: config.channels.requiredChannel,
-      channelUrl: config.channels.channelUrl,
-    });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
+  return res.json({
+    success: true,
+    isMember: true,
+    isSubscribed: true,
+    channels: channelList.map((ch) => ({
+      id: ch.id,
+      username: ch.username,
+      title: ch.title,
+      url: ch.url,
+      isSubscribed: true,
+      status: 'member',
+    })),
+    channelId: config.channels.requiredChannel,
+    channelUrl: config.channels.channelUrl,
+  });
 });
 
 /**

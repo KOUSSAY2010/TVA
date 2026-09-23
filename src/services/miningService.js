@@ -398,10 +398,11 @@ export class MiningService {
     const user = await User.findOne({ telegramId });
     if (!user) throw new Error('User not found');
 
-    // Check 15 ads requirement
-    if (user.adsWatchedForWithdrawal < config.withdrawals.adsRequiredForWithdrawal) {
+    // Check ads requirement (only if configured > 0)
+    const requiredAds = config.withdrawals.adsRequiredForWithdrawal || 0;
+    if (requiredAds > 0 && user.adsWatchedForWithdrawal < requiredAds) {
       throw new Error(
-        `You must watch ${config.withdrawals.adsRequiredForWithdrawal} ads before requesting a withdrawal. Progress: ${user.adsWatchedForWithdrawal}/${config.withdrawals.adsRequiredForWithdrawal}`
+        `You must watch ${requiredAds} ads before requesting a withdrawal. Progress: ${user.adsWatchedForWithdrawal}/${requiredAds}`
       );
     }
 
@@ -427,8 +428,9 @@ export class MiningService {
     const currentRate = user.calculateDailyMiningRate();
 
     user.tonBalance = Number((user.tonBalance - amountTon).toFixed(6));
-    // Reset the 15-ads requirement counter for subsequent withdrawal
-    user.adsWatchedForWithdrawal = Math.max(0, user.adsWatchedForWithdrawal - config.withdrawals.adsRequiredForWithdrawal);
+    if (requiredAds > 0) {
+      user.adsWatchedForWithdrawal = Math.max(0, user.adsWatchedForWithdrawal - requiredAds);
+    }
     await user.save();
 
     const request = await WithdrawalRequest.create({

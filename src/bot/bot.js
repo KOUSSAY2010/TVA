@@ -66,35 +66,29 @@ export function setupBotHandlers(botInstance) {
 
       // Check if user exists or create new user with 4-level referral tracking
       const user = await MiningService.getOrCreateUser(ctx.from, referrerId);
-      const currentRate = user.calculateDailyMiningRate();
       const botUsername = ctx.botInfo?.username || config.telegram.botUsername || 'TVAMining_bot';
+      const safeName = (ctx.from?.first_name || 'Miner').replace(/[*_`\[\]]/g, '');
 
       const welcomeText =
-        `⚡ *Welcome to TVA Cloud TON Mining Bot!* ⚡\n\n` +
-        `🚀 Start mining TON cryptocurrency now at maximum speed via our Telegram Mini App.\n\n` +
-        `💎 *Ways to Earn Points & Boost Mining Hashrate:*\n` +
-        `• 📺 *Watch Ads:* Earn +1 Point for every daily ad you watch.\n` +
-        `• 🤖 *Automated Mining Rigs:* Advanced units that provide daily TON profits directly.\n` +
-        `• 👥 *4-Tier Referral Rewards:*\n` +
-        `   🥇 Level 1: *+1.0 Point* per user earn\n` +
-        `   🥈 Level 2: *+0.5 Point* per user earn\n` +
-        `   🥉 Level 3: *+0.25 Point* per user earn\n` +
-        `   🎖️ Level 4: *+0.1 Point* per user earn\n` +
-        `• 📋 *Partner Tasks:* Subscribe to partner channels for instant bonuses.\n\n` +
-        `📊 *Your Account Stats:*\n` +
-        `• 💰 *TON Balance:* \`${user.tonBalance.toFixed(4)} TON\`\n` +
-        `• ⚡ *Mining Rate:* \`${currentRate} TON/day\`\n` +
-        `• 🎯 *Total Points:* \`${user.totalPoints} PTS\`\n` +
-        `• 🤝 *Direct Referrals:* \`${user.activeReferralsCount}\`\n\n` +
-        `💡 *Conversion Formula:* 1 Point = 0.0001 TON / day\n\n` +
-        `Tap the *🚀 Launch App* button below to open the Mini App and start mining! 👇`;
+        `🪙 *Welcome to TVA GRAM, ${safeName} 👑! 👑*\n\n` +
+        `💎 *Complete tasks, watch ads & earn TON rewards.*\n\n` +
+        `🎯 *Daily Tasks* — Complete simple tasks and earn instantly.\n` +
+        `👥 *Invite Friends* — Earn from referrals and their activity.\n` +
+        `💰 *Fast Withdrawals* — Withdraw your earnings directly to your TON Wallet.\n\n` +
+        `⚡ *Fast rewards • Transparent payouts • On-chain verified*\n\n` +
+        `🚀 *Ready to earn? Tap below and start now!*\n\n` +
+        `📢 *Your referral & payout updates will appear here:*\n` +
+        `https://t.me/TVA_Payment`;
 
       const shareText = encodeURIComponent('Join TVA Mining Bot and start mining TON cryptocurrency daily for free! 🚀💎');
       const shareUrl = `https://t.me/share/url?url=https://t.me/${botUsername}?start=ref_${ctx.from.id}&text=${shareText}`;
 
       const keyboard = Markup.inlineKeyboard([
-        [Markup.button.webApp('🚀 Launch App', config.telegram.webAppUrl)],
-        [Markup.button.url('👥 Invite Friends', shareUrl)],
+        [Markup.button.webApp('🚀 Open TVA Mining', config.telegram.webAppUrl)],
+        [
+          Markup.button.url('📢 Payouts Channel', 'https://t.me/TVA_Payment'),
+          Markup.button.url('👥 Invite Friends', shareUrl),
+        ],
       ]);
 
       const mascotPath = path.resolve(process.cwd(), 'public', 'img', 'robots', 'mascot.jpg');
@@ -116,9 +110,10 @@ export function setupBotHandlers(botInstance) {
     } catch (err) {
       console.error('Error handling /start command:', err);
       try {
-        await ctx.reply('Welcome to TVA Bot! Tap below to open the app:', {
+        await ctx.reply('🪙 Welcome to TVA GRAM! Tap below to open the app:', {
           ...Markup.inlineKeyboard([
-            [Markup.button.webApp('🚀 Launch App', config.telegram.webAppUrl)],
+            [Markup.button.webApp('🚀 Open TVA Mining', config.telegram.webAppUrl)],
+            [Markup.button.url('📢 Payouts Channel', 'https://t.me/TVA_Payment')],
           ]),
         });
       } catch (_) {}
