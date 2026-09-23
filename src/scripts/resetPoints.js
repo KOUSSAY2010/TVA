@@ -1,12 +1,16 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import mongoose from 'mongoose';
 import config from '../config/index.js';
 import User from '../models/User.js';
 
 async function resetAllPoints() {
   try {
-    console.log('Connecting to MongoDB database...');
-    await mongoose.connect(config.database.uri);
-    console.log('Connected.');
+    const mongoUri = config.db?.uri || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/tva_mining';
+    console.log(`Connecting to MongoDB...`);
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 8000 });
+    console.log('✅ Connected successfully.');
 
     const totalBefore = await User.countDocuments();
     const withPoints = await User.countDocuments({
