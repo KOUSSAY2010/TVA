@@ -32,7 +32,7 @@ async function resetAllPoints() {
 
     console.log(`✅ Successfully reset points for ${result.modifiedCount} users to 0!`);
 
-    const sample = await User.find({}, 'telegramId username totalPoints points').limit(5);
+    const sample = await User.find({}, 'telegramId username totalPoints points').lean().limit(5);
     console.log('Sample users after reset:', JSON.stringify(sample, null, 2));
 
     await mongoose.disconnect();
