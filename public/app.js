@@ -929,13 +929,16 @@ function setupTabNavigation() {
 // 6. HOME TAB DASHBOARD ACTIONS & ADSGRAM VIDEO AD ON CLAIM
 // ==========================================================================
 let adsgramController = null;
+let currentBlockId = null;
 function getAdsgramController() {
+  const targetBlockId = String(APP_CONFIG.adsgramBlockId || '49428').trim();
   if (window.Adsgram) {
     try {
-      if (!adsgramController) {
+      if (!adsgramController || currentBlockId !== targetBlockId) {
         adsgramController = window.Adsgram.init({
-          blockId: APP_CONFIG.adsgramBlockId || '49428',
+          blockId: targetBlockId,
         });
+        currentBlockId = targetBlockId;
       }
       return adsgramController;
     } catch (e) {
@@ -1418,44 +1421,134 @@ function setupTasksTab() {
     }
   };
 
+  // Function to grant watched ad reward after verified completion
+  const executeWatchAdReward = async () => {
+    const isAr = state.selectedLanguage === 'ar';
+    const isRu = state.selectedLanguage === 'ru';
+    try {
+      const res = await fetch('/api/ads/reward', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        state.totalPoints = json.data.totalPoints;
+        state.adsWatchedToday = json.data.adsWatchedToday;
+        state.totalAdsWatched += 1;
+        state.adsWatchedForWithdrawal += 1;
+        state.dailyMiningRate = json.data.currentDailyMiningRate;
+        updateUI();
+        saveStateCache();
+        startMiningTicker();
+        triggerHaptic('notification-success');
+        showToast(
+          isAr
+            ? '🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة أضيفت إلى رصيدك.'
+            : (isRu ? '🎉 Просмотр рекламы завершен! +1 балл добавлен на баланс.' : '🎉 Ad completed! +1 Point added to your account.'),
+          'success'
+        );
+      } else {
+        showToast(json.message || 'Ad reward error', 'error');
+      }
+    } catch (err) {
+      showToast(isAr ? 'خطأ في الاتصال بالسيرفر' : 'Connection error', 'error');
+    }
+    resetAdState();
+  };
+
+  // Fallback interactive 15-second timer modal if Adsgram SDK has no fill or runs in desktop browser
+  const startFallbackAdTimer = () => {
+    const isAr = state.selectedLanguage === 'ar';
+    const isRu = state.selectedLanguage === 'ru';
+    resetAdState();
+    if (adModal) adModal.classList.add('active');
+    triggerHaptic('impact');
+
+    adCountdownInterval = setInterval(() => {
+      adRemaining -= 1;
+      if (countdownNumber) countdownNumber.innerText = String(Math.max(0, adRemaining));
+      const pct = Math.min(100, Math.round(((15 - adRemaining) / 15) * 100));
+      if (adProgressFill) adProgressFill.style.width = `${pct}%`;
+
+      if (claimAdText && adRemaining > 0) {
+        claimAdText.innerText = isAr
+          ? `انتظر انتهاء الإعلان (${adRemaining} ثانية)...`
+          : (isRu ? `Ожидайте (${adRemaining} сек)...` : `Please wait (${adRemaining}s)...`);
+      }
+
+      if (adRemaining <= 0) {
+        clearInterval(adCountdownInterval);
+        adFinished = true;
+        if (claimAdBtn) {
+          claimAdBtn.disabled = false;
+          claimAdBtn.classList.add('btn-instant-bounce');
+        }
+        if (claimAdText) {
+          claimAdText.innerText = isAr
+            ? '🎉 استلام المكافأة الآن (+1 نقطة)!'
+            : (isRu ? '🎉 Забрать награду (+1 балл)!' : '🎉 Claim Reward Now (+1 PTS)!');
+        }
+        triggerHaptic('notification-success');
+      }
+    }, 1000);
+  };
+
   if (watchAdBtn) {
     watchAdBtn.addEventListener('click', () => {
       const isAr = state.selectedLanguage === 'ar';
+      const isRu = state.selectedLanguage === 'ru';
 
       if (state.adsWatchedToday >= state.maxDailyAds) {
         triggerHaptic('impact');
-        showToast(isAr ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`, 'error');
+        showToast(
+          isAr
+            ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.`
+            : (isRu ? `Достигнут дневной лимит (${state.maxDailyAds}/${state.maxDailyAds} реклам). Сброс в 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`),
+          'error'
+        );
         return;
       }
 
-      resetAdState();
-      if (adModal) adModal.classList.add('active');
-      triggerHaptic('impact');
+      // 1. Try streaming real Adsgram Video Ad via Adsgram SDK
+      const controller = getAdsgramController();
+      if (controller) {
+        triggerHaptic('impact');
+        controller.show()
+          .then(async (result) => {
+            // User completed full video ad
+            if (result?.done !== false) {
+              await executeWatchAdReward();
+            } else {
+              showToast(
+                isAr
+                  ? 'يجب إكمال مشاهدة الإعلان حتى النهاية لاستلام المكافأة'
+                  : (isRu ? 'Необходимо досмотреть рекламу до конца для получения награды' : 'You must watch the full ad to receive your reward.'),
+                'error'
+              );
+            }
+          })
+          .catch((err) => {
+            console.warn('Adsgram show result:', err);
+            // User closed / dismissed ad early
+            if (err?.done === false && !err?.error) {
+              showToast(
+                isAr
+                  ? 'تم إلغاء مشاهدة الإعلان قبل اكتماله.'
+                  : (isRu ? 'Просмотр рекламы отменен до завершения.' : 'Ad was closed early, reward not granted.'),
+                'info'
+              );
+              return;
+            }
+            // Adsgram error / no fill available in user region: use fallback timer modal
+            console.warn('Falling back to local ad timer due to Adsgram error/no-fill:', err?.description || err?.message);
+            startFallbackAdTimer();
+          });
+        return;
+      }
 
-      // Enforce strict 15-second timer
-      adCountdownInterval = setInterval(() => {
-        adRemaining -= 1;
-        if (countdownNumber) countdownNumber.innerText = String(Math.max(0, adRemaining));
-        const pct = Math.min(100, Math.round(((15 - adRemaining) / 15) * 100));
-        if (adProgressFill) adProgressFill.style.width = `${pct}%`;
-
-        if (claimAdText && adRemaining > 0) {
-          claimAdText.innerText = isAr ? `انتظر انتهاء الإعلان (${adRemaining} ثانية)...` : `Please wait (${adRemaining}s)...`;
-        }
-
-        if (adRemaining <= 0) {
-          clearInterval(adCountdownInterval);
-          adFinished = true;
-          if (claimAdBtn) {
-            claimAdBtn.disabled = false;
-            claimAdBtn.classList.add('btn-instant-bounce');
-          }
-          if (claimAdText) {
-            claimAdText.innerText = isAr ? '🎉 استلام المكافأة الآن (+1 نقطة)!' : '🎉 Claim Reward Now (+1 PTS)!';
-          }
-          triggerHaptic('notification-success');
-        }
-      }, 1000);
+      // 2. Fallback if Adsgram SDK is not available
+      startFallbackAdTimer();
     });
   }
 
@@ -1475,38 +1568,12 @@ function setupTasksTab() {
     });
   }
 
-  // Claim Reward button: executed only after 15 seconds have fully elapsed
+  // Claim Reward button: executed only after fallback timer fully elapses
   if (claimAdBtn) {
     claimAdBtn.addEventListener('click', async () => {
       if (!adFinished) return;
-      const isAr = state.selectedLanguage === 'ar';
-      triggerHaptic('notification-success');
       if (adModal) adModal.classList.remove('active');
-
-      try {
-        const res = await fetch('/api/ads/reward', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
-        });
-        const json = await res.json();
-        if (json.success && json.data) {
-          state.totalPoints = json.data.totalPoints;
-          state.adsWatchedToday = json.data.adsWatchedToday;
-          state.totalAdsWatched += 1;
-          state.adsWatchedForWithdrawal += 1;
-          state.dailyMiningRate = json.data.currentDailyMiningRate;
-          updateUI();
-          saveStateCache();
-          startMiningTicker();
-          showToast(isAr ? '🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة أضيفت إلى رصيدك.' : '🎉 Ad completed! +1 Point added to your account.', 'success');
-        } else {
-          showToast(json.message || 'Ad reward error', 'error');
-        }
-      } catch (err) {
-        showToast(isAr ? 'خطأ في الاتصال بالسيرفر' : 'Connection error', 'error');
-      }
-      resetAdState();
+      await executeWatchAdReward();
     });
   }
 
