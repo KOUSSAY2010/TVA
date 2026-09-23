@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import config from '../config/index.js';
-import User from '../models/user.js';
+import User from '../models/User.js';
 
 async function resetAllPoints() {
   try {
