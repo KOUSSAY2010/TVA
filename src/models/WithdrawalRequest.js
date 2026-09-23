@@ -48,6 +48,10 @@ const WithdrawalRequestSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    txLink: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

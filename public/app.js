@@ -2491,6 +2491,42 @@ async function loadPendingWithdrawals() {
 window.handleReviewWithdrawal = async function (requestId, action) {
   triggerHaptic('impact');
   const isAr = state.selectedLanguage === 'ar';
+
+  if (action === 'approved') {
+    const adminTxModal = document.getElementById('admin-tx-modal');
+    const adminTxInput = document.getElementById('admin-tx-link-input');
+
+    if (adminTxModal && adminTxInput) {
+      adminTxModal.dataset.currentRequestId = requestId;
+      adminTxInput.value = '';
+      adminTxModal.classList.add('active');
+      setTimeout(() => adminTxInput.focus(), 150);
+      return;
+    }
+
+    // Fallback prompt if modal element isn't in DOM
+    const promptMsg = isAr
+      ? 'أدخل رابط المعاملة (Transaction Link):'
+      : 'Enter Transaction Link (رابط المعاملة):';
+    const txLink = window.prompt(promptMsg);
+    if (txLink === null) return; // User cancelled
+    const trimmed = txLink.trim();
+    if (!trimmed) {
+      showToast(isAr ? '⚠️ يرجى إدخال رابط المعاملة لإتمام الموافقة' : '⚠️ Please enter a transaction link', 'warning');
+      return;
+    }
+    await executeWithdrawalReview(requestId, 'approved', trimmed);
+    return;
+  }
+
+  // Reject action
+  const confirmReject = confirm(isAr ? 'هل أنت متأكد من رفض هذا الطلب وإعادة الرصيد للمستخدم؟' : 'Are you sure you want to reject this withdrawal?');
+  if (!confirmReject) return;
+  await executeWithdrawalReview(requestId, 'rejected', '');
+};
+
+async function executeWithdrawalReview(requestId, action, txLink = '') {
+  const isAr = state.selectedLanguage === 'ar';
   try {
     const res = await fetch('/api/admin/withdrawals/review', {
       method: 'POST',
@@ -2498,7 +2534,7 @@ window.handleReviewWithdrawal = async function (requestId, action) {
         'Content-Type': 'application/json',
         'x-telegram-user-id': String(state.user.telegramId),
       },
-      body: JSON.stringify({ requestId, action }),
+      body: JSON.stringify({ requestId, action, txLink }),
     });
     const json = await res.json();
     if (json.success) {
@@ -2510,7 +2546,7 @@ window.handleReviewWithdrawal = async function (requestId, action) {
   } catch (err) {
     showToast('Failed to review withdrawal', 'error');
   }
-};
+}
 
 function setupAdditionalModals() {
   // Settings Modal Close & Language Options
@@ -2578,6 +2614,53 @@ function setupAdditionalModals() {
         feedbackMsg.value = '';
         feedbackModal.classList.remove('active');
         showToast(isAr ? `📩 شكراً لك! تم إرسال رسالتك إلى فريق العمل بنجاح.` : `📩 Thank you! Your message has been sent to the TVA team.`, 'success');
+      });
+    }
+  }
+
+  // Admin Transaction Link Modal
+  const adminTxModal = document.getElementById('admin-tx-modal');
+  const closeAdminTxBtn = document.getElementById('btn-close-admin-tx-modal');
+  const cancelAdminTxBtn = document.getElementById('btn-cancel-admin-tx');
+  const confirmAdminTxBtn = document.getElementById('btn-confirm-admin-tx');
+  const adminTxInput = document.getElementById('admin-tx-link-input');
+
+  if (adminTxModal) {
+    const closeTxModal = () => {
+      adminTxModal.classList.remove('active');
+      if (adminTxInput) adminTxInput.value = '';
+    };
+
+    if (closeAdminTxBtn) closeAdminTxBtn.addEventListener('click', closeTxModal);
+    if (cancelAdminTxBtn) cancelAdminTxBtn.addEventListener('click', closeTxModal);
+    adminTxModal.addEventListener('click', (e) => {
+      if (e.target === adminTxModal) closeTxModal();
+    });
+
+    if (confirmAdminTxBtn) {
+      confirmAdminTxBtn.addEventListener('click', async () => {
+        triggerHaptic('impact');
+        const requestId = adminTxModal.dataset.currentRequestId;
+        const txLink = (adminTxInput?.value || '').trim();
+        const isAr = state.selectedLanguage === 'ar';
+
+        if (!txLink) {
+          showToast(isAr ? '⚠️ يرجى إدخال رابط المعاملة (Transaction Link)' : '⚠️ Please enter the Transaction Link', 'warning');
+          adminTxInput?.focus();
+          return;
+        }
+
+        closeTxModal();
+        await executeWithdrawalReview(requestId, 'approved', txLink);
+      });
+    }
+
+    if (adminTxInput) {
+      adminTxInput.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          confirmAdminTxBtn?.click();
+        }
       });
     }
   }

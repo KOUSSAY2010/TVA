@@ -754,6 +754,44 @@
       </div>
     </div>
 
+    <!-- Modal: Admin Enter Transaction Link Modal -->
+    <div id="admin-tx-modal" class="modal-backdrop" style="z-index: 100005;">
+      <div class="modal-sheet" style="max-width: 440px;">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-link text-neon"></i>
+            <h3 id="admin-tx-modal-title">أدخل رابط المعاملة (Transaction Link)</h3>
+          </div>
+          <button type="button" id="btn-close-admin-tx-modal" class="btn-modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="card-caption" id="admin-tx-modal-caption" style="margin-bottom: 12px;">
+          أدخل رابط المعاملة (Transaction Link) لتوثيق التحويل ونشره كزر في قناة السحوبات:
+        </p>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label class="input-label" for="admin-tx-link-input">رابط المعاملة (Transaction Link):</label>
+          <input
+            type="url"
+            id="admin-tx-link-input"
+            placeholder="https://tonviewer.com/transaction/..."
+            style="width: 100%; box-sizing: border-box;"
+          />
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <button type="button" id="btn-cancel-admin-tx" class="btn-admin-action" style="flex: 1; background: rgba(255,255,255,0.08); color: #fff; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;">
+            إلغاء
+          </button>
+          <button type="button" id="btn-confirm-admin-tx" class="btn-cta glow-btn" style="flex: 2; margin-top: 0; padding: 12px; border-radius: 12px;">
+            <i class="fa-solid fa-check"></i> تأكيد الموافقة
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal: Settings & Language Preferences (Arabic & English) -->
     <div id="settings-modal" class="modal-backdrop">
       <div class="modal-sheet">
