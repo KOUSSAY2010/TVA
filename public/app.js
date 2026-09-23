@@ -641,7 +641,7 @@ const APP_CONFIG = {
   botUsername: 'TVAMining_bot', // Configurable Telegram bot username for referral links
   supportAdminUsername: 'TVA_Support_Help', // Official Support Telegram username
   supportAdminUrl: 'https://t.me/TVA_Support_Help',
-  adsgramBlockId: 'int-8765', // Adsgram video ad block placement
+  adsgramBlockId: '49428', // Official Adsgram video ad block placement
   depositWalletAddress: 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   channels: [
     { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
@@ -704,6 +704,7 @@ async function loadPublicConfig() {
       }
       if (json.data.supportUrl) APP_CONFIG.supportAdminUrl = json.data.supportUrl;
       if (json.data.depositAddress) APP_CONFIG.depositWalletAddress = json.data.depositAddress;
+      if (json.data.adsgramBlockId) APP_CONFIG.adsgramBlockId = json.data.adsgramBlockId;
       if (Array.isArray(json.data.channels) && json.data.channels.length > 0) {
         APP_CONFIG.channels = json.data.channels;
       }
@@ -883,7 +884,7 @@ function getAdsgramController() {
     try {
       if (!adsgramController) {
         adsgramController = window.Adsgram.init({
-          blockId: APP_CONFIG.adsgramBlockId || 'int-8765',
+          blockId: APP_CONFIG.adsgramBlockId || '49428',
         });
       }
       return adsgramController;

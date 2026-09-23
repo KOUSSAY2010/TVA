@@ -487,6 +487,7 @@ apiRouter.get('/config/public', (req, res) => {
       channelUrl: config.channels.channelUrl,
       channels: config.channels.list,
       depositAddress: config.deposit.recipientAddress,
+      adsgramBlockId: config.ads.blockId || '49428',
     },
   });
 });

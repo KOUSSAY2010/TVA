@@ -26,6 +26,7 @@ export const config = {
   },
 
   ads: {
+    blockId: process.env.ADSGRAM_BLOCK_ID || '49428',
     maxDailyAds: parseInt(process.env.MAX_DAILY_ADS || '40', 10),
     minDurationSeconds: parseInt(process.env.ADS_MIN_DURATION_SECONDS || '15', 10),
     adsForActiveReferral: parseInt(process.env.ACTIVE_REFERRAL_REQUIRED_ADS || '10', 10),
