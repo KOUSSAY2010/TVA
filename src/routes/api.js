@@ -138,11 +138,11 @@ apiRouter.get('/user/me', async (req, res) => {
           },
           referralUplines: user.referralUplines || [],
           adsWatchedToday: user.adsWatchedToday,
-          maxDailyAds: config.ads.maxDailyAds,
-          remainingDailyAds: Math.max(0, config.ads.maxDailyAds - user.adsWatchedToday),
+          maxDailyAds: sysSettings.maxDailyAds ?? config.ads.maxDailyAds,
+          remainingDailyAds: Math.max(0, (sysSettings.maxDailyAds ?? config.ads.maxDailyAds) - user.adsWatchedToday),
           totalAdsWatched: user.totalAdsWatched,
           adsWatchedForWithdrawal: user.adsWatchedForWithdrawal,
-          withdrawalAdsRequired: config.withdrawals.adsRequiredForWithdrawal,
+          withdrawalAdsRequired: sysSettings.adsRequiredForWithdrawal ?? config.withdrawals.adsRequiredForWithdrawal,
           hasWatchedAdForPromo: user.hasWatchedAdForPromo,
           rigs: user.rigs,
           miners: user.rigs,
@@ -191,12 +191,13 @@ apiRouter.post('/mining/claim', async (req, res) => {
  */
 apiRouter.post('/ads/reward', async (req, res) => {
   try {
-    const { durationSeconds } = req.body;
-    if (!req.telegramId) {
+    const { durationSeconds, source = 'tasks' } = req.body;
+    const telegramId = req.telegramId || req.body?.telegramId;
+    if (!telegramId) {
       return res.status(400).json({ success: false, message: 'Missing telegramId' });
     }
 
-    const result = await MiningService.processAdReward(req.telegramId, durationSeconds);
+    const result = await MiningService.processAdReward(telegramId, durationSeconds, source);
     return res.json({ success: true, data: result });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });

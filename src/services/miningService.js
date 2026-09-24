@@ -219,9 +219,11 @@ export class MiningService {
   }
 
   /**
-   * Process AdsGram / Ad reward with 15-second anti-cheat verification and referral rewards.
+   * Process Ad reward with 15-second anti-cheat verification.
+   * If source === 'withdrawal': counts towards withdrawal & daily ads, but grants 0 points.
+   * If source === 'tasks': counts towards withdrawal & daily ads, and grants points + referral rewards.
    */
-  static async processAdReward(telegramId, adDurationSeconds) {
+  static async processAdReward(telegramId, adDurationSeconds, source = 'tasks') {
     // Anti-Cheat: Reject if ad watched duration is under 15 seconds
     if (typeof adDurationSeconds === 'number' && adDurationSeconds < config.ads.minDurationSeconds) {
       throw new Error(`Anti-cheat violation: Ad watched duration (${adDurationSeconds}s) is below required ${config.ads.minDurationSeconds}s.`);
@@ -232,49 +234,57 @@ export class MiningService {
 
     user.checkAndResetDailyAds();
 
-    // Check daily ads limit (max 40/day)
+    // Check daily ads limit (max 30/day)
     if (user.adsWatchedToday >= config.ads.maxDailyAds) {
       throw new Error(`Daily limit of ${config.ads.maxDailyAds} ads reached. Resets at midnight UTC.`);
     }
 
-    // 1 watched ad = 1 point
+    // Both sources increment daily ads, total ads, and withdrawal ads counter
     user.adsWatchedToday += 1;
     user.totalAdsWatched += 1;
-    user.totalPoints += config.mining.pointsPerAd; // 1 point = +0.0001 TON/day
     user.adsWatchedForWithdrawal += 1;
     user.hasWatchedAdForPromo = true;
 
-    // 4-Tier Multi-Level Referral Distribution:
-    // Level 1: 1 Point | Level 2: 0.5 Point | Level 3: 0.25 Point | Level 4: 0.1 Point
-    try {
-      await MiningService.distributeMultiLevelRewards(user);
-    } catch (refErr) {
-      console.warn('⚠️ Multi-level referral reward error:', refErr.message);
-    }
-
-    // Check Legacy Referral Activation:
-    // A referral is considered "active" (and rewards referrer with 10 points)
-    // AFTER the referred user watches exactly 10 ads.
+    let pointsAwarded = 0;
     let referralRewarded = false;
-    if (user.referredBy && !user.isReferralRewarded && user.totalAdsWatched >= config.ads.adsForActiveReferral) {
-      const referrer = await User.findOne({ telegramId: user.referredBy });
-      if (referrer) {
-        referrer.activeReferralsCount += 1;
-        referrer.totalPoints += config.ads.referralRewardPoints; // 10 points
-        await referrer.save();
 
-        user.isReferralRewarded = true;
-        referralRewarded = true;
+    // Only award points & referral rewards if watched from tasks
+    if (source !== 'withdrawal') {
+      pointsAwarded = config.mining.pointsPerAd; // 1 point = +0.0001 TON/day
+      user.totalPoints += pointsAwarded;
+
+      // 4-Tier Multi-Level Referral Distribution:
+      // Level 1: 1 Point | Level 2: 0.5 Point | Level 3: 0.25 Point | Level 4: 0.1 Point
+      try {
+        await MiningService.distributeMultiLevelRewards(user);
+      } catch (refErr) {
+        console.warn('⚠️ Multi-level referral reward error:', refErr.message);
+      }
+
+      // Check Legacy Referral Activation:
+      // A referral is considered "active" (and rewards referrer with 10 points)
+      // AFTER the referred user watches exactly 10 ads.
+      if (user.referredBy && !user.isReferralRewarded && user.totalAdsWatched >= config.ads.adsForActiveReferral) {
+        const referrer = await User.findOne({ telegramId: user.referredBy });
+        if (referrer) {
+          referrer.activeReferralsCount += 1;
+          referrer.totalPoints += config.ads.referralRewardPoints; // 10 points
+          await referrer.save();
+
+          user.isReferralRewarded = true;
+          referralRewarded = true;
+        }
       }
     }
 
     await user.save();
 
     return {
-      pointsAwarded: config.mining.pointsPerAd,
+      pointsAwarded,
       totalPoints: user.totalPoints,
       adsWatchedToday: user.adsWatchedToday,
-      remainingDailyAds: config.ads.maxDailyAds - user.adsWatchedToday,
+      remainingDailyAds: Math.max(0, config.ads.maxDailyAds - user.adsWatchedToday),
+      adsWatchedForWithdrawal: user.adsWatchedForWithdrawal,
       currentDailyMiningRate: user.calculateDailyMiningRate(),
       referralRewarded,
     };

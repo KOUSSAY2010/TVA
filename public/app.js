@@ -57,7 +57,7 @@ const TRANSLATIONS = {
     daily_limit: 'الحد اليومي',
     resets_daily: 'يتجدد يومياً في 00:00 UTC',
     watch_ad_btn: 'مشاهدة إعلان وكسب النقاط',
-    anti_cheat_note: 'محمي بنظام AdsGram للتحقق ومنع الاحتيال (15 ثانية)',
+    anti_cheat_note: 'محمي بنظام التحقق ومنع الاحتيال (15 ثانية)',
     community_tasks_title: 'مهام سريعة ومكافآت فورية',
     promote_channel_btn: 'ترويج قناة',
     community_tasks_desc: 'أكمل المهام البسيطة التالية واحصل على نقاط فورية تزيد من سرعتك في تعدين TON!',
@@ -90,7 +90,8 @@ const TRANSLATIONS = {
     modal_withdraw_title: 'طلب سحب الأرباح',
     modal_withdraw_caption: 'اسحب رصيدك من TON مباشرة إلى عنوان محفظتك.',
     modal_withdraw_min_rule: 'الحد الأدنى: 0.1 TON • رسوم السحب 5%',
-    modal_withdraw_req_rule: 'الشرط: سحب فوري ومباشر',
+    modal_withdraw_req_rule: 'شرط السحب: مشاهدة 15 إعلاناً',
+    watch_ad_withdraw_btn: 'مشاهدة إعلان لفتح السحب',
     modal_withdraw_wallet_label: 'عنوان محفظة TON',
     modal_withdraw_wallet_placeholder: 'أدخل عنوان محفظة TON',
     modal_withdraw_amount_label: 'المبلغ المراد سحبه (TON)',
@@ -204,7 +205,7 @@ const TRANSLATIONS = {
 
     // Claim Ad
     modal_claim_ad_title: 'إعلان استلام الأرباح',
-    claim_ad_stream_text: 'جاري بث الإعلان الترويجي عبر نظام Adsgram... يرجى الانتظار للمطالبة بأرباح TON.',
+    claim_ad_stream_text: 'جاري بث الإعلان الترويجي... يرجى الانتظار للمطالبة بأرباح TON.',
     wait_ad_finish: 'يرجى مشاهدة الإعلان كاملاً (15 ث)...',
     claim_ad_ready: 'استلام أرباح التعدين الآن!',
   },
@@ -251,7 +252,7 @@ const TRANSLATIONS = {
     daily_limit: 'Daily Limit',
     resets_daily: 'Resets daily at 00:00 UTC',
     watch_ad_btn: 'Watch Ad & Earn Points',
-    anti_cheat_note: 'Protected by AdsGram 15s Anti-Cheat verification',
+    anti_cheat_note: 'Protected by 15s Anti-Cheat verification',
     community_tasks_title: 'Quick Tasks & Instant Rewards',
     promote_channel_btn: 'Promote Channel',
     community_tasks_desc: 'Complete the simple tasks below to earn instant points that boost your TON mining speed!',
@@ -310,7 +311,8 @@ const TRANSLATIONS = {
     modal_withdraw_title: 'Request Withdrawal',
     modal_withdraw_caption: 'Withdraw mined TON directly to your TON wallet address.',
     modal_withdraw_min_rule: 'Min: 0.1 TON • 5% withdrawal fee',
-    modal_withdraw_req_rule: 'Requirement: Instant Direct Payout',
+    modal_withdraw_req_rule: 'Requirement: Watch 15 ads to withdraw',
+    watch_ad_withdraw_btn: 'Watch Ad for Withdrawal',
     modal_withdraw_wallet_label: 'TON Wallet Address',
     modal_withdraw_wallet_placeholder: 'EQD... or UQD...',
     modal_withdraw_amount_label: 'Amount to Withdraw (TON)',
@@ -395,7 +397,7 @@ const TRANSLATIONS = {
 
     // Claim Ad
     modal_claim_ad_title: 'Claim Reward Ad Stream',
-    claim_ad_stream_text: 'Streaming verified ad via Adsgram network... Please watch to claim your mined TON.',
+    claim_ad_stream_text: 'Streaming verified ad... Please watch to claim your mined TON.',
     wait_ad_finish: 'Please watch full ad (15s)...',
     claim_ad_ready: 'Claim Mined TON Now!',
   },
@@ -442,7 +444,7 @@ const TRANSLATIONS = {
     daily_limit: 'Дневной лимит',
     resets_daily: 'Сброс ежедневно в 00:00 UTC',
     watch_ad_btn: 'Смотреть рекламу (+1 балл)',
-    anti_cheat_note: 'Защищено системой AdsGram (15 сек)',
+    anti_cheat_note: 'Защищено системой проверки (15 сек)',
     community_tasks_title: 'Быستрые задания и награды',
     promote_channel_btn: 'Продвигать канал',
     community_tasks_desc: 'Выполняйте простые задания ниже и получайте очки, ускоряющие ваш майнинг TON!',
@@ -481,7 +483,8 @@ const TRANSLATIONS = {
     modal_withdraw_title: 'Запрос на вывод средств',
     modal_withdraw_caption: 'Выводите заработанные TON прямо на свой адрес кошелька.',
     modal_withdraw_min_rule: 'Мин: 0.1 TON • Комиссия сети 5%',
-    modal_withdraw_req_rule: 'Условие: Мгновенный вывод',
+    modal_withdraw_req_rule: 'Условие: просмотр 15 реклам для вывода',
+    watch_ad_withdraw_btn: 'Смотреть рекламу для вывода',
     modal_withdraw_wallet_label: 'Адрес кошелька TON',
     modal_withdraw_wallet_placeholder: 'EQD... или UQD...',
     modal_withdraw_amount_label: 'Сумма вывода (TON)',
@@ -587,7 +590,7 @@ const TRANSLATIONS = {
 
     // Claim Ad
     modal_claim_ad_title: 'Просмотр рекламы для сбора дохода',
-    claim_ad_stream_text: 'Трансляция рекламы Adsgram... Пожалуйста, дождитесь окончания для начисления TON.',
+    claim_ad_stream_text: 'Трансляция рекламы... Пожалуйста, дождитесь окончания для начисления TON.',
     wait_ad_finish: 'Пожалуйста, посмотрите рекламу (15 сек)...',
     claim_ad_ready: 'Забрать добытые TON!',
   }
@@ -611,10 +614,10 @@ const state = {
   baseRate: 0.001000,
   totalPoints: 0,
   adsWatchedToday: 0,
-  maxDailyAds: 40,
+  maxDailyAds: 30,
   totalAdsWatched: 0,
   adsWatchedForWithdrawal: 0,
-  requiredWithdrawalAds: 0,
+  requiredWithdrawalAds: 15,
   totalFriends: 0,
   activeFriends: 0,
   activeRigsCount: 0,
@@ -1397,6 +1400,8 @@ window.handleBuyRig = function (cost) {
 // ==========================================================================
 // 8. TASKS TAB (ADS & PROGRESS - OPTIMISTIC UI)
 // ==========================================================================
+let launchAdWatchFlow = null;
+
 function setupTasksTab() {
   const watchAdBtn = document.getElementById('btn-watch-ad');
   const adModal = document.getElementById('modal-ad-player');
@@ -1405,9 +1410,11 @@ function setupTasksTab() {
   const countdownNumber = document.getElementById('ad-countdown-number');
   const adProgressFill = document.getElementById('ad-timer-progress-fill');
   const claimAdText = document.getElementById('btn-claim-ad-text');
+  const adPlayerTitle = document.getElementById('ad-player-title');
   let adCountdownInterval = null;
   let adRemaining = 15;
   let adFinished = false;
+  let activeAdSource = 'tasks';
 
   const resetAdState = () => {
     if (adCountdownInterval) clearInterval(adCountdownInterval);
@@ -1417,37 +1424,55 @@ function setupTasksTab() {
     if (adProgressFill) adProgressFill.style.width = '0%';
     if (claimAdBtn) {
       claimAdBtn.disabled = true;
+      claimAdBtn.classList.remove('btn-instant-bounce');
       if (claimAdText) claimAdText.innerText = state.selectedLanguage === 'ar' ? 'انتظر انتهاء الإعلان (15 ثانية)...' : 'Please wait for ad to finish (15s)...';
     }
   };
 
   // Function to grant watched ad reward after verified completion
-  const executeWatchAdReward = async () => {
+  const executeWatchAdReward = async (source = 'tasks') => {
     const isAr = state.selectedLanguage === 'ar';
     const isRu = state.selectedLanguage === 'ru';
     try {
       const res = await fetch('/api/ads/reward', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16 }),
+        body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16, source }),
       });
       const json = await res.json();
       if (json.success && json.data) {
-        state.totalPoints = json.data.totalPoints;
+        if (source === 'tasks') {
+          state.totalPoints = json.data.totalPoints;
+          state.dailyMiningRate = json.data.currentDailyMiningRate;
+          startMiningTicker();
+        }
         state.adsWatchedToday = json.data.adsWatchedToday;
-        state.totalAdsWatched += 1;
-        state.adsWatchedForWithdrawal += 1;
-        state.dailyMiningRate = json.data.currentDailyMiningRate;
+        state.totalAdsWatched = (state.totalAdsWatched || 0) + 1;
+        state.adsWatchedForWithdrawal = json.data.adsWatchedForWithdrawal ?? (state.adsWatchedForWithdrawal + 1);
+
         updateUI();
         saveStateCache();
-        startMiningTicker();
         triggerHaptic('notification-success');
-        showToast(
-          isAr
-            ? '🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة أضيفت إلى رصيدك.'
-            : (isRu ? '🎉 Просмотр рекламы завершен! +1 балл добавлен на баланс.' : '🎉 Ad completed! +1 Point added to your account.'),
-          'success'
-        );
+
+        if (source === 'tasks') {
+          showToast(
+            isAr
+              ? `🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة وتم احتسابه لشرط السحب (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+              : (isRu
+                  ? `🎉 Просмотр рекламы завершен! +1 балл добавлен и учтен для вывода (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+                  : `🎉 Ad completed! +1 Point added and counted towards withdrawal (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`),
+            'success'
+          );
+        } else {
+          showToast(
+            isAr
+              ? `🎉 تمت مشاهدة الإعلان واحتسابه لشرط السحب بنجاح (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+              : (isRu
+                  ? `🎉 Просмотр рекламы учтен для вывода (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+                  : `🎉 Ad watched and counted towards withdrawal requirement (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`),
+            'success'
+          );
+        }
       } else {
         showToast(json.message || 'Ad reward error', 'error');
       }
@@ -1458,12 +1483,19 @@ function setupTasksTab() {
   };
 
   // Fallback interactive 15-second timer modal if Adsgram SDK has no fill or runs in desktop browser
-  const startFallbackAdTimer = () => {
+  const startFallbackAdTimer = (source = 'tasks') => {
+    activeAdSource = source;
     const isAr = state.selectedLanguage === 'ar';
     const isRu = state.selectedLanguage === 'ru';
     resetAdState();
     if (adModal) adModal.classList.add('active');
     triggerHaptic('impact');
+
+    if (adPlayerTitle) {
+      adPlayerTitle.innerText = source === 'withdrawal'
+        ? (isAr ? 'جاري تشغيل إعلان شرط السحب...' : 'Playing ad for withdrawal requirement...')
+        : (isAr ? 'جاري تشغيل الإعلان الترويجي...' : 'Playing sponsored ad...');
+    }
 
     adCountdownInterval = setInterval(() => {
       adRemaining -= 1;
@@ -1485,70 +1517,93 @@ function setupTasksTab() {
           claimAdBtn.classList.add('btn-instant-bounce');
         }
         if (claimAdText) {
-          claimAdText.innerText = isAr
-            ? '🎉 استلام المكافأة الآن (+1 نقطة)!'
-            : (isRu ? '🎉 Забрать награду (+1 балл)!' : '🎉 Claim Reward Now (+1 PTS)!');
+          if (activeAdSource === 'withdrawal') {
+            claimAdText.innerText = isAr
+              ? '🎉 تأكيد مشاهدة الإعلان للسحب'
+              : (isRu ? '🎉 Засчитать просмотр для вывода' : '🎉 Confirm Ad for Withdrawal');
+          } else {
+            claimAdText.innerText = isAr
+              ? '🎉 استلام المكافأة الآن (+1 نقطة)!'
+              : (isRu ? '🎉 Забрать награду (+1 балл)!' : '🎉 Claim Reward Now (+1 PTS)!');
+          }
         }
         triggerHaptic('notification-success');
       }
     }, 1000);
   };
 
+  launchAdWatchFlow = (source = 'tasks') => {
+    const isAr = state.selectedLanguage === 'ar';
+    const isRu = state.selectedLanguage === 'ru';
+
+    if (state.adsWatchedToday >= state.maxDailyAds) {
+      triggerHaptic('impact');
+      showToast(
+        isAr
+          ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.`
+          : (isRu ? `Достигнут дневной лимит (${state.maxDailyAds}/${state.maxDailyAds} реклам). Сброс в 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`),
+        'error'
+      );
+      return;
+    }
+
+    if (source === 'withdrawal' && state.requiredWithdrawalAds > 0 && state.adsWatchedForWithdrawal >= state.requiredWithdrawalAds) {
+      triggerHaptic('notification-success');
+      showToast(
+        isAr
+          ? `تم استيفاء شرط مشاهدة الإعلانات للسحب بنجاح (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+          : `Withdrawal ads requirement already met (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`,
+        'info'
+      );
+      return;
+    }
+
+    activeAdSource = source;
+
+    // 1. Try streaming real Adsgram Video Ad via Adsgram SDK
+    const controller = getAdsgramController();
+    if (controller) {
+      triggerHaptic('impact');
+      controller.show()
+        .then(async (result) => {
+          // User completed full video ad
+          if (result?.done !== false) {
+            await executeWatchAdReward(source);
+          } else {
+            showToast(
+              isAr
+                ? 'يجب إكمال مشاهدة الإعلان حتى النهاية لاستلام المكافأة'
+                : (isRu ? 'Необходимо досмотреть рекламу до конца для получения награды' : 'You must watch the full ad to receive your reward.'),
+              'error'
+            );
+          }
+        })
+        .catch((err) => {
+          console.warn('Adsgram show result:', err);
+          // User closed / dismissed ad early
+          if (err?.done === false && !err?.error) {
+            showToast(
+              isAr
+                ? 'تم إلغاء مشاهدة الإعلان قبل اكتماله.'
+                : (isRu ? 'Просмотр рекламы отменен до завершения.' : 'Ad was closed early, reward not granted.'),
+              'info'
+            );
+            return;
+          }
+          // Adsgram error / no fill available in user region: use fallback timer modal
+          console.warn('Falling back to local ad timer due to Adsgram error/no-fill:', err?.description || err?.message);
+          startFallbackAdTimer(source);
+        });
+      return;
+    }
+
+    // 2. Fallback if Adsgram SDK is not available
+    startFallbackAdTimer(source);
+  };
+
   if (watchAdBtn) {
     watchAdBtn.addEventListener('click', () => {
-      const isAr = state.selectedLanguage === 'ar';
-      const isRu = state.selectedLanguage === 'ru';
-
-      if (state.adsWatchedToday >= state.maxDailyAds) {
-        triggerHaptic('impact');
-        showToast(
-          isAr
-            ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.`
-            : (isRu ? `Достигнут дневной лимит (${state.maxDailyAds}/${state.maxDailyAds} реклам). Сброс в 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`),
-          'error'
-        );
-        return;
-      }
-
-      // 1. Try streaming real Adsgram Video Ad via Adsgram SDK
-      const controller = getAdsgramController();
-      if (controller) {
-        triggerHaptic('impact');
-        controller.show()
-          .then(async (result) => {
-            // User completed full video ad
-            if (result?.done !== false) {
-              await executeWatchAdReward();
-            } else {
-              showToast(
-                isAr
-                  ? 'يجب إكمال مشاهدة الإعلان حتى النهاية لاستلام المكافأة'
-                  : (isRu ? 'Необходимо досмотреть рекламу до конца для получения награды' : 'You must watch the full ad to receive your reward.'),
-                'error'
-              );
-            }
-          })
-          .catch((err) => {
-            console.warn('Adsgram show result:', err);
-            // User closed / dismissed ad early
-            if (err?.done === false && !err?.error) {
-              showToast(
-                isAr
-                  ? 'تم إلغاء مشاهدة الإعلان قبل اكتماله.'
-                  : (isRu ? 'Просмотр рекламы отменен до завершения.' : 'Ad was closed early, reward not granted.'),
-                'info'
-              );
-              return;
-            }
-            // Adsgram error / no fill available in user region: use fallback timer modal
-            console.warn('Falling back to local ad timer due to Adsgram error/no-fill:', err?.description || err?.message);
-            startFallbackAdTimer();
-          });
-        return;
-      }
-
-      // 2. Fallback if Adsgram SDK is not available
-      startFallbackAdTimer();
+      launchAdWatchFlow('tasks');
     });
   }
 
@@ -1573,7 +1628,7 @@ function setupTasksTab() {
     claimAdBtn.addEventListener('click', async () => {
       if (!adFinished) return;
       if (adModal) adModal.classList.remove('active');
-      await executeWatchAdReward();
+      await executeWatchAdReward(activeAdSource);
     });
   }
 
@@ -1856,6 +1911,16 @@ function setupWithdrawalModal() {
         .catch(() => {
           saveStateCache();
         });
+    });
+  }
+
+  // Watch ad button inside withdrawal modal
+  const withdrawAdBtn = document.getElementById('btn-watch-ad-withdraw');
+  if (withdrawAdBtn) {
+    withdrawAdBtn.addEventListener('click', () => {
+      if (typeof launchAdWatchFlow === 'function') {
+        launchAdWatchFlow('withdrawal');
+      }
     });
   }
 }
@@ -3299,6 +3364,18 @@ function updateUI() {
   if (withdrawAdsStatus) {
     withdrawAdsStatus.innerText = `${state.adsWatchedForWithdrawal} / ${state.requiredWithdrawalAds}`;
   }
+  const withdrawAdBtn = document.getElementById('btn-watch-ad-withdraw');
+  if (withdrawAdBtn) {
+    if (state.requiredWithdrawalAds > 0 && state.adsWatchedForWithdrawal >= state.requiredWithdrawalAds) {
+      withdrawAdBtn.innerHTML = `<i class="fa-solid fa-circle-check text-neon"></i> <span>${state.selectedLanguage === 'ar' ? 'شرط السحب مكتمل' : (state.selectedLanguage === 'ru' ? 'Условие вывода выполнено' : 'Withdrawal Requirement Met')} (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds})</span>`;
+      withdrawAdBtn.disabled = true;
+      withdrawAdBtn.style.opacity = '0.75';
+    } else {
+      withdrawAdBtn.disabled = false;
+      withdrawAdBtn.style.opacity = '1';
+      withdrawAdBtn.innerHTML = `<i class="fa-solid fa-play"></i> <span>${state.selectedLanguage === 'ar' ? 'مشاهدة إعلان لفتح السحب' : (state.selectedLanguage === 'ru' ? 'Смотреть рекламу для вывода' : 'Watch Ad for Withdrawal')} (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds})</span>`;
+    }
+  }
 
   // Profile Header Elements
   const profileNameElem = document.getElementById('profile-user-name');
@@ -3379,9 +3456,10 @@ async function syncWithBackend() {
       state.dailyMiningRate = mining.currentDailyMiningRate;
       state.totalPoints = user.totalPoints;
       state.adsWatchedToday = user.adsWatchedToday;
-      state.maxDailyAds = user.maxDailyAds;
+      state.maxDailyAds = user.maxDailyAds || 30;
       state.totalAdsWatched = user.totalAdsWatched;
       state.adsWatchedForWithdrawal = user.adsWatchedForWithdrawal;
+      state.requiredWithdrawalAds = user.withdrawalAdsRequired ?? 15;
       state.totalFriends = user.totalFriends || 0;
       state.activeFriends = user.activeReferralsCount || 0;
       if (user.referralStats && typeof user.referralStats === 'object') {

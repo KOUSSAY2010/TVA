@@ -27,7 +27,7 @@ export const config = {
 
   ads: {
     blockId: process.env.ADSGRAM_BLOCK_ID || '49428',
-    maxDailyAds: parseInt(process.env.MAX_DAILY_ADS || '40', 10),
+    maxDailyAds: parseInt(process.env.MAX_DAILY_ADS || '30', 10),
     minDurationSeconds: parseInt(process.env.ADS_MIN_DURATION_SECONDS || '15', 10),
     adsForActiveReferral: parseInt(process.env.ACTIVE_REFERRAL_REQUIRED_ADS || '10', 10),
     referralRewardPoints: parseInt(process.env.REFERRAL_REWARD_POINTS || '10', 10),
@@ -36,7 +36,7 @@ export const config = {
   withdrawals: {
     minAmountTon: parseFloat(process.env.MIN_WITHDRAWAL_TON || '0.1'),
     feePercent: parseFloat(process.env.WITHDRAWAL_FEE_PERCENT || '5'),
-    adsRequiredForWithdrawal: parseInt(process.env.ADS_REQUIRED_FOR_WITHDRAWAL || '0', 10),
+    adsRequiredForWithdrawal: parseInt(process.env.ADS_REQUIRED_FOR_WITHDRAWAL || '15', 10),
     // Configurable toggle: User must own at least 1 active rig to withdraw (disabled by default)
     requireRigForWithdrawal: process.env.REQUIRE_RIG_FOR_WITHDRAWAL === 'true',
   },

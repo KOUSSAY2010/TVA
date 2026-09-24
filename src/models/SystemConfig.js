@@ -34,7 +34,7 @@ const SystemConfigSchema = new mongoose.Schema(
     },
     maxDailyAds: {
       type: Number,
-      default: 40,
+      default: 30,
       min: 1,
     },
     activeReferralRequiredAds: {

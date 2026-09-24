@@ -211,7 +211,7 @@
           <div class="ads-progress-container">
             <div class="progress-info-row">
               <span data-i18n="daily_limit">الحد اليومي</span>
-              <span id="ads-counter-text" class="progress-count-text">0 / 40</span>
+              <span id="ads-counter-text" class="progress-count-text">0 / 30</span>
             </div>
             <div class="progress-bar-track">
               <div class="progress-bar-fill" id="ads-progress-fill" style="width: 0%;"></div>
@@ -228,7 +228,7 @@
           <!-- Security note -->
           <div class="info-callout">
             <i class="fa-solid fa-shield-halved"></i>
-            <span data-i18n="anti_cheat_note">محمي بنظام AdsGram للتحقق ومنع الاحتيال (15 ثانية)</span>
+            <span data-i18n="anti_cheat_note">محمي بنظام التحقق ومنع الاحتيال (15 ثانية)</span>
           </div>
         </div>
 
@@ -278,16 +278,11 @@
           </p>
 
           <!-- Stats Row -->
-          <div class="stats-cards-row">
+          <div class="stats-cards-row single-card">
             <div class="mini-stat-card">
               <span class="stat-icon"><i class="fa-solid fa-users"></i></span>
               <span class="stat-number" id="total-friends-count">0</span>
               <span class="stat-label" data-i18n="total_friends">Total Friends</span>
-            </div>
-            <div class="mini-stat-card highlight-stat">
-              <span class="stat-icon text-neon"><i class="fa-solid fa-circle-check"></i></span>
-              <span class="stat-number" id="active-friends-count">0</span>
-              <span class="stat-label" data-i18n="active_friends">Active Friends</span>
             </div>
           </div>
 
@@ -573,7 +568,7 @@
           <div class="ad-reactor-pulse">
             <i class="fa-solid fa-gem reactor-gem text-neon"></i>
           </div>
-          <p class="ad-caption-text" data-i18n="claim_ad_stream_text">جاري بث الإعلان الترويجي عبر نظام Adsgram... يرجى الانتظار للمطالبة بأرباح TON.</p>
+          <p class="ad-caption-text" data-i18n="claim_ad_stream_text">جاري بث الإعلان الترويجي... يرجى الانتظار للمطالبة بأرباح TON.</p>
           <div class="ad-progress-track">
             <div class="ad-progress-bar-fill" id="claim-ad-progress-fill"></div>
           </div>
@@ -731,11 +726,17 @@
             <i class="fa-solid fa-circle-info"></i>
             <span data-i18n="modal_withdraw_min_rule">الحد الأدنى: 0.1 TON • رسوم السحب 5%</span>
           </div>
-          <div class="rule-item" id="rule-item-withdrawal-ads" style="display: none !important;">
-            <i class="fa-solid fa-circle-check"></i>
-            <span><span data-i18n="modal_withdraw_req_rule">الشرط: سحب فوري مباشر</span> (<strong id="withdrawal-ads-status">0 / 0</strong>)</span>
+          <div class="rule-item" id="rule-item-withdrawal-ads">
+            <i class="fa-solid fa-circle-check text-neon"></i>
+            <span><span data-i18n="modal_withdraw_req_rule">شرط السحب: مشاهدة 15 إعلاناً</span> (<strong id="withdrawal-ads-status">0 / 15</strong>)</span>
           </div>
         </div>
+
+        <!-- Watch Ad from Withdrawal Screen -->
+        <button type="button" id="btn-watch-ad-withdraw" class="btn-cta glow-btn mb-3" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(168, 85, 247, 0.85)); margin-bottom: 16px;">
+          <i class="fa-solid fa-play"></i>
+          <span data-i18n="watch_ad_withdraw_btn">مشاهدة إعلان لفتح السحب</span>
+        </button>
 
         <div class="form-group">
           <label class="input-label" for="withdraw-wallet-address" data-i18n="modal_withdraw_wallet_label">عنوان محفظة TON</label>
@@ -1238,12 +1239,12 @@
       </div>
     </div>
 
-    <!-- Modal: AdsGram 15-Second Video Ad Player -->
+    <!-- Modal: 15-Second Video Ad Player -->
     <div id="modal-ad-player" class="modal-backdrop">
       <div class="modal-sheet ad-player-sheet">
         <div class="ad-player-header">
           <div class="ad-badge-group">
-            <span class="ad-live-pill"><span class="status-pulse-dot"></span> AdsGram Sponsored</span>
+            <span class="ad-live-pill"><span class="status-pulse-dot"></span> Sponsored</span>
           </div>
           <button type="button" id="btn-close-ad-player" class="btn-ad-close" title="إغلاق">
             <i class="fa-solid fa-xmark"></i>

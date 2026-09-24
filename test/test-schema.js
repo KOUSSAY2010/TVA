@@ -70,7 +70,7 @@ console.log(`✅ Withdrawal fees & limits verified (10 TON -> 0.5 fee, 9.5 net, 
 
 // 4. Test Ads & Anti-Cheat Settings
 console.log('\nTest 4: Verifying Ads Limits & Anti-Cheat Configuration');
-assert.strictEqual(config.ads.maxDailyAds, 40, 'Max daily ads should be 40');
+assert.strictEqual(config.ads.maxDailyAds, 30, 'Max daily ads should be 30');
 assert.strictEqual(config.ads.minDurationSeconds, 15, 'Anti-cheat duration should be 15s');
 assert.strictEqual(config.ads.adsForActiveReferral, 10, 'Active referral requires 10 ads');
 assert.strictEqual(config.ads.referralRewardPoints, 10, 'Referral rewards 10 points');
