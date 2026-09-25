@@ -55,7 +55,7 @@ const UserSchema = new mongoose.Schema(
     adsWatchedToday: {
       type: Number,
       default: 0,
-      max: config.ads.maxDailyAds, // Max 40 ads/day
+      max: config.ads.maxDailyAds, // Max 30 ads/day
     },
     lastAdDate: {
       type: String, // Stored as YYYY-MM-DD (UTC) for daily reset check

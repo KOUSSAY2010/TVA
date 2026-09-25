@@ -77,7 +77,11 @@ SystemConfigSchema.statics.getOrCreateConfig = async function () {
     settings = await this.create({
       key: 'global_settings',
       rigTiers: defaultRigs,
+      maxDailyAds: 30,
     });
+  } else if (settings.maxDailyAds !== 30) {
+    settings.maxDailyAds = 30;
+    await settings.save();
   }
   return settings;
 };

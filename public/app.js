@@ -668,7 +668,7 @@ function loadStateCache() {
     if (typeof data.dailyMiningRate === 'number') state.dailyMiningRate = data.dailyMiningRate;
     if (typeof data.totalPoints === 'number') state.totalPoints = data.totalPoints;
     if (typeof data.adsWatchedToday === 'number') state.adsWatchedToday = data.adsWatchedToday;
-    if (typeof data.maxDailyAds === 'number') state.maxDailyAds = data.maxDailyAds;
+    if (typeof data.maxDailyAds === 'number') state.maxDailyAds = (data.maxDailyAds === 40 ? 30 : data.maxDailyAds);
     if (typeof data.totalAdsWatched === 'number') state.totalAdsWatched = data.totalAdsWatched;
     if (typeof data.adsWatchedForWithdrawal === 'number') state.adsWatchedForWithdrawal = data.adsWatchedForWithdrawal;
     if (typeof data.totalFriends === 'number') state.totalFriends = data.totalFriends;
@@ -693,7 +693,8 @@ const APP_CONFIG = {
   botUsername: 'TVAMining_bot', // Configurable Telegram bot username for referral links
   supportAdminUsername: 'TVA_Support_Help', // Official Support Telegram username
   supportAdminUrl: 'https://t.me/TVA_Support_Help',
-  adsgramBlockId: '49428', // Official Adsgram video ad block placement
+  adsgramBlockId: '49428', // Legacy Adsgram fallback block placement
+  adloopSlotId: '798549', // Official Adloop slot ID
   depositWalletAddress: 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   channels: [
     { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
@@ -757,6 +758,7 @@ async function loadPublicConfig() {
       if (json.data.supportUrl) APP_CONFIG.supportAdminUrl = json.data.supportUrl;
       if (json.data.depositAddress) APP_CONFIG.depositWalletAddress = json.data.depositAddress;
       if (json.data.adsgramBlockId) APP_CONFIG.adsgramBlockId = json.data.adsgramBlockId;
+      if (json.data.adloopSlotId) APP_CONFIG.adloopSlotId = json.data.adloopSlotId;
       if (Array.isArray(json.data.channels) && json.data.channels.length > 0) {
         APP_CONFIG.channels = json.data.channels;
       }
@@ -929,23 +931,24 @@ function setupTabNavigation() {
 }
 
 // ==========================================================================
-// 6. HOME TAB DASHBOARD ACTIONS & ADSGRAM VIDEO AD ON CLAIM
+// 6. HOME TAB DASHBOARD ACTIONS & ADLOOP VIDEO AD ON CLAIM
 // ==========================================================================
-let adsgramController = null;
-let currentBlockId = null;
-function getAdsgramController() {
-  const targetBlockId = String(APP_CONFIG.adsgramBlockId || '49428').trim();
-  if (window.Adsgram) {
+let adloopController = null;
+let currentSlotId = null;
+
+function getAdloopController() {
+  const targetSlotId = String(APP_CONFIG.adloopSlotId || '798549').trim();
+  if (window.Adloop && typeof window.Adloop.init === 'function') {
     try {
-      if (!adsgramController || currentBlockId !== targetBlockId) {
-        adsgramController = window.Adsgram.init({
-          blockId: targetBlockId,
+      if (!adloopController || currentSlotId !== targetSlotId) {
+        adloopController = window.Adloop.init({
+          slotId: targetSlotId,
         });
-        currentBlockId = targetBlockId;
+        currentSlotId = targetSlotId;
       }
-      return adsgramController;
+      return adloopController;
     } catch (e) {
-      console.warn('Adsgram init error:', e.message);
+      console.warn('Adloop init error:', e.message);
     }
   }
   return null;
@@ -953,10 +956,89 @@ function getAdsgramController() {
 
 function playClaimVideoAd(onSuccess, onCancel) {
   const isAr = state.selectedLanguage === 'ar';
-  const controller = getAdsgramController();
+  const controller = getAdloopController();
 
-  // If Adsgram SDK is available in the Telegram Mini App environment, stream the video ad
-  if (controller) {
+  const startFallbackClaimModal = () => {
+    // Fallback interactive 15s modal with early cancellation guard
+    const modal = document.getElementById('video-ad-modal');
+    const timerBadge = document.getElementById('claim-ad-timer');
+    const fillBar = document.getElementById('claim-ad-progress-fill');
+    const actionBtn = document.getElementById('btn-claim-ad-complete');
+    const btnText = document.getElementById('claim-ad-btn-text');
+    const btnIcon = document.getElementById('claim-ad-btn-icon');
+    const closeBtn = document.getElementById('btn-close-claim-ad');
+
+    if (!modal) {
+      onSuccess();
+      return;
+    }
+
+    modal.classList.add('active');
+    triggerHaptic('impact');
+
+    let remaining = 15;
+    let isCompleted = false;
+    if (timerBadge) timerBadge.innerText = `${remaining}s`;
+    if (fillBar) fillBar.style.width = '0%';
+    if (actionBtn) actionBtn.disabled = true;
+    if (btnIcon) btnIcon.className = 'fa-solid fa-lock';
+    if (btnText) btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
+
+    const interval = setInterval(() => {
+      remaining -= 1;
+      if (timerBadge) timerBadge.innerText = `${remaining}s`;
+      const pct = Math.round(((15 - remaining) / 15) * 100);
+      if (fillBar) fillBar.style.width = `${pct}%`;
+
+      if (btnText && remaining > 0) {
+        btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
+      }
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        isCompleted = true;
+        if (timerBadge) timerBadge.innerText = '0s';
+        if (fillBar) fillBar.style.width = '100%';
+        if (actionBtn) {
+          actionBtn.disabled = false;
+          actionBtn.classList.add('btn-instant-bounce');
+          setTimeout(() => actionBtn.classList.remove('btn-instant-bounce'), 300);
+        }
+        if (btnIcon) btnIcon.className = 'fa-solid fa-gift text-neon';
+        if (btnText) btnText.innerText = isAr ? '🎉 استلام أرباح التعدين الآن!' : '🎉 Claim Mined TON Now!';
+
+        const handleClaimCompletion = () => {
+          actionBtn.removeEventListener('click', handleClaimCompletion);
+          modal.classList.remove('active');
+          onSuccess();
+        };
+
+        if (actionBtn) {
+          actionBtn.addEventListener('click', handleClaimCompletion, { once: true });
+        } else {
+          modal.classList.remove('active');
+          onSuccess();
+        }
+      }
+    }, 1000);
+
+    // Close early without watching: abort claim and notify user
+    const handleEarlyDismiss = () => {
+      clearInterval(interval);
+      modal.classList.remove('active');
+      if (!isCompleted) {
+        showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
+        if (onCancel) onCancel();
+      }
+    };
+
+    if (closeBtn) {
+      closeBtn.onclick = handleEarlyDismiss;
+    }
+  };
+
+  // If Adloop SDK is available in the Telegram Mini App environment, stream the video ad
+  if (controller && typeof controller.show === 'function') {
     triggerHaptic('impact');
     controller.show()
       .then((result) => {
@@ -969,89 +1051,20 @@ function playClaimVideoAd(onSuccess, onCancel) {
         }
       })
       .catch((err) => {
-        console.warn('Adsgram error or dismissed by user:', err);
-        showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
-        if (onCancel) onCancel();
+        console.warn('Adloop error or dismissed by user:', err);
+        if (err?.done === false && !err?.error) {
+          showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
+          if (onCancel) onCancel();
+          return;
+        }
+        // Fallback to local 15-second timer modal if no fill or network error
+        startFallbackClaimModal();
       });
     return;
   }
 
   // Fallback interactive 15s modal with early cancellation guard
-  const modal = document.getElementById('video-ad-modal');
-  const timerBadge = document.getElementById('claim-ad-timer');
-  const fillBar = document.getElementById('claim-ad-progress-fill');
-  const actionBtn = document.getElementById('btn-claim-ad-complete');
-  const btnText = document.getElementById('claim-ad-btn-text');
-  const btnIcon = document.getElementById('claim-ad-btn-icon');
-  const closeBtn = document.getElementById('btn-close-claim-ad');
-
-  if (!modal) {
-    onSuccess();
-    return;
-  }
-
-  modal.classList.add('active');
-  triggerHaptic('impact');
-
-  let remaining = 15;
-  let isCompleted = false;
-  if (timerBadge) timerBadge.innerText = `${remaining}s`;
-  if (fillBar) fillBar.style.width = '0%';
-  if (actionBtn) actionBtn.disabled = true;
-  if (btnIcon) btnIcon.className = 'fa-solid fa-lock';
-  if (btnText) btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
-
-  const interval = setInterval(() => {
-    remaining -= 1;
-    if (timerBadge) timerBadge.innerText = `${remaining}s`;
-    const pct = Math.round(((15 - remaining) / 15) * 100);
-    if (fillBar) fillBar.style.width = `${pct}%`;
-
-    if (btnText && remaining > 0) {
-      btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
-    }
-
-    if (remaining <= 0) {
-      clearInterval(interval);
-      isCompleted = true;
-      if (timerBadge) timerBadge.innerText = '0s';
-      if (fillBar) fillBar.style.width = '100%';
-      if (actionBtn) {
-        actionBtn.disabled = false;
-        actionBtn.classList.add('btn-instant-bounce');
-        setTimeout(() => actionBtn.classList.remove('btn-instant-bounce'), 300);
-      }
-      if (btnIcon) btnIcon.className = 'fa-solid fa-gift text-neon';
-      if (btnText) btnText.innerText = isAr ? '🎉 استلام أرباح التعدين الآن!' : '🎉 Claim Mined TON Now!';
-
-      const handleClaimCompletion = () => {
-        actionBtn.removeEventListener('click', handleClaimCompletion);
-        modal.classList.remove('active');
-        onSuccess();
-      };
-
-      if (actionBtn) {
-        actionBtn.addEventListener('click', handleClaimCompletion, { once: true });
-      } else {
-        modal.classList.remove('active');
-        onSuccess();
-      }
-    }
-  }, 1000);
-
-  // Close early without watching: abort claim and notify user
-  const handleEarlyDismiss = () => {
-    clearInterval(interval);
-    modal.classList.remove('active');
-    if (!isCompleted) {
-      showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
-      if (onCancel) onCancel();
-    }
-  };
-
-  if (closeBtn) {
-    closeBtn.onclick = handleEarlyDismiss;
-  }
+  startFallbackClaimModal();
 }
 
 function setupHomeDashboard() {
@@ -1560,9 +1573,9 @@ function setupTasksTab() {
 
     activeAdSource = source;
 
-    // 1. Try streaming real Adsgram Video Ad via Adsgram SDK
-    const controller = getAdsgramController();
-    if (controller) {
+    // 1. Try streaming real Adloop Video Ad via Adloop SDK
+    const controller = getAdloopController();
+    if (controller && typeof controller.show === 'function') {
       triggerHaptic('impact');
       controller.show()
         .then(async (result) => {
@@ -1579,7 +1592,7 @@ function setupTasksTab() {
           }
         })
         .catch((err) => {
-          console.warn('Adsgram show result:', err);
+          console.warn('Adloop show result:', err);
           // User closed / dismissed ad early
           if (err?.done === false && !err?.error) {
             showToast(
@@ -1590,14 +1603,14 @@ function setupTasksTab() {
             );
             return;
           }
-          // Adsgram error / no fill available in user region: use fallback timer modal
-          console.warn('Falling back to local ad timer due to Adsgram error/no-fill:', err?.description || err?.message);
+          // Adloop error / no fill available in user region: use fallback timer modal
+          console.warn('Falling back to local ad timer due to Adloop error/no-fill:', err?.description || err?.message);
           startFallbackAdTimer(source);
         });
       return;
     }
 
-    // 2. Fallback if Adsgram SDK is not available
+    // 2. Fallback if Adloop SDK is not available
     startFallbackAdTimer(source);
   };
 
@@ -3456,7 +3469,7 @@ async function syncWithBackend() {
       state.dailyMiningRate = mining.currentDailyMiningRate;
       state.totalPoints = user.totalPoints;
       state.adsWatchedToday = user.adsWatchedToday;
-      state.maxDailyAds = user.maxDailyAds || 30;
+      state.maxDailyAds = (user.maxDailyAds && user.maxDailyAds !== 40) ? user.maxDailyAds : 30;
       state.totalAdsWatched = user.totalAdsWatched;
       state.adsWatchedForWithdrawal = user.adsWatchedForWithdrawal;
       state.requiredWithdrawalAds = user.withdrawalAdsRequired ?? 15;

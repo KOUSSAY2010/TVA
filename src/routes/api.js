@@ -138,8 +138,8 @@ apiRouter.get('/user/me', async (req, res) => {
           },
           referralUplines: user.referralUplines || [],
           adsWatchedToday: user.adsWatchedToday,
-          maxDailyAds: sysSettings.maxDailyAds ?? config.ads.maxDailyAds,
-          remainingDailyAds: Math.max(0, (sysSettings.maxDailyAds ?? config.ads.maxDailyAds) - user.adsWatchedToday),
+          maxDailyAds: (sysSettings.maxDailyAds && sysSettings.maxDailyAds !== 40) ? sysSettings.maxDailyAds : (config.ads.maxDailyAds || 30),
+          remainingDailyAds: Math.max(0, ((sysSettings.maxDailyAds && sysSettings.maxDailyAds !== 40) ? sysSettings.maxDailyAds : (config.ads.maxDailyAds || 30)) - user.adsWatchedToday),
           totalAdsWatched: user.totalAdsWatched,
           adsWatchedForWithdrawal: user.adsWatchedForWithdrawal,
           withdrawalAdsRequired: sysSettings.adsRequiredForWithdrawal ?? config.withdrawals.adsRequiredForWithdrawal,
@@ -455,6 +455,8 @@ apiRouter.get('/config/public', (req, res) => {
       channels: config.channels.list,
       depositAddress: config.deposit.recipientAddress,
       adsgramBlockId: config.ads.blockId || '49428',
+      adloopSlotId: config.ads.adloopSlotId || '798549',
+      adloopSiteId: config.ads.adloopSiteId || 'SITE-NA35PV9RER',
     },
   });
 });
