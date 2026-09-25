@@ -704,10 +704,13 @@ const APP_CONFIG = {
 };
 
 let tonConnectUI = null;
+let isTonConnectInitializing = false;
+
 function initTonConnect() {
   if (window.TON_CONNECT_UI) {
     try {
-      if (!tonConnectUI) {
+      if (!tonConnectUI && !isTonConnectInitializing) {
+        isTonConnectInitializing = true;
         tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
           manifestUrl: window.location.origin + '/tonconnect-manifest.json',
           buttonRootId: 'ton-connect-btn-container',
@@ -741,8 +744,40 @@ function initTonConnect() {
       }
     } catch (e) {
       console.warn('TonConnectUI init warning:', e.message);
+    } finally {
+      isTonConnectInitializing = false;
     }
   }
+  return tonConnectUI;
+}
+
+async function ensureTonConnectUI(maxWaitMs = 3500) {
+  if (tonConnectUI) return tonConnectUI;
+  if (initTonConnect()) return tonConnectUI;
+
+  // Poll for window.TON_CONNECT_UI if script is still downloading
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    await new Promise((r) => setTimeout(r, 150));
+    if (initTonConnect()) return tonConnectUI;
+  }
+
+  // Fallback: If not loaded yet, inject secondary CDN
+  if (!window.TON_CONNECT_UI) {
+    await new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@tonconnect/ui@latest/dist/tonconnect-ui.min.js';
+      script.onload = () => {
+        initTonConnect();
+        resolve(tonConnectUI);
+      };
+      script.onerror = () => resolve(null);
+      document.head.appendChild(script);
+      setTimeout(() => resolve(initTonConnect()), 2500);
+    });
+  }
+
+  return initTonConnect();
 }
 
 async function loadPublicConfig() {
@@ -930,7 +965,7 @@ function setupTabNavigation() {
 }
 
 // ==========================================================================
-// 6. HOME TAB DASHBOARD ACTIONS & ADLOOP VIDEO AD INTEGRATION
+// 6. RESILIENT AD SYSTEM (ADLOOP + 15S INTERACTIVE PROMO BACKUP ENGINE)
 // ==========================================================================
 function getAdloopSdk() {
   if (typeof window !== 'undefined') {
@@ -943,7 +978,7 @@ function getAdloopSdk() {
   return null;
 }
 
-async function ensureAdloopReady(maxWaitMs = 3500) {
+async function ensureAdloopReady(maxWaitMs = 1500) {
   let sdk = getAdloopSdk();
   if (sdk && typeof sdk.init === 'function') return sdk;
 
@@ -955,54 +990,261 @@ async function ensureAdloopReady(maxWaitMs = 3500) {
     if (sdk && typeof sdk.init === 'function') return sdk;
   }
 
-  // If still not loaded, dynamically inject tag as guarantee
+  // If still not loaded, check/inject tag
   return new Promise((resolve) => {
     let script = document.querySelector('script[src*="adloop.js"]');
     if (!script) {
       script = document.createElement('script');
       script.src = 'https://adloopnetwork.com/adloop.js?sid=SITE-NA35PV9RER';
       document.head.appendChild(script);
+      script.addEventListener('load', () => resolve(getAdloopSdk()), { once: true });
+      script.addEventListener('error', () => resolve(null), { once: true });
     }
-    script.addEventListener('load', () => resolve(getAdloopSdk()), { once: true });
-    script.addEventListener('error', () => resolve(null), { once: true });
-    setTimeout(() => resolve(getAdloopSdk()), 2000);
+    setTimeout(() => resolve(getAdloopSdk()), 1000);
   });
 }
 
-async function showAdloopAd() {
-  const sdk = await ensureAdloopReady();
-  if (!sdk || typeof sdk.init !== 'function') {
-    throw new Error('SDK_NOT_LOADED');
+// Function to grant watched ad reward on server after verified completion
+async function executeWatchAdReward(source = 'tasks') {
+  const isAr = state.selectedLanguage === 'ar';
+  const isRu = state.selectedLanguage === 'ru';
+  try {
+    const res = await fetch('/api/ads/reward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16, source }),
+    });
+    const json = await res.json();
+    if (json.success && json.data) {
+      if (source === 'tasks') {
+        state.totalPoints = json.data.totalPoints;
+        state.dailyMiningRate = json.data.currentDailyMiningRate;
+        startMiningTicker();
+      }
+      state.adsWatchedToday = json.data.adsWatchedToday;
+      state.totalAdsWatched = (state.totalAdsWatched || 0) + 1;
+      state.adsWatchedForWithdrawal = json.data.adsWatchedForWithdrawal ?? (state.adsWatchedForWithdrawal + 1);
+
+      updateUI();
+      saveStateCache();
+      triggerHaptic('notification-success');
+
+      if (source === 'tasks') {
+        showToast(
+          isAr
+            ? `🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة وتم احتسابه لشرط السحب (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+            : (isRu
+                ? `🎉 Просмотр рекламы завершен! +1 балл добавлен и учтен для вывода (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+                : `🎉 Ad completed! +1 Point added and counted towards withdrawal (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`),
+          'success'
+        );
+      } else {
+        showToast(
+          isAr
+            ? `🎉 تمت مشاهدة الإعلان واحتسابه لشرط السحب بنجاح (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+            : (isRu
+                ? `🎉 Просмотр рекламы учтен для вывода (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+                : `🎉 Ad watched and counted towards withdrawal requirement (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`),
+          'success'
+        );
+      }
+    } else {
+      showToast(json.message || 'Ad reward error', 'error');
+    }
+  } catch (err) {
+    showToast(isAr ? 'خطأ في الاتصال بالسيرفر' : 'Connection error', 'error');
+  }
+}
+
+// Fallback 15-second Interactive Ad Modal State
+let adCountdownInterval = null;
+let adRemaining = 15;
+let adFinished = false;
+let activeAdSource = 'tasks';
+let adClaimSuccessCb = null;
+let adClaimCancelCb = null;
+
+function resetFallbackAdState() {
+  if (adCountdownInterval) {
+    clearInterval(adCountdownInterval);
+    adCountdownInterval = null;
+  }
+  adRemaining = 15;
+  adFinished = false;
+
+  const countdownNumber = document.getElementById('ad-countdown-number');
+  const adProgressFill = document.getElementById('ad-timer-progress-fill');
+  const claimAdBtn = document.getElementById('btn-claim-ad-reward');
+  const claimAdText = document.getElementById('btn-claim-ad-text');
+
+  if (countdownNumber) countdownNumber.innerText = '15';
+  if (adProgressFill) adProgressFill.style.width = '0%';
+  if (claimAdBtn) {
+    claimAdBtn.disabled = true;
+    claimAdBtn.classList.remove('btn-instant-bounce');
+  }
+  if (claimAdText) {
+    claimAdText.innerText = state.selectedLanguage === 'ar' ? 'انتظر انتهاء الإعلان (15 ثانية)...' : 'Please wait for ad to finish (15s)...';
+  }
+}
+
+function openFallbackAdTimer(source = 'tasks', onSuccess = null, onCancel = null) {
+  activeAdSource = source;
+  adClaimSuccessCb = onSuccess;
+  adClaimCancelCb = onCancel;
+
+  const isAr = state.selectedLanguage === 'ar';
+  const isRu = state.selectedLanguage === 'ru';
+  const adModal = document.getElementById('modal-ad-player');
+  const countdownNumber = document.getElementById('ad-countdown-number');
+  const adProgressFill = document.getElementById('ad-timer-progress-fill');
+  const claimAdBtn = document.getElementById('btn-claim-ad-reward');
+  const claimAdText = document.getElementById('btn-claim-ad-text');
+  const adPlayerTitle = document.getElementById('ad-player-title');
+
+  resetFallbackAdState();
+  if (adModal) adModal.classList.add('active');
+  triggerHaptic('impact');
+
+  if (adPlayerTitle) {
+    if (source === 'claim') {
+      adPlayerTitle.innerText = isAr
+        ? 'جاري تشغيل إعلان استلام أرباح التعدين...'
+        : (isRu ? 'Просмотр рекламы для сбора TON...' : 'Playing mining claim ad...');
+    } else if (source === 'withdrawal') {
+      adPlayerTitle.innerText = isAr
+        ? 'جاري تشغيل إعلان شرط السحب...'
+        : (isRu ? 'Просмотр рекламы для вывода...' : 'Playing ad for withdrawal requirement...');
+    } else {
+      adPlayerTitle.innerText = isAr
+        ? 'جاري تشغيل الإعلان الترويجي...'
+        : (isRu ? 'Воспроизведение рекламы...' : 'Playing sponsored ad...');
+    }
   }
 
-  const slotId = String(APP_CONFIG.adloopSlotId || '798549').trim();
-  const ad = sdk.init({ slotId });
-  if (!ad || typeof ad.show !== 'function') {
-    throw new Error('INIT_FAILED');
+  adCountdownInterval = setInterval(() => {
+    adRemaining -= 1;
+    if (countdownNumber) countdownNumber.innerText = String(Math.max(0, adRemaining));
+    const pct = Math.min(100, Math.round(((15 - adRemaining) / 15) * 100));
+    if (adProgressFill) adProgressFill.style.width = `${pct}%`;
+
+    if (claimAdText && adRemaining > 0) {
+      claimAdText.innerText = isAr
+        ? `انتظر انتهاء الإعلان (${adRemaining} ثانية)...`
+        : (isRu ? `Ожидайте (${adRemaining} сек)...` : `Please wait (${adRemaining}s)...`);
+    }
+
+    if (adRemaining <= 0) {
+      clearInterval(adCountdownInterval);
+      adCountdownInterval = null;
+      adFinished = true;
+      if (claimAdBtn) {
+        claimAdBtn.disabled = false;
+        claimAdBtn.classList.add('btn-instant-bounce');
+      }
+      if (claimAdText) {
+        if (activeAdSource === 'claim') {
+          claimAdText.innerText = isAr
+            ? '🎉 استلام أرباح التعدين الآن!'
+            : (isRu ? '🎉 Забрать прибыль майнинга!' : '🎉 Claim Mining TON Now!');
+        } else if (activeAdSource === 'withdrawal') {
+          claimAdText.innerText = isAr
+            ? '🎉 تأكيد مشاهدة الإعلان للسحب'
+            : (isRu ? '🎉 Засчитать просмотр для вывода' : '🎉 Confirm Ad for Withdrawal');
+        } else {
+          claimAdText.innerText = isAr
+            ? '🎉 استلام المكافأة الآن (+1 نقطة)!'
+            : (isRu ? '🎉 Забрать награду (+1 балл)!' : '🎉 Claim Reward Now (+1 PTS)!');
+        }
+      }
+      triggerHaptic('notification-success');
+    }
+  }, 1000);
+}
+
+// Master Unified Video Ad Flow
+async function playVideoAdStream({ source = 'tasks', onSuccess = null, onCancel = null } = {}) {
+  const isAr = state.selectedLanguage === 'ar';
+  const isRu = state.selectedLanguage === 'ru';
+
+  // 1. Daily ad limit check
+  if (source === 'tasks' && state.adsWatchedToday >= state.maxDailyAds) {
+    triggerHaptic('impact');
+    showToast(
+      isAr
+        ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.`
+        : (isRu ? `Достигнут дневной лимит (${state.maxDailyAds}/${state.maxDailyAds} реклам). Сброс в 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`),
+      'error'
+    );
+    if (onCancel) onCancel();
+    return;
   }
 
-  return ad.show();
+  // 2. Withdrawal ads requirement already met
+  if (source === 'withdrawal' && state.requiredWithdrawalAds > 0 && state.adsWatchedForWithdrawal >= state.requiredWithdrawalAds) {
+    triggerHaptic('notification-success');
+    showToast(
+      isAr
+        ? `تم استيفاء شرط مشاهدة الإعلانات للسحب بنجاح (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
+        : `Withdrawal ads requirement already met (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`,
+      'info'
+    );
+    if (onCancel) onCancel();
+    return;
+  }
+
+  // 3. Try official Adloop SDK with fast non-blocking check
+  let adloopShown = false;
+  try {
+    const sdk = await ensureAdloopReady(1200);
+    if (sdk && typeof sdk.init === 'function') {
+      const slotId = String(APP_CONFIG.adloopSlotId || '798549').trim();
+      const ad = sdk.init({ slotId });
+      if (ad && typeof ad.show === 'function') {
+        showToast(isAr ? 'جاري فتح الإعلان...' : 'Opening ad...', 'info');
+        triggerHaptic('impact');
+        const res = await ad.show();
+        if (res && res.done !== false) {
+          adloopShown = true;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Adloop not available or no fill, switching to fallback player:', err);
+    // User cancelled ad explicitly by minimizing or closing
+    if (err?.description === 'app_backgrounded') {
+      triggerHaptic('notification-error');
+      showToast(isAr ? 'تم إغلاق الإعلان قبل اكتماله' : 'Ad closed before completion', 'error');
+      if (onCancel) onCancel();
+      return;
+    }
+  }
+
+  // If Adloop successfully served and finished
+  if (adloopShown) {
+    triggerHaptic('notification-success');
+    if (source === 'claim') {
+      if (onSuccess) onSuccess();
+    } else {
+      await executeWatchAdReward(source);
+    }
+    return;
+  }
+
+  // 4. Guaranteed Seamless Fallback Player (Opens 15-second simulation ad)
+  openFallbackAdTimer(source, onSuccess, onCancel);
 }
 
 async function playClaimVideoAd(onSuccess, onCancel) {
-  const isAr = state.selectedLanguage === 'ar';
-  try {
-    triggerHaptic('impact');
-    showToast(isAr ? 'جاري فتح إعلان Adloop...' : 'Opening Adloop ad...', 'info');
-    await showAdloopAd();
-    triggerHaptic('notification-success');
-    if (onSuccess) onSuccess();
-  } catch (err) {
-    console.warn('Adloop claim ad error/dismissed:', err);
-    triggerHaptic('notification-error');
-    if (err?.message === 'SDK_NOT_LOADED') {
-      showToast(isAr ? 'تعذر الاتصال بشبكة Adloop، يرجى التحقق من الإنترنت' : 'Could not load Adloop network, check connection', 'error');
-    } else {
-      showToast(isAr ? 'يجب إكمال مشاهدة إعلان Adloop لاستلام الأرباح' : 'You must complete the full ad to claim rewards.', 'error');
-    }
-    if (onCancel) onCancel();
-  }
+  await playVideoAdStream({ source: 'claim', onSuccess, onCancel });
 }
+
+let launchAdWatchFlow = (source = 'tasks') => {
+  playVideoAdStream({
+    source,
+    onSuccess: () => executeWatchAdReward(source),
+  });
+};
 
 function setupHomeDashboard() {
   const depositModal = document.getElementById('deposit-modal');
@@ -1350,187 +1592,11 @@ window.handleBuyRig = function (cost) {
 // ==========================================================================
 // 8. TASKS TAB (ADS & PROGRESS - OPTIMISTIC UI)
 // ==========================================================================
-let launchAdWatchFlow = null;
-
 function setupTasksTab() {
   const watchAdBtn = document.getElementById('btn-watch-ad');
   const adModal = document.getElementById('modal-ad-player');
   const closeAdBtn = document.getElementById('btn-close-ad-player');
   const claimAdBtn = document.getElementById('btn-claim-ad-reward');
-  const countdownNumber = document.getElementById('ad-countdown-number');
-  const adProgressFill = document.getElementById('ad-timer-progress-fill');
-  const claimAdText = document.getElementById('btn-claim-ad-text');
-  const adPlayerTitle = document.getElementById('ad-player-title');
-  let adCountdownInterval = null;
-  let adRemaining = 15;
-  let adFinished = false;
-  let activeAdSource = 'tasks';
-
-  const resetAdState = () => {
-    if (adCountdownInterval) clearInterval(adCountdownInterval);
-    adRemaining = 15;
-    adFinished = false;
-    if (countdownNumber) countdownNumber.innerText = '15';
-    if (adProgressFill) adProgressFill.style.width = '0%';
-    if (claimAdBtn) {
-      claimAdBtn.disabled = true;
-      claimAdBtn.classList.remove('btn-instant-bounce');
-      if (claimAdText) claimAdText.innerText = state.selectedLanguage === 'ar' ? 'انتظر انتهاء الإعلان (15 ثانية)...' : 'Please wait for ad to finish (15s)...';
-    }
-  };
-
-  // Function to grant watched ad reward after verified completion
-  const executeWatchAdReward = async (source = 'tasks') => {
-    const isAr = state.selectedLanguage === 'ar';
-    const isRu = state.selectedLanguage === 'ru';
-    try {
-      const res = await fetch('/api/ads/reward', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId: state.user.telegramId, durationSeconds: 16, source }),
-      });
-      const json = await res.json();
-      if (json.success && json.data) {
-        if (source === 'tasks') {
-          state.totalPoints = json.data.totalPoints;
-          state.dailyMiningRate = json.data.currentDailyMiningRate;
-          startMiningTicker();
-        }
-        state.adsWatchedToday = json.data.adsWatchedToday;
-        state.totalAdsWatched = (state.totalAdsWatched || 0) + 1;
-        state.adsWatchedForWithdrawal = json.data.adsWatchedForWithdrawal ?? (state.adsWatchedForWithdrawal + 1);
-
-        updateUI();
-        saveStateCache();
-        triggerHaptic('notification-success');
-
-        if (source === 'tasks') {
-          showToast(
-            isAr
-              ? `🎉 تمت مشاهدة الإعلان بنجاح! +1 نقطة وتم احتسابه لشرط السحب (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
-              : (isRu
-                  ? `🎉 Просмотр рекламы завершен! +1 балл добавлен и учтен для вывода (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
-                  : `🎉 Ad completed! +1 Point added and counted towards withdrawal (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`),
-            'success'
-          );
-        } else {
-          showToast(
-            isAr
-              ? `🎉 تمت مشاهدة الإعلان واحتسابه لشرط السحب بنجاح (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
-              : (isRu
-                  ? `🎉 Просмотр рекламы учтен для вывода (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
-                  : `🎉 Ad watched and counted towards withdrawal requirement (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`),
-            'success'
-          );
-        }
-      } else {
-        showToast(json.message || 'Ad reward error', 'error');
-      }
-    } catch (err) {
-      showToast(isAr ? 'خطأ في الاتصال بالسيرفر' : 'Connection error', 'error');
-    }
-    resetAdState();
-  };
-
-  // Fallback interactive 15-second timer modal if Adloop SDK has no fill or runs in desktop browser
-  const startFallbackAdTimer = (source = 'tasks') => {
-    activeAdSource = source;
-    const isAr = state.selectedLanguage === 'ar';
-    const isRu = state.selectedLanguage === 'ru';
-    resetAdState();
-    if (adModal) adModal.classList.add('active');
-    triggerHaptic('impact');
-
-    if (adPlayerTitle) {
-      adPlayerTitle.innerText = source === 'withdrawal'
-        ? (isAr ? 'جاري تشغيل إعلان شرط السحب...' : 'Playing ad for withdrawal requirement...')
-        : (isAr ? 'جاري تشغيل الإعلان الترويجي...' : 'Playing sponsored ad...');
-    }
-
-    adCountdownInterval = setInterval(() => {
-      adRemaining -= 1;
-      if (countdownNumber) countdownNumber.innerText = String(Math.max(0, adRemaining));
-      const pct = Math.min(100, Math.round(((15 - adRemaining) / 15) * 100));
-      if (adProgressFill) adProgressFill.style.width = `${pct}%`;
-
-      if (claimAdText && adRemaining > 0) {
-        claimAdText.innerText = isAr
-          ? `انتظر انتهاء الإعلان (${adRemaining} ثانية)...`
-          : (isRu ? `Ожидайте (${adRemaining} сек)...` : `Please wait (${adRemaining}s)...`);
-      }
-
-      if (adRemaining <= 0) {
-        clearInterval(adCountdownInterval);
-        adFinished = true;
-        if (claimAdBtn) {
-          claimAdBtn.disabled = false;
-          claimAdBtn.classList.add('btn-instant-bounce');
-        }
-        if (claimAdText) {
-          if (activeAdSource === 'withdrawal') {
-            claimAdText.innerText = isAr
-              ? '🎉 تأكيد مشاهدة الإعلان للسحب'
-              : (isRu ? '🎉 Засчитать просмотр для вывода' : '🎉 Confirm Ad for Withdrawal');
-          } else {
-            claimAdText.innerText = isAr
-              ? '🎉 استلام المكافأة الآن (+1 نقطة)!'
-              : (isRu ? '🎉 Забрать награду (+1 балл)!' : '🎉 Claim Reward Now (+1 PTS)!');
-          }
-        }
-        triggerHaptic('notification-success');
-      }
-    }, 1000);
-  };
-
-  launchAdWatchFlow = async (source = 'tasks') => {
-    const isAr = state.selectedLanguage === 'ar';
-    const isRu = state.selectedLanguage === 'ru';
-
-    if (state.adsWatchedToday >= state.maxDailyAds) {
-      triggerHaptic('impact');
-      showToast(
-        isAr
-          ? `وصلت إلى الحد اليومي (${state.maxDailyAds}/${state.maxDailyAds} إعلاناً). يتجدد في 00:00 UTC.`
-          : (isRu ? `Достигнут дневной лимит (${state.maxDailyAds}/${state.maxDailyAds} реклам). Сброс в 00:00 UTC.` : `Daily limit reached (${state.maxDailyAds}/${state.maxDailyAds} ads). Resets at 00:00 UTC.`),
-        'error'
-      );
-      return;
-    }
-
-    if (source === 'withdrawal' && state.requiredWithdrawalAds > 0 && state.adsWatchedForWithdrawal >= state.requiredWithdrawalAds) {
-      triggerHaptic('notification-success');
-      showToast(
-        isAr
-          ? `تم استيفاء شرط مشاهدة الإعلانات للسحب بنجاح (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`
-          : `Withdrawal ads requirement already met (${state.adsWatchedForWithdrawal}/${state.requiredWithdrawalAds}).`,
-        'info'
-      );
-      return;
-    }
-
-    activeAdSource = source;
-
-    try {
-      triggerHaptic('impact');
-      showToast(isAr ? 'جاري فتح إعلان Adloop...' : 'Opening Adloop ad...', 'info');
-      await showAdloopAd();
-      triggerHaptic('notification-success');
-      await executeWatchAdReward(source);
-    } catch (err) {
-      console.warn('Adloop task ad error/dismissed:', err);
-      triggerHaptic('notification-error');
-      if (err?.message === 'SDK_NOT_LOADED') {
-        showToast(isAr ? 'تعذر الاتصال بشبكة Adloop، يرجى المحاولة بعد لحظات' : 'Could not reach Adloop network, please try again.', 'error');
-      } else {
-        showToast(
-          isAr
-            ? 'يجب إكمال مشاهدة إعلان Adloop لاستلام المكافأة'
-            : (isRu ? 'Необходимо досмотреть рекламу до конца для получения награды' : 'You must watch the full ad to receive your reward.'),
-          'error'
-        );
-      }
-    }
-  };
 
   if (watchAdBtn) {
     watchAdBtn.addEventListener('click', () => {
@@ -1544,12 +1610,22 @@ function setupTasksTab() {
       const isAr = state.selectedLanguage === 'ar';
       if (!adFinished) {
         triggerHaptic('impact');
-        showToast(isAr ? 'عذراً، يجب مشاهدة الإعلان لمدة 15 ثانية على الأقل' : 'Sorry, you must watch the ad for at least 15 seconds', 'error');
-        resetAdState();
+        showToast(
+          isAr
+            ? 'عذراً، يجب مشاهدة الإعلان لمدة 15 ثانية على الأقل للحصول على المكافأة'
+            : 'Sorry, you must watch the ad for at least 15 seconds to receive reward',
+          'error'
+        );
+        resetFallbackAdState();
         if (adModal) adModal.classList.remove('active');
+        if (activeAdSource === 'claim' && adClaimCancelCb) {
+          const cb = adClaimCancelCb;
+          adClaimCancelCb = null;
+          cb();
+        }
         return;
       }
-      resetAdState();
+      resetFallbackAdState();
       if (adModal) adModal.classList.remove('active');
     });
   }
@@ -1559,7 +1635,17 @@ function setupTasksTab() {
     claimAdBtn.addEventListener('click', async () => {
       if (!adFinished) return;
       if (adModal) adModal.classList.remove('active');
-      await executeWatchAdReward(activeAdSource);
+      const src = activeAdSource;
+      const successCb = adClaimSuccessCb;
+      adClaimSuccessCb = null;
+      adClaimCancelCb = null;
+      resetFallbackAdState();
+
+      if (src === 'claim') {
+        if (successCb) successCb();
+      } else {
+        await executeWatchAdReward(src);
+      }
     });
   }
 
@@ -1641,15 +1727,17 @@ function setupTasksTab() {
         return;
       }
 
-      if (!tonConnectUI) {
-        initTonConnect();
+      let ui = tonConnectUI;
+      if (!ui) {
+        showToast(isAr ? 'جاري تهيئة المحفظة...' : 'Connecting wallet...', 'info');
+        ui = await ensureTonConnectUI();
       }
 
-      if (tonConnectUI) {
-        if (!tonConnectUI.connected) {
+      if (ui) {
+        if (!ui.connected) {
           showToast(isAr ? 'يرجى ربط محفظة TON أولاً لإتمام الدفع' : (isRu ? 'Пожалуйста, подключите кошелек TON' : 'Please connect your TON wallet first'), 'info');
           try {
-            await tonConnectUI.openModal();
+            await ui.openModal();
           } catch (_) {}
           return;
         }
@@ -1667,7 +1755,7 @@ function setupTasksTab() {
           };
 
           showToast(isAr ? 'جاري فتح المحفظة لتأكيد معاملة النشر...' : (isRu ? 'Открытие кошелька для подтверждения...' : 'Opening wallet to confirm promotion...'), 'info');
-          const result = await tonConnectUI.sendTransaction(tx);
+          const result = await ui.sendTransaction(tx);
           if (result) {
             triggerHaptic('notification-success');
 
@@ -3125,17 +3213,19 @@ function setupDepositModal() {
         return;
       }
 
-      if (!tonConnectUI) {
-        initTonConnect();
+      let ui = tonConnectUI;
+      if (!ui) {
+        showToast(isAr ? 'جاري تهيئة المحفظة...' : 'Connecting wallet...', 'info');
+        ui = await ensureTonConnectUI();
       }
 
       const CLIENT_DEPOSIT_ADDRESS = 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M';
 
-      if (tonConnectUI) {
-        if (!tonConnectUI.connected) {
+      if (ui) {
+        if (!ui.connected) {
           showToast(isAr ? 'يرجى ربط محفظة TON أولاً' : 'Please connect your TON wallet first', 'info');
           try {
-            await tonConnectUI.openModal();
+            await ui.openModal();
           } catch (e) {
             console.warn('openModal error:', e);
           }
@@ -3155,7 +3245,7 @@ function setupDepositModal() {
           };
 
           showToast(isAr ? 'جاري فتح المحفظة لتأكيد المعاملة...' : 'Opening wallet to confirm transaction...', 'info');
-          const result = await tonConnectUI.sendTransaction(tx);
+          const result = await ui.sendTransaction(tx);
           if (result) {
             triggerHaptic('notification-success');
             showToast(isAr ? `✅ تم إرسال معاملة إيداع ${amount} TON بنجاح!` : `✅ Successfully sent ${amount} TON deposit transaction!`, 'success');
@@ -3166,7 +3256,7 @@ function setupDepositModal() {
           showToast(isAr ? 'تم إلغاء المعاملة أو حدث خطأ في المحفظة' : 'Transaction canceled or wallet error', 'error');
         }
       } else {
-        showToast(isAr ? 'نظام المحفظة قيد التهيئة، يرجى المحاولة بعد قليل...' : 'Wallet system initializing, please try again in a moment...', 'info');
+        showToast(isAr ? 'تعذر تحميل نظام المحفظة، يرجى التحقق من اتصال الإنترنت' : 'Could not load wallet system, check connection', 'error');
       }
     });
   }

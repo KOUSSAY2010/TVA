@@ -57,6 +57,20 @@ app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModifi
 // Serve custom images directory
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
+// Dynamic TON Connect Manifest
+app.get('/tonconnect-manifest.json', (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const origin = `${protocol}://${host}`;
+  res.json({
+    url: origin,
+    name: 'TVA Crypto Mining',
+    iconUrl: `${origin}/img/TVA.jpg`,
+    termsOfUseUrl: `${origin}/terms`,
+    privacyPolicyUrl: `${origin}/privacy`,
+  });
+});
+
 // Explicit root route serving index.html (no-cache)
 app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
