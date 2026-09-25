@@ -33,15 +33,35 @@ app.use(express.urlencoded({ extended: true }));
 // Store Telegraf bot instance for route access (e.g. withdrawal admin notifications)
 app.set('botInstance', bot);
 
+// -----------------------------------------------------------------------
+// Cache Control Middleware
+// - HTML + JS files: no-cache (always serve latest after git pull)
+// - Images, fonts, CSS: 7-day cache (safe static assets)
+// -----------------------------------------------------------------------
+app.use((req, res, next) => {
+  const ext = path.extname(req.path).toLowerCase();
+  if (ext === '.html' || ext === '.js') {
+    // Force browser/Telegram to always revalidate
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.css'].includes(ext)) {
+    // Safe to cache images and fonts for 7 days
+    res.setHeader('Cache-Control', 'public, max-age=604800');
+  }
+  next();
+});
+
 // Serve Web App static frontend files from the public/ directory
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
 // Serve custom images directory
 app.use('/img', express.static(path.join(__dirname, 'img')));
-app.use('/img', express.static('img'));
 
-// Explicit root route serving index.html
+// Explicit root route serving index.html (no-cache)
 app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -59,9 +79,12 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Fallback to index.html for single-page app navigation
+// Fallback to index.html for single-page app navigation (no-cache)
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
