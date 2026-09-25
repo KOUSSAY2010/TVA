@@ -931,140 +931,78 @@ function setupTabNavigation() {
 }
 
 // ==========================================================================
-// 6. HOME TAB DASHBOARD ACTIONS & ADLOOP VIDEO AD ON CLAIM
+// 6. HOME TAB DASHBOARD ACTIONS & ADLOOP VIDEO AD INTEGRATION
 // ==========================================================================
-let adloopController = null;
-let currentSlotId = null;
-
-function getAdloopController() {
-  const targetSlotId = String(APP_CONFIG.adloopSlotId || '798549').trim();
-  if (window.Adloop && typeof window.Adloop.init === 'function') {
-    try {
-      if (!adloopController || currentSlotId !== targetSlotId) {
-        adloopController = window.Adloop.init({
-          slotId: targetSlotId,
-        });
-        currentSlotId = targetSlotId;
-      }
-      return adloopController;
-    } catch (e) {
-      console.warn('Adloop init error:', e.message);
-    }
+function getAdloopSdk() {
+  if (typeof window !== 'undefined') {
+    if (window.Adloop) return window.Adloop;
+    if (window.adloop) return window.adloop;
+    if (window.AdLoop) return window.AdLoop;
   }
+  if (typeof Adloop !== 'undefined') return Adloop;
+  if (typeof adloop !== 'undefined') return adloop;
   return null;
 }
 
-function playClaimVideoAd(onSuccess, onCancel) {
-  const isAr = state.selectedLanguage === 'ar';
-  const controller = getAdloopController();
+async function ensureAdloopReady(maxWaitMs = 3500) {
+  let sdk = getAdloopSdk();
+  if (sdk && typeof sdk.init === 'function') return sdk;
 
-  const startFallbackClaimModal = () => {
-    // Fallback interactive 15s modal with early cancellation guard
-    const modal = document.getElementById('video-ad-modal');
-    const timerBadge = document.getElementById('claim-ad-timer');
-    const fillBar = document.getElementById('claim-ad-progress-fill');
-    const actionBtn = document.getElementById('btn-claim-ad-complete');
-    const btnText = document.getElementById('claim-ad-btn-text');
-    const btnIcon = document.getElementById('claim-ad-btn-icon');
-    const closeBtn = document.getElementById('btn-close-claim-ad');
-
-    if (!modal) {
-      onSuccess();
-      return;
-    }
-
-    modal.classList.add('active');
-    triggerHaptic('impact');
-
-    let remaining = 15;
-    let isCompleted = false;
-    if (timerBadge) timerBadge.innerText = `${remaining}s`;
-    if (fillBar) fillBar.style.width = '0%';
-    if (actionBtn) actionBtn.disabled = true;
-    if (btnIcon) btnIcon.className = 'fa-solid fa-lock';
-    if (btnText) btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
-
-    const interval = setInterval(() => {
-      remaining -= 1;
-      if (timerBadge) timerBadge.innerText = `${remaining}s`;
-      const pct = Math.round(((15 - remaining) / 15) * 100);
-      if (fillBar) fillBar.style.width = `${pct}%`;
-
-      if (btnText && remaining > 0) {
-        btnText.innerText = isAr ? `يرجى مشاهدة الإعلان كاملاً (${remaining} ث)...` : `Please watch full ad (${remaining}s)...`;
-      }
-
-      if (remaining <= 0) {
-        clearInterval(interval);
-        isCompleted = true;
-        if (timerBadge) timerBadge.innerText = '0s';
-        if (fillBar) fillBar.style.width = '100%';
-        if (actionBtn) {
-          actionBtn.disabled = false;
-          actionBtn.classList.add('btn-instant-bounce');
-          setTimeout(() => actionBtn.classList.remove('btn-instant-bounce'), 300);
-        }
-        if (btnIcon) btnIcon.className = 'fa-solid fa-gift text-neon';
-        if (btnText) btnText.innerText = isAr ? '🎉 استلام أرباح التعدين الآن!' : '🎉 Claim Mined TON Now!';
-
-        const handleClaimCompletion = () => {
-          actionBtn.removeEventListener('click', handleClaimCompletion);
-          modal.classList.remove('active');
-          onSuccess();
-        };
-
-        if (actionBtn) {
-          actionBtn.addEventListener('click', handleClaimCompletion, { once: true });
-        } else {
-          modal.classList.remove('active');
-          onSuccess();
-        }
-      }
-    }, 1000);
-
-    // Close early without watching: abort claim and notify user
-    const handleEarlyDismiss = () => {
-      clearInterval(interval);
-      modal.classList.remove('active');
-      if (!isCompleted) {
-        showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
-        if (onCancel) onCancel();
-      }
-    };
-
-    if (closeBtn) {
-      closeBtn.onclick = handleEarlyDismiss;
-    }
-  };
-
-  // If Adloop SDK is available in the Telegram Mini App environment, stream the video ad
-  if (controller && typeof controller.show === 'function') {
-    triggerHaptic('impact');
-    controller.show()
-      .then((result) => {
-        // Successful completion: proceed to claim
-        if (result?.done !== false) {
-          onSuccess();
-        } else {
-          showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
-          if (onCancel) onCancel();
-        }
-      })
-      .catch((err) => {
-        console.warn('Adloop error or dismissed by user:', err);
-        if (err?.done === false && !err?.error) {
-          showToast(isAr ? 'يجب إكمال مشاهدة الإعلان لاستلام الأرباح' : 'You must complete watching the ad to claim rewards.', 'error');
-          if (onCancel) onCancel();
-          return;
-        }
-        // Fallback to local 15-second timer modal if no fill or network error
-        startFallbackClaimModal();
-      });
-    return;
+  // Poll for SDK loading
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    await new Promise((r) => setTimeout(r, 100));
+    sdk = getAdloopSdk();
+    if (sdk && typeof sdk.init === 'function') return sdk;
   }
 
-  // Fallback interactive 15s modal with early cancellation guard
-  startFallbackClaimModal();
+  // If still not loaded, dynamically inject tag as guarantee
+  return new Promise((resolve) => {
+    let script = document.querySelector('script[src*="adloop.js"]');
+    if (!script) {
+      script = document.createElement('script');
+      script.src = 'https://adloopnetwork.com/adloop.js?sid=SITE-NA35PV9RER';
+      document.head.appendChild(script);
+    }
+    script.addEventListener('load', () => resolve(getAdloopSdk()), { once: true });
+    script.addEventListener('error', () => resolve(null), { once: true });
+    setTimeout(() => resolve(getAdloopSdk()), 2000);
+  });
+}
+
+async function showAdloopAd() {
+  const sdk = await ensureAdloopReady();
+  if (!sdk || typeof sdk.init !== 'function') {
+    throw new Error('SDK_NOT_LOADED');
+  }
+
+  const slotId = String(APP_CONFIG.adloopSlotId || '798549').trim();
+  const ad = sdk.init({ slotId });
+  if (!ad || typeof ad.show !== 'function') {
+    throw new Error('INIT_FAILED');
+  }
+
+  return ad.show();
+}
+
+async function playClaimVideoAd(onSuccess, onCancel) {
+  const isAr = state.selectedLanguage === 'ar';
+  try {
+    triggerHaptic('impact');
+    showToast(isAr ? 'جاري فتح إعلان Adloop...' : 'Opening Adloop ad...', 'info');
+    await showAdloopAd();
+    triggerHaptic('notification-success');
+    if (onSuccess) onSuccess();
+  } catch (err) {
+    console.warn('Adloop claim ad error/dismissed:', err);
+    triggerHaptic('notification-error');
+    if (err?.message === 'SDK_NOT_LOADED') {
+      showToast(isAr ? 'تعذر الاتصال بشبكة Adloop، يرجى التحقق من الإنترنت' : 'Could not load Adloop network, check connection', 'error');
+    } else {
+      showToast(isAr ? 'يجب إكمال مشاهدة إعلان Adloop لاستلام الأرباح' : 'You must complete the full ad to claim rewards.', 'error');
+    }
+    if (onCancel) onCancel();
+  }
 }
 
 function setupHomeDashboard() {
@@ -1545,7 +1483,7 @@ function setupTasksTab() {
     }, 1000);
   };
 
-  launchAdWatchFlow = (source = 'tasks') => {
+  launchAdWatchFlow = async (source = 'tasks') => {
     const isAr = state.selectedLanguage === 'ar';
     const isRu = state.selectedLanguage === 'ru';
 
@@ -1573,45 +1511,26 @@ function setupTasksTab() {
 
     activeAdSource = source;
 
-    // 1. Try streaming real Adloop Video Ad via Adloop SDK
-    const controller = getAdloopController();
-    if (controller && typeof controller.show === 'function') {
+    try {
       triggerHaptic('impact');
-      controller.show()
-        .then(async (result) => {
-          // User completed full video ad
-          if (result?.done !== false) {
-            await executeWatchAdReward(source);
-          } else {
-            showToast(
-              isAr
-                ? 'يجب إكمال مشاهدة الإعلان حتى النهاية لاستلام المكافأة'
-                : (isRu ? 'Необходимо досмотреть рекламу до конца для получения награды' : 'You must watch the full ad to receive your reward.'),
-              'error'
-            );
-          }
-        })
-        .catch((err) => {
-          console.warn('Adloop show result:', err);
-          // User closed / dismissed ad early
-          if (err?.done === false && !err?.error) {
-            showToast(
-              isAr
-                ? 'تم إلغاء مشاهدة الإعلان قبل اكتماله.'
-                : (isRu ? 'Просмотр рекламы отменен до завершения.' : 'Ad was closed early, reward not granted.'),
-              'info'
-            );
-            return;
-          }
-          // Adloop error / no fill available in user region: use fallback timer modal
-          console.warn('Falling back to local ad timer due to Adloop error/no-fill:', err?.description || err?.message);
-          startFallbackAdTimer(source);
-        });
-      return;
+      showToast(isAr ? 'جاري فتح إعلان Adloop...' : 'Opening Adloop ad...', 'info');
+      await showAdloopAd();
+      triggerHaptic('notification-success');
+      await executeWatchAdReward(source);
+    } catch (err) {
+      console.warn('Adloop task ad error/dismissed:', err);
+      triggerHaptic('notification-error');
+      if (err?.message === 'SDK_NOT_LOADED') {
+        showToast(isAr ? 'تعذر الاتصال بشبكة Adloop، يرجى المحاولة بعد لحظات' : 'Could not reach Adloop network, please try again.', 'error');
+      } else {
+        showToast(
+          isAr
+            ? 'يجب إكمال مشاهدة إعلان Adloop لاستلام المكافأة'
+            : (isRu ? 'Необходимо досмотреть рекламу до конца для получения награды' : 'You must watch the full ad to receive your reward.'),
+          'error'
+        );
+      }
     }
-
-    // 2. Fallback if Adloop SDK is not available
-    startFallbackAdTimer(source);
   };
 
   if (watchAdBtn) {
