@@ -26,7 +26,6 @@ export const config = {
   },
 
   ads: {
-    blockId: process.env.ADSGRAM_BLOCK_ID || '49428',
     adloopSlotId: process.env.ADLOOP_SLOT_ID || '798549',
     adloopSiteId: process.env.ADLOOP_SITE_ID || 'SITE-NA35PV9RER',
     maxDailyAds: parseInt(process.env.MAX_DAILY_ADS || '30', 10),

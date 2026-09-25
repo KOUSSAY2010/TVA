@@ -66,7 +66,8 @@ const TRANSLATIONS = {
     // Friends
     referral_program: 'برنامج الإحالة',
     invite_miners_title: 'ادعُ أصدقاءك وضاعف دخلك',
-    referral_desc: 'شارك رابط الدعوة الخاص بك مع أصدقائك. اكسب 10 نقاط لكل صديق نشط!',
+    referral_desc: 'شارك رابط دعوتك مع أصدقائك. احصل على مكافآت عبر 4 مستويات إحالة!',
+
     total_friends: 'إجمالي الأصدقاء',
     active_friends: 'الأصدقاء النشطون (10 إعلانات)',
     your_ref_link: 'رابط الدعوة الخاص بك',
@@ -693,12 +694,11 @@ const APP_CONFIG = {
   botUsername: 'TVAMining_bot', // Configurable Telegram bot username for referral links
   supportAdminUsername: 'TVA_Support_Help', // Official Support Telegram username
   supportAdminUrl: 'https://t.me/TVA_Support_Help',
-  adsgramBlockId: '49428', // Legacy Adsgram fallback block placement
-  adloopSlotId: '798549', // Official Adloop slot ID
+  adloopSlotId: '798549', // Official Adloop Network slot ID
   depositWalletAddress: 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   channels: [
+    { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Mining News 📢', url: 'https://t.me/TVA_Mining_News' },
     { id: '@TVA_Mining_News_Arabic', username: 'TVA_Mining_News_Arabic', title: 'TVA الأخبار العربية 📢', url: 'https://t.me/TVA_Mining_News_Arabic' },
-    { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Official News 🌐', url: 'https://t.me/TVA_Mining_News' },
     { id: '@TVA_Payment', username: 'TVA_Payment', title: 'TVA إثباتات السحب والدفع 💎', url: 'https://t.me/TVA_Payment' },
   ],
 };
@@ -757,7 +757,6 @@ async function loadPublicConfig() {
       }
       if (json.data.supportUrl) APP_CONFIG.supportAdminUrl = json.data.supportUrl;
       if (json.data.depositAddress) APP_CONFIG.depositWalletAddress = json.data.depositAddress;
-      if (json.data.adsgramBlockId) APP_CONFIG.adsgramBlockId = json.data.adsgramBlockId;
       if (json.data.adloopSlotId) APP_CONFIG.adloopSlotId = json.data.adloopSlotId;
       if (Array.isArray(json.data.channels) && json.data.channels.length > 0) {
         APP_CONFIG.channels = json.data.channels;
@@ -1087,7 +1086,7 @@ function setupHomeDashboard() {
         return;
       }
 
-      // Intercept with Adsgram Video Ad stream before executing claim!
+      // Intercept with Adloop video ad before executing claim!
       playClaimVideoAd(
         () => {
           // Execute claim logic strictly after the ad completes
@@ -1433,7 +1432,7 @@ function setupTasksTab() {
     resetAdState();
   };
 
-  // Fallback interactive 15-second timer modal if Adsgram SDK has no fill or runs in desktop browser
+  // Fallback interactive 15-second timer modal if Adloop SDK has no fill or runs in desktop browser
   const startFallbackAdTimer = (source = 'tasks') => {
     activeAdSource = source;
     const isAr = state.selectedLanguage === 'ar';

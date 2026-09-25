@@ -454,7 +454,6 @@ apiRouter.get('/config/public', (req, res) => {
       channelUrl: config.channels.channelUrl,
       channels: config.channels.list,
       depositAddress: config.deposit.recipientAddress,
-      adsgramBlockId: config.ads.blockId || '49428',
       adloopSlotId: config.ads.adloopSlotId || '798549',
       adloopSiteId: config.ads.adloopSiteId || 'SITE-NA35PV9RER',
     },

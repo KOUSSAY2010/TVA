@@ -70,15 +70,17 @@ export function setupBotHandlers(botInstance) {
       const safeName = (ctx.from?.first_name || 'Miner').replace(/[*_`\[\]]/g, '');
 
       const welcomeText =
-        `🪙 *Welcome to TVA GRAM, ${safeName} 👑! 👑*\n\n` +
+        `🪙 *Welcome to TVA GRAM, ${safeName}! 👑*\n\n` +
         `💎 *Complete tasks, watch ads & earn TON rewards.*\n\n` +
         `🎯 *Daily Tasks* — Complete simple tasks and earn instantly.\n` +
-        `👥 *Invite Friends* — Earn from referrals and their activity.\n` +
-        `💰 *Fast Withdrawals* — Withdraw your earnings directly to your TON Wallet.\n\n` +
+        `👥 *Invite Friends* — Earn from referrals across 4 levels.\n` +
+        `💰 *Fast Withdrawals* — Withdraw directly to your TON Wallet.\n\n` +
         `⚡ *Fast rewards • Transparent payouts • On-chain verified*\n\n` +
-        `🚀 *Ready to earn? Tap below and start now!*\n\n` +
-        `📢 *Your referral & payout updates will appear here:*\n` +
-        `https://t.me/TVA_Payment`;
+        `📢 *Join our official channels to stay updated:*\n` +
+        `🔹 [TVA Mining News](https://t.me/TVA_Mining_News)\n` +
+        `🔹 [TVA الأخبار العربية](https://t.me/TVA_Mining_News_Arabic)\n` +
+        `🔹 [TVA Payouts Channel](https://t.me/TVA_Payment)\n\n` +
+        `🚀 *Ready to earn? Tap below and start now!*`;
 
       const shareText = encodeURIComponent('Join TVA Mining Bot and start mining TON cryptocurrency daily for free! 🚀💎');
       const shareUrl = `https://t.me/share/url?url=https://t.me/${botUsername}?start=ref_${ctx.from.id}&text=${shareText}`;
@@ -86,7 +88,11 @@ export function setupBotHandlers(botInstance) {
       const keyboard = Markup.inlineKeyboard([
         [Markup.button.webApp('🚀 Open TVA Mining', config.telegram.webAppUrl)],
         [
-          Markup.button.url('📢 Payouts Channel', 'https://t.me/TVA_Payment'),
+          Markup.button.url('📢 TVA News', 'https://t.me/TVA_Mining_News'),
+          Markup.button.url('📢 أخبار عربية', 'https://t.me/TVA_Mining_News_Arabic'),
+        ],
+        [
+          Markup.button.url('💎 Payouts Channel', 'https://t.me/TVA_Payment'),
           Markup.button.url('👥 Invite Friends', shareUrl),
         ],
       ]);
@@ -113,7 +119,7 @@ export function setupBotHandlers(botInstance) {
         await ctx.reply('🪙 Welcome to TVA GRAM! Tap below to open the app:', {
           ...Markup.inlineKeyboard([
             [Markup.button.webApp('🚀 Open TVA Mining', config.telegram.webAppUrl)],
-            [Markup.button.url('📢 Payouts Channel', 'https://t.me/TVA_Payment')],
+            [Markup.button.url('💎 Payouts Channel', 'https://t.me/TVA_Payment')],
           ]),
         });
       } catch (_) {}
