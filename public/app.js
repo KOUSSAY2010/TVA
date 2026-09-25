@@ -694,7 +694,7 @@ const APP_CONFIG = {
   botUsername: 'TVAMining_bot', // Configurable Telegram bot username for referral links
   supportAdminUsername: 'TVA_Support_Help', // Official Support Telegram username
   supportAdminUrl: 'https://t.me/TVA_Support_Help',
-  adloopSlotId: '798549', // Official Adloop Network slot ID
+  adloopSlotId: '266123', // Official Adloop Network slot ID
   depositWalletAddress: 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   channels: [
     { id: '@TVA_Mining_News', username: 'TVA_Mining_News', title: 'TVA Mining News 📢', url: 'https://t.me/TVA_Mining_News' },
@@ -995,7 +995,7 @@ async function ensureAdloopReady(maxWaitMs = 3000) {
     let script = document.querySelector('script[src*="adloop.js"]');
     if (!script) {
       script = document.createElement('script');
-      script.src = '/adloop.js?sid=SITE-NA35PV9RER';
+      script.src = '/adloop.js?sid=SITE-MKR8TJT3K5';
       script.async = true;
       document.head.appendChild(script);
       script.onload = () => resolve(getAdloopSdk());
@@ -1194,7 +1194,7 @@ async function playVideoAdStream({ source = 'tasks', onSuccess = null, onCancel 
     return;
   }
 
-  // 3. Official Adloop Network Ad Flow (slotId: 798549)
+  // 3. Official Adloop Network Ad Flow (slotId: 266123)
   let adloopSdk = await ensureAdloopReady(2500);
   if (!adloopSdk && typeof window !== 'undefined' && window.Adloop) {
     adloopSdk = window.Adloop;
@@ -1205,7 +1205,7 @@ async function playVideoAdStream({ source = 'tasks', onSuccess = null, onCancel 
       showToast(isAr ? 'جاري فتح الإعلان...' : 'Opening ad...', 'info');
       triggerHaptic('impact');
 
-      const ad = adloopSdk.init({ slotId: '798549' });
+      const ad = adloopSdk.init({ slotId: '266123' });
       ad.show()
         .then(async (result) => {
           console.log('[Adloop] Ad completed successfully:', result);

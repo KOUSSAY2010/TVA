@@ -26,8 +26,8 @@ export const config = {
   },
 
   ads: {
-    adloopSlotId: process.env.ADLOOP_SLOT_ID || '798549',
-    adloopSiteId: process.env.ADLOOP_SITE_ID || 'SITE-NA35PV9RER',
+    adloopSlotId: process.env.ADLOOP_SLOT_ID || '266123',
+    adloopSiteId: process.env.ADLOOP_SITE_ID || 'SITE-MKR8TJT3K5',
     maxDailyAds: parseInt(process.env.MAX_DAILY_ADS || '30', 10),
     minDurationSeconds: parseInt(process.env.ADS_MIN_DURATION_SECONDS || '15', 10),
     adsForActiveReferral: parseInt(process.env.ACTIVE_REFERRAL_REQUIRED_ADS || '10', 10),

@@ -454,8 +454,8 @@ apiRouter.get('/config/public', (req, res) => {
       channelUrl: config.channels.channelUrl,
       channels: config.channels.list,
       depositAddress: config.deposit.recipientAddress,
-      adloopSlotId: config.ads.adloopSlotId || '798549',
-      adloopSiteId: config.ads.adloopSiteId || 'SITE-NA35PV9RER',
+      adloopSlotId: config.ads.adloopSlotId || '266123',
+      adloopSiteId: config.ads.adloopSiteId || 'SITE-MKR8TJT3K5',
     },
   });
 });

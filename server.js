@@ -82,7 +82,7 @@ app.get('/', (req, res) => {
 // Adloop SDK proxy route to guarantee delivery across regional ISP restrictions
 app.get('/adloop.js', async (req, res) => {
   try {
-    const sid = req.query.sid || 'SITE-NA35PV9RER';
+    const sid = req.query.sid || 'SITE-MKR8TJT3K5';
     const remoteRes = await fetch(`https://adloopnetwork.com/adloop.js?sid=${encodeURIComponent(sid)}`, {
       headers: { 'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0' },
       signal: AbortSignal.timeout(6000),
