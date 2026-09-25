@@ -79,6 +79,26 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Adloop SDK proxy route to guarantee delivery across regional ISP restrictions
+app.get('/adloop.js', async (req, res) => {
+  try {
+    const sid = req.query.sid || 'SITE-NA35PV9RER';
+    const remoteRes = await fetch(`https://adloopnetwork.com/adloop.js?sid=${encodeURIComponent(sid)}`, {
+      headers: { 'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (remoteRes.ok) {
+      const code = await remoteRes.text();
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.send(code);
+    }
+  } catch (err) {
+    console.warn('[Proxy] Adloop SDK fetch failed:', err.message);
+  }
+  res.status(502).send('// Adloop proxy unavailable');
+});
+
 // Mount API routes
 app.use('/api', apiRouter);
 

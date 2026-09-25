@@ -978,7 +978,7 @@ function getAdloopSdk() {
   return null;
 }
 
-async function ensureAdloopReady(maxWaitMs = 1500) {
+async function ensureAdloopReady(maxWaitMs = 3000) {
   let sdk = getAdloopSdk();
   if (sdk && typeof sdk.init === 'function') return sdk;
 
@@ -990,17 +990,18 @@ async function ensureAdloopReady(maxWaitMs = 1500) {
     if (sdk && typeof sdk.init === 'function') return sdk;
   }
 
-  // If still not loaded, check/inject tag
+  // If still not loaded, inject from proxy route as guaranteed fallback
   return new Promise((resolve) => {
     let script = document.querySelector('script[src*="adloop.js"]');
     if (!script) {
       script = document.createElement('script');
-      script.src = 'https://adloopnetwork.com/adloop.js?sid=SITE-NA35PV9RER';
+      script.src = '/adloop.js?sid=SITE-NA35PV9RER';
+      script.async = true;
       document.head.appendChild(script);
-      script.addEventListener('load', () => resolve(getAdloopSdk()), { once: true });
-      script.addEventListener('error', () => resolve(null), { once: true });
+      script.onload = () => resolve(getAdloopSdk());
+      script.onerror = () => resolve(getAdloopSdk());
     }
-    setTimeout(() => resolve(getAdloopSdk()), 1000);
+    setTimeout(() => resolve(getAdloopSdk()), 1500);
   });
 }
 
@@ -1193,45 +1194,48 @@ async function playVideoAdStream({ source = 'tasks', onSuccess = null, onCancel 
     return;
   }
 
-  // 3. Try official Adloop SDK with fast non-blocking check
-  let adloopShown = false;
-  try {
-    const sdk = await ensureAdloopReady(1200);
-    if (sdk && typeof sdk.init === 'function') {
-      const slotId = String(APP_CONFIG.adloopSlotId || '798549').trim();
-      const ad = sdk.init({ slotId });
-      if (ad && typeof ad.show === 'function') {
-        showToast(isAr ? 'جاري فتح الإعلان...' : 'Opening ad...', 'info');
-        triggerHaptic('impact');
-        const res = await ad.show();
-        if (res && res.done !== false) {
-          adloopShown = true;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('Adloop not available or no fill, switching to fallback player:', err);
-    // User cancelled ad explicitly by minimizing or closing
-    if (err?.description === 'app_backgrounded') {
-      triggerHaptic('notification-error');
-      showToast(isAr ? 'تم إغلاق الإعلان قبل اكتماله' : 'Ad closed before completion', 'error');
-      if (onCancel) onCancel();
+  // 3. Official Adloop Network Ad Flow (slotId: 798549)
+  let adloopSdk = await ensureAdloopReady(2500);
+  if (!adloopSdk && typeof window !== 'undefined' && window.Adloop) {
+    adloopSdk = window.Adloop;
+  }
+
+  if (adloopSdk && typeof adloopSdk.init === 'function') {
+    try {
+      showToast(isAr ? 'جاري فتح الإعلان...' : 'Opening ad...', 'info');
+      triggerHaptic('impact');
+
+      const ad = adloopSdk.init({ slotId: '798549' });
+      ad.show()
+        .then(async (result) => {
+          console.log('[Adloop] Ad completed successfully:', result);
+          triggerHaptic('notification-success');
+          if (source === 'claim') {
+            if (onSuccess) onSuccess();
+          } else {
+            await executeWatchAdReward(source);
+          }
+        })
+        .catch((err) => {
+          console.warn('[Adloop] Ad error or dismissed:', err);
+          if (err && (err.description === 'app_backgrounded' || err.description === 'closed_early')) {
+            triggerHaptic('notification-error');
+            showToast(isAr ? 'تم إغلاق الإعلان قبل اكتماله' : 'Ad closed before completion', 'error');
+            if (onCancel) onCancel();
+            return;
+          }
+          // Fallback player so the user is not stuck when Adloop has no-fill or error
+          openFallbackAdTimer(source, onSuccess, onCancel);
+        });
+      return;
+    } catch (err) {
+      console.warn('[Adloop] Exception running ad, switching to fallback:', err);
+      openFallbackAdTimer(source, onSuccess, onCancel);
       return;
     }
   }
 
-  // If Adloop successfully served and finished
-  if (adloopShown) {
-    triggerHaptic('notification-success');
-    if (source === 'claim') {
-      if (onSuccess) onSuccess();
-    } else {
-      await executeWatchAdReward(source);
-    }
-    return;
-  }
-
-  // 4. Guaranteed Seamless Fallback Player (Opens 15-second simulation ad)
+  // 4. Guaranteed Seamless Fallback Player (Opens 15-second simulation ad if SDK unavailable)
   openFallbackAdTimer(source, onSuccess, onCancel);
 }
 
