@@ -7,9 +7,9 @@ export const config = {
   
   telegram: {
     botToken: process.env.BOT_TOKEN || '',
-    botUsername: process.env.BOT_USERNAME || 'TVAMining_bot',
+    botUsername: process.env.BOT_USERNAME || 'DRAGON_STONE_BOT',
     adminId: process.env.ADMIN_TELEGRAM_ID || '',
-    webAppUrl: process.env.WEBAPP_URL || 'https://tva-mining.local',
+    webAppUrl: process.env.WEBAPP_URL || 'https://dragonstone-mining.local',
   },
 
   db: {
@@ -76,11 +76,11 @@ export const config = {
     recipientAddress: process.env.DEPOSIT_WALLET_ADDRESS || 'UQDUlQeNULJd5yl9WjHBkHjA0O3pVueC8NKscybGQbI-R92M',
   },
 
-  // Rig presets: [1, 3, 5, 10, 25, 50, 100] TON
+  // Dragon tiers: [1, 3, 5, 10, 25, 50, 100] TON
   // Lifetime upgrades granting Points (1100 points per 1 TON, where 1 point = 0.0001 TON/day)
   rigTiers: [1, 3, 5, 10, 25, 50, 100].map((cost) => ({
-    tierId: `rig_${cost}ton`,
-    name: `${cost} TON Rig`,
+    tierId: `dragon_${cost}ton`,
+    name: `${cost} TON Dragon`,
     costTon: cost,
     isLifetime: true,
     pointsReward: cost * 1100, // Grants Points directly

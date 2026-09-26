@@ -8,8 +8,8 @@ const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
   tg.expand();
-  if (tg.setHeaderColor) tg.setHeaderColor('#09090b');
-  if (tg.setBackgroundColor) tg.setBackgroundColor('#09090b');
+  if (tg.setHeaderColor) tg.setHeaderColor('#0a0505');
+  if (tg.setBackgroundColor) tg.setBackgroundColor('#050303');
 }
 
 // 2. Localization (i18n) Translations Dictionary
@@ -230,11 +230,11 @@ const TRANSLATIONS = {
     redeem_btn: 'Redeem',
     promo_placeholder: 'ENTER CODE',
 
-    // Rigs Store
-    rigs_store_badge: 'Mining Rig Store',
-    rigs_store_title: 'Automated Mining Units',
-    rigs_store_desc: 'Deploy advanced mining rigs to boost your daily TON profits directly.',
-    active_rigs_label: 'Currently Active Rigs:',
+    // Rigs / Dragons Store
+    rigs_store_badge: 'Dragon Store 🐉',
+    rigs_store_title: 'TON Mining Dragons',
+    rigs_store_desc: 'Summon powerful Dragons to upgrade your account and multiply your daily TON earnings directly.',
+    active_rigs_label: 'Currently Active Dragons:',
     days_contract_tag: 'Lifetime Upgrade',
     lifetime_contract_tag: 'Lifetime Upgrade',
     daily_yield: 'Points Reward',
@@ -243,8 +243,8 @@ const TRANSLATIONS = {
     lifetime_type: 'Lifetime',
     total_return: 'Type',
     buy_for: 'Buy for',
-    unit: 'Unit',
-    units: 'Units',
+    unit: 'Dragon',
+    units: 'Dragons',
 
     // Tasks
     boost_hashrate: 'Boost Your Hashrate',
@@ -261,7 +261,7 @@ const TRANSLATIONS = {
 
     // Friends
     referral_program: 'Referral Program',
-    invite_miners_title: 'Invite Miners & Expand',
+    invite_miners_title: 'Invite Dragons & Expand',
     referral_desc: 'Share your invite link with friends. Earn rewards across 4 referral tiers!',
     total_friends: 'Total Friends',
     active_friends: 'Active Friends (10 ads)',

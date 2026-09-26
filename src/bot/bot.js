@@ -5,7 +5,15 @@ import config from '../config/index.js';
 import MiningService from '../services/miningService.js';
 import WithdrawalRequest from '../models/WithdrawalRequest.js';
 
-export const bot = new Telegraf(config.telegram.botToken || 'dummy_token_for_init');
+// =============================================================================
+// DRAGONSTONE MINING BOT - @DRAGON_STONE_BOT
+// BOT TOKEN: Set BOT_TOKEN in your .env file.
+// The new Dragonstone bot token is configured via process.env.BOT_TOKEN ONLY.
+// Do NOT hardcode the token here. Example .env line:
+//   BOT_TOKEN=8955110097:AAG1iALnYZB03xPBhpWU8iEGYQD9fWmQbsk
+// =============================================================================
+
+export const bot = new Telegraf(process.env.BOT_TOKEN);
 
 /**
  * Configure bot commands and event handlers
@@ -27,7 +35,7 @@ export function setupBotHandlers(botInstance) {
   // Register Bot commands and Menu Button in Telegram
   try {
     botInstance.telegram.setMyCommands([
-      { command: 'start', description: '🚀 Start Mining Bot' },
+      { command: 'start', description: '🐉 Start Dragonstone Mining' },
       { command: 'app', description: '⚡ Open Mini App' },
       { command: 'help', description: '💡 Guide & Support' },
     ]).catch((err) => {
@@ -38,7 +46,7 @@ export function setupBotHandlers(botInstance) {
       botInstance.telegram.setChatMenuButton({
         menu_button: {
           type: 'web_app',
-          text: '⚡ TVA Mining',
+          text: '🐉 Dragonstone Mining',
           web_app: { url: config.telegram.webAppUrl },
         },
       }).catch((err) => {
@@ -82,22 +90,23 @@ export function setupBotHandlers(botInstance) {
         `🔹 [TVA Payouts Channel](https://t.me/TVA_Payment)\n\n` +
         `🚀 *Ready to earn? Tap below and start now!*`;
 
-      const shareText = encodeURIComponent('Join TVA Mining Bot and start mining TON cryptocurrency daily for free! 🚀💎');
+      const shareText = encodeURIComponent('Join Dragonstone Mining Bot and earn TON daily for free! 🐉🔥');
       const shareUrl = `https://t.me/share/url?url=https://t.me/${botUsername}?start=ref_${ctx.from.id}&text=${shareText}`;
 
       const keyboard = Markup.inlineKeyboard([
-        [Markup.button.webApp('🚀 Open TVA Mining', config.telegram.webAppUrl)],
+        [Markup.button.webApp('🐉 Open Dragonstone Mining', config.telegram.webAppUrl)],
         [
-          Markup.button.url('📢 TVA News', 'https://t.me/TVA_Mining_News'),
+          Markup.button.url('📢 Dragon News', 'https://t.me/TVA_Mining_News'),
           Markup.button.url('📢 أخبار عربية', 'https://t.me/TVA_Mining_News_Arabic'),
         ],
         [
-          Markup.button.url('💎 Payouts Channel', 'https://t.me/TVA_Payment'),
+          Markup.button.url('💰 Payouts Channel', 'https://t.me/TVA_Payment'),
           Markup.button.url('👥 Invite Friends', shareUrl),
         ],
       ]);
 
-      const mascotPath = path.resolve(process.cwd(), 'public', 'img', 'robots', 'mascot.jpg');
+      // Dragon mascot: place your dragon image at public/assets/main_dragon_logo.jpg
+      const mascotPath = path.resolve(process.cwd(), 'public', 'assets', 'main_dragon_logo.jpg');
       if (fs.existsSync(mascotPath)) {
         await ctx.replyWithPhoto({ source: mascotPath }, {
           caption: welcomeText,
@@ -116,24 +125,24 @@ export function setupBotHandlers(botInstance) {
     } catch (err) {
       console.error('Error handling /start command:', err);
       try {
-        await ctx.reply('🪙 Welcome to TVA GRAM! Tap below to open the app:', {
+        await ctx.reply('🐉 Welcome to Dragonstone Mining! Tap below to open the app:', {
           ...Markup.inlineKeyboard([
-            [Markup.button.webApp('🚀 Open TVA Mining', config.telegram.webAppUrl)],
-            [Markup.button.url('💎 Payouts Channel', 'https://t.me/TVA_Payment')],
+            [Markup.button.webApp('🐉 Open Dragonstone Mining', config.telegram.webAppUrl)],
+            [Markup.button.url('💰 Payouts Channel', 'https://t.me/TVA_Payment')],
           ]),
         });
       } catch (_) {}
     }
   });
 
-  // 2. /app command: English Mini App direct launcher
+  // 2. /app command: Dragon Mini App direct launcher
   botInstance.command('app', async (ctx) => {
     try {
-      const appText = `🚀 *TVA Mining App is Ready!*\n\nTap the button below to open the Mini App, track mining earnings, claim tokens, and complete daily tasks:`;
+      const appText = `🐉 *Dragonstone Mining App is Ready!*\n\nTap the button below to open the Mini App, summon Dragons, claim tokens, and complete daily tasks:`;
       await ctx.reply(appText, {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
-          [Markup.button.webApp('🚀 Launch App', config.telegram.webAppUrl)],
+          [Markup.button.webApp('🐉 Launch Dragonstone', config.telegram.webAppUrl)],
         ]),
       });
     } catch (err) {
